@@ -10,9 +10,9 @@ const Hero = () => {
     { title: "Winter Heritage", head: "Timeless\nCraftsmanship.", img: "/images/hero-2.png", pos: "object-top" },
     { title: "Pure Wool Luxury", head: "Elegance in\nEvery Stitch.", img: "/images/hero-3.png", pos: "object-center" },
     { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "/images/hero-4.png", pos: "object-center" },
-    { title: "Hand-Knitted", head: "Patterns of\nTradition.", img: "/images/hero-5.png", pos: "object-bottom" },
+    { title: "Hand-Knitted", head: "Patterns of\nTradition.", img: "/images/hero-5.png", pos: "object-center" },
     { title: "Sustainable Yarn", head: "Earth Friendly\nWarmth.", img: "/images/hero-6.png", pos: "object-center" },
-    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "/images/hero-7.png", pos: "object-top" }
+    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "/images/hero-7.png", pos: "object-center" }
   ];
 
   useEffect(() => {
