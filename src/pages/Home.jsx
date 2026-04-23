@@ -142,12 +142,12 @@ const Home = () => {
                 <p className="text-sm md:text-lg text-[var(--text-muted)] italic mb-1">
                   Expert will call you within 2 hours!
                 </p>
-                <a href="https://wa.me/917404142034" target="_blank" rel="noopener noreferrer" className="font-black text-lg md:text-2xl text-[var(--primary)] hover:underline tracking-tight">+91-7404142034</a>
+                <a href="https://wa.me/917027311213" target="_blank" rel="noopener noreferrer" className="font-black text-lg md:text-2xl text-[var(--primary)] hover:underline tracking-tight">+91-70273 11213</a>
               </div>
             </div>
             <div className="pt-2">
               <motion.a
-                href="https://wa.me/917404142034"
+                href="https://wa.me/917027311213"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}

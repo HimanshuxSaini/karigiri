@@ -95,7 +95,7 @@ const Footer = () => {
            <div>
               <h5 className="text-slate-900 mb-4">Contact Sales</h5>
               <p className="leading-loose text-slate-500">
-                 PH: <a href="https://wa.me/917404142034" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--primary)]">+91 7404142034</a> <br />
+                 PH: <a href="https://wa.me/917027311213" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--primary)]">+91 70273 11213</a> <br />
                  Email: sales@karigiri.com
               </p>
            </div>

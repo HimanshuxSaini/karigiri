@@ -108,7 +108,7 @@ const FAQ = () => {
         <div className="mt-16 text-center">
            <p className="text-xs md:text-sm text-slate-400 font-bold uppercase tracking-widest mb-6">Still have questions?</p>
            <a 
-             href="https://wa.me/917404142034" 
+             href="https://wa.me/917027311213" 
              target="_blank" 
              rel="noopener noreferrer"
              className="inline-flex items-center space-x-3 bg-white border-2 border-slate-900 px-8 py-4 rounded-full font-black text-[10px] md:text-xs uppercase tracking-[0.2em] hover:bg-slate-900 hover:text-white transition-all transform hover:-translate-y-1"
