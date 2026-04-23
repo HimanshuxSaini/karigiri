@@ -38,7 +38,7 @@ const Hero = () => {
               <img 
                 src={slides[current].img} 
                 alt="New Season" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
               
               <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/40 to-transparent flex items-center px-6 md:px-24">
