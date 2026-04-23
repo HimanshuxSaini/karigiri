@@ -6,13 +6,13 @@ const Hero = () => {
   const [current, setCurrent] = useState(0);
 
   const slides = [
-    { title: "Artisanal Edit 2026", head: "The Softest\nCollection.", img: "/images/hero-1.png" },
-    { title: "Winter Heritage", head: "Timeless\nCraftsmanship.", img: "/images/hero-2.png" },
-    { title: "Pure Wool Luxury", head: "Elegance in\nEvery Stitch.", img: "/images/hero-3.png" },
-    { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "/images/hero-4.png" },
-    { title: "Hand-Knitted", head: "Patterns of\nTradition.", img: "/images/hero-5.png" },
-    { title: "Sustainable Yarn", head: "Earth Friendly\nWarmth.", img: "/images/hero-6.png" },
-    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "/images/hero-7.png" }
+    { title: "Artisanal Edit 2026", head: "The Softest\nCollection.", img: "/images/hero-1.png", pos: "object-center" },
+    { title: "Winter Heritage", head: "Timeless\nCraftsmanship.", img: "/images/hero-2.png", pos: "object-top" },
+    { title: "Pure Wool Luxury", head: "Elegance in\nEvery Stitch.", img: "/images/hero-3.png", pos: "object-center" },
+    { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "/images/hero-4.png", pos: "object-center" },
+    { title: "Hand-Knitted", head: "Patterns of\nTradition.", img: "/images/hero-5.png", pos: "object-bottom" },
+    { title: "Sustainable Yarn", head: "Earth Friendly\nWarmth.", img: "/images/hero-6.png", pos: "object-center" },
+    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "/images/hero-7.png", pos: "object-top" }
   ];
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const Hero = () => {
   return (
     <div className="pt-20 md:pt-24 bg-[var(--background)]">
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-6 md:py-12">
-        <div className="relative h-[350px] sm:h-[450px] md:h-[600px] rounded-sm overflow-hidden shadow-sm bg-white">
+        <div className="relative h-[400px] sm:h-[500px] md:h-[750px] rounded-sm overflow-hidden shadow-sm bg-white">
           <AnimatePresence mode="wait">
             <motion.div 
               key={current}
@@ -38,7 +38,7 @@ const Hero = () => {
               <img 
                 src={slides[current].img} 
                 alt="New Season" 
-                className="w-full h-full object-cover object-center"
+                className={`w-full h-full object-cover ${slides[current].pos}`}
               />
               
               <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/40 to-transparent flex items-center px-6 md:px-24">
