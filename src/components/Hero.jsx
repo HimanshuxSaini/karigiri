@@ -23,9 +23,9 @@ const Hero = () => {
   }, []);
 
   return (
-    <div className="pt-20 md:pt-24 bg-[var(--background)]">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-6 md:py-12">
-        <div className="relative h-[400px] sm:h-[500px] md:h-[750px] rounded-sm overflow-hidden shadow-sm bg-white">
+    <div className="pt-20 md:pt-22 bg-[var(--background)]">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-4 md:py-6">
+        <div className="relative h-[70vh] sm:h-[75vh] md:h-[80vh] rounded-sm overflow-hidden shadow-sm bg-white">
           <AnimatePresence mode="wait">
             <motion.div 
               key={current}
