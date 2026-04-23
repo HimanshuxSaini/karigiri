@@ -23,7 +23,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <div className="pt-24 md:pt-36 bg-[var(--background)]">
+    <div className="pt-20 md:pt-24 bg-[var(--background)]">
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-6 md:py-12">
         <div className="relative h-[350px] sm:h-[450px] md:h-[600px] rounded-sm overflow-hidden shadow-sm bg-white">
           <AnimatePresence mode="wait">
@@ -38,7 +38,7 @@ const Hero = () => {
               <img 
                 src={slides[current].img} 
                 alt="New Season" 
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-cover object-center"
               />
               
               <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/40 to-transparent flex items-center px-6 md:px-24">
