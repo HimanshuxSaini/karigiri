@@ -163,5 +163,113 @@ export const allProducts = [
     category: "Kids", 
     image: "/images/custom-order-2.png",
     description: "A complete baby knit set including a sweater, bonnet, and socks. Made with the softest baby-friendly wool."
+  },
+  { 
+    id: 203, 
+    name: "Mocha Dream Crochet Booties", 
+    brand: "KARIGIRI", 
+    price: 650, 
+    category: "Kids", 
+    image: "/images/kids-booties-1.png",
+    description: "Hand-knitted mocha brown and cream white crochet booties for infants. Soft, breathable, and designed for tiny feet with artisanal care."
+  },
+  { 
+    id: 204, 
+    name: "Crimson Button-Up Booties", 
+    brand: "KARIGIRI", 
+    price: 750, 
+    category: "Kids", 
+    image: "/images/kids-booties-2.png", 
+    description: "Vibrant red high-top crochet booties featuring a stylish grey trim and wooden button closure. Perfect for keeping baby's feet warm and fashionable."
+  },
+  { 
+    id: 205, 
+    name: "Ruby Tassel Crochet Shoes", 
+    brand: "KARIGIRI", 
+    price: 700, 
+    category: "Kids", 
+    image: "/images/kids-booties-3.png",
+    description: "Classic red crochet shoes for babies with a charming beige tassel drawstring. Handcrafted in Sonipat using premium baby-soft wool."
+  },
+  { 
+    id: 206, 
+    name: "Forest Bow Baby Sandals", 
+    brand: "KARIGIRI", 
+    price: 600, 
+    category: "Kids", 
+    image: "/images/kids-booties-4.png",
+    description: "Adorable green and red crochet sandals with a large decorative bow. Ideal for summer or indoor wear, offering a soft and flexible fit for infants."
+  },
+  { 
+    id: 207, 
+    name: "Scarlet Blossom Booties", 
+    brand: "KARIGIRI", 
+    price: 780, 
+    category: "Kids", 
+    image: "/images/kids-booties-5.png",
+    description: "Vibrant red hand-knitted crochet booties featuring a large white blossom on the side and a secure wooden button closure."
+  },
+  { 
+    id: 208, 
+    name: "Polka Dot Ruffled Shoes", 
+    brand: "KARIGIRI", 
+    price: 720, 
+    category: "Kids", 
+    image: "/images/kids-booties-6.png",
+    description: "Elegant white crochet booties with a bold red ruffled trim and charming red polka dot accents."
+  },
+  { 
+    id: 209, 
+    name: "Pink Cloud Ruffled Booties", 
+    brand: "KARIGIRI", 
+    price: 850, 
+    category: "Kids", 
+    image: "/images/kids-booties-7.png",
+    description: "Soft pink booties with a voluminous white ruffled cuff and a delicate silk ribbon bow for a princess-like feel."
+  },
+  { 
+    id: 210, 
+    name: "Cherry Garden Beige Shoes", 
+    brand: "KARIGIRI", 
+    price: 690, 
+    category: "Kids", 
+    image: "/images/kids-booties-8.png",
+    description: "Delightful beige crochet shoes with a mint green trim and hand-embroidered cherry details."
+  },
+  { 
+    id: 211, 
+    name: "Cacao Heritage Hat & Bootie Set", 
+    brand: "KARIGIRI", 
+    price: 1450, 
+    category: "Kids", 
+    image: "/images/kids-booties-9.png",
+    description: "A complete artisanal set featuring a deep brown braided hat with a tan flower and matching heritage-style booties."
+  },
+  { 
+    id: 212, 
+    name: "Honey Heart Crochet Booties", 
+    brand: "KARIGIRI", 
+    price: 740, 
+    category: "Kids", 
+    image: "/images/kids-booties-10.png",
+    description: "Sweet mustard yellow crochet booties with a bold red heart bow and a vintage wooden button."
+  },
+  { 
+    id: 213, 
+    name: "Blush Cherry Ruffled Shoes", 
+    brand: "KARIGIRI", 
+    price: 760, 
+    category: "Kids", 
+    image: "/images/kids-booties-11.png",
+    description: "Soft pink crochet shoes for babies, featuring a mint green ruffled trim and hand-stitched cherry accents."
+  },
+  { 
+    id: 214, 
+    name: "Lilac Moss Ribbon Booties", 
+    brand: "KARIGIRI", 
+    price: 820, 
+    category: "Kids", 
+    image: "/images/kids-booties-12.png",
+    description: "Charming lilac pink booties with a deep moss green crochet bow, handcrafted for ultimate comfort and style."
   }
 ];

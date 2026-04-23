@@ -232,8 +232,8 @@ const Home = () => {
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
           {[
-            { name: "Nisha Devi", region: "Sonipat, Haryana", craft: "Master Knitter", story: "Meera leads our local knitting circle in Sonipat, specializing in intricate geometric patterns passed down through generations of her family." },
-            { name: "Ajay Kumar Pandey", region: "Sonipat, Haryana", craft: "Premium Weaver", story: "Rajesh transforms raw ethically sourced wool into gossamer-thin wraps using traditional looms preserved in our Sonipat studio." }
+            { name: "Nisha Devi", region: "Sonipat, Haryana", craft: "Master Knitter", story: "Nisha leads our local knitting circle in Sonipat, specializing in intricate geometric patterns passed down through generations of her family." },
+            { name: "Ajay Kumar Pandey", region: "Sonipat, Haryana", craft: "Premium Weaver", story: "Ajay transforms raw ethically sourced wool into gossamer-thin wraps using traditional looms preserved in our Sonipat studio." }
           ].map((artisan, i) => (
             <motion.div
               key={i}
