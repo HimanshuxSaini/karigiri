@@ -12,7 +12,7 @@ const Hero = () => {
     { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "/images/hero-4.png", pos: "object-center" },
     { title: "Hand-Knitted", head: "Patterns of\nTradition.", img: "/images/hero-5.png", pos: "object-center" },
     { title: "Sustainable Yarn", head: "Earth Friendly\nWarmth.", img: "/images/hero-6.png", pos: "object-center" },
-    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "/images/hero-7.png", pos: "object-center" }
+    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "/images/hero-7.png", pos: "object-top" }
   ];
 
   useEffect(() => {
