@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { protectAdmin } = require('../middleware/authMiddleware');
 
 // Configure multer for disk storage
 const storage = multer.diskStorage({
@@ -26,7 +27,7 @@ const upload = multer({
   }
 });
 
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', protectAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });

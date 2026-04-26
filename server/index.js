@@ -47,22 +47,37 @@ app.get('/', (req, res) => {
 });
 
 // Initialize Firebase Admin
-const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-const fullPath = serviceAccountPath ? path.resolve(__dirname, '..', serviceAccountPath) : null;
+try {
+  if (!admin.apps.length) {
+    const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
+    const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    
+    let credential;
 
-if (fullPath && fs.existsSync(fullPath)) {
-  try {
-    if (!admin.apps.length) {
+    if (serviceAccountVar) {
+      // Support JSON string from environment variable (Best for Render/Vercel)
+      credential = admin.credential.cert(JSON.parse(serviceAccountVar));
+    } else if (serviceAccountPath) {
+      // Support local file path
+      const fullPath = path.resolve(__dirname, '..', serviceAccountPath);
+      if (fs.existsSync(fullPath)) {
+        credential = admin.credential.cert(fullPath);
+      }
+    }
+
+    if (credential) {
       admin.initializeApp({
-        credential: admin.credential.cert(fullPath),
+        credential,
         projectId: process.env.VITE_FIREBASE_PROJECT_ID,
         storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET
       });
       console.log('Firebase Admin: ✅ Initialized');
+    } else {
+      console.warn('Firebase Admin: ⚠️ Not initialized (No credentials found)');
     }
-  } catch (error) {
-    console.error('Firebase Error:', error.message);
   }
+} catch (error) {
+  console.error('Firebase Initialization Error:', error.message);
 }
 
 const PORT = process.env.PORT || 5001;

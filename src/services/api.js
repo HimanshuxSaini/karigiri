@@ -120,6 +120,15 @@ export const bulkUploadProducts = async (products) => {
   return results;
 };
 
+// Helper to get auth header
+const getAuthHeader = async () => {
+  if (auth.currentUser) {
+    const token = await auth.currentUser.getIdToken();
+    return { 'Authorization': `Bearer ${token}` };
+  }
+  return {};
+};
+
 export const uploadProductImage = async (file) => {
   try {
     console.log("Starting server-side upload for file:", file.name);
@@ -127,8 +136,13 @@ export const uploadProductImage = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
 
+    const authHeader = await getAuthHeader();
+
     const response = await fetch(`${API_URL}/upload`, {
       method: 'POST',
+      headers: {
+        ...authHeader
+      },
       body: formData,
     });
 

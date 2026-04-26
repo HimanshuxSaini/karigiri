@@ -7,10 +7,11 @@ const {
   updateOrderToDelivered,
   updateOrderStatus
 } = require('../controllers/orderController');
+const { protectAdmin } = require('../middleware/authMiddleware');
 
-router.route('/').post(addOrderItems).get(getOrders);
+router.route('/').post(addOrderItems).get(protectAdmin, getOrders);
 router.route('/:id').get(getOrderById);
-router.route('/:id/deliver').put(updateOrderToDelivered);
-router.route('/:id/status').put(updateOrderStatus);
+router.route('/:id/deliver').put(protectAdmin, updateOrderToDelivered);
+router.route('/:id/status').put(protectAdmin, updateOrderStatus);
 
 module.exports = router;
