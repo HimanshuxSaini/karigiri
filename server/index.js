@@ -53,11 +53,20 @@ try {
     if (serviceAccountVar) {
       // Support JSON string from environment variable (Best for Render/Vercel)
       credential = admin.credential.cert(JSON.parse(serviceAccountVar));
-    } else if (serviceAccountPath) {
-      // Support local file path
-      const fullPath = path.resolve(__dirname, '..', serviceAccountPath);
-      if (fs.existsSync(fullPath)) {
-        credential = admin.credential.cert(fullPath);
+    } else {
+      // Support local file path or Render secret path
+      const pathsToTry = [
+        serviceAccountPath ? path.resolve(__dirname, '..', serviceAccountPath) : null,
+        '/etc/secrets/serviceAccountKey.json',
+        './serviceAccountKey.json'
+      ].filter(Boolean);
+
+      for (const p of pathsToTry) {
+        if (fs.existsSync(p)) {
+          credential = admin.credential.cert(p);
+          console.log(`Firebase Admin: Using credentials from ${p}`);
+          break;
+        }
       }
     }
 

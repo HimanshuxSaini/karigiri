@@ -25,7 +25,11 @@ const protectAdmin = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth Middleware Error:', error.message);
-    res.status(401).json({ message: 'Not authorized, token failed' });
+    res.status(401).json({ 
+      message: 'Not authorized, token failed', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
