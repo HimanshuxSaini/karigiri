@@ -8,14 +8,10 @@ const admin = require('firebase-admin');
 const envPath = path.resolve(__dirname, '..', '.env');
 require('dotenv').config({ path: envPath });
 
-const connectDB = require('./config/db');
 const otpRoutes = require('./routes/otpRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
-
-// Connect to Database
-connectDB();
 
 const app = express();
 
