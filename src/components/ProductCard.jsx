@@ -7,18 +7,22 @@ const ProductCard = ({ product }) => {
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
 
-  const isWishlisted = isInWishlist(product.id);
+  const productId = product._id || product.id;
+  const isWishlisted = isInWishlist(productId);
 
   return (
     <motion.div 
       whileHover={{ y: -5 }}
       className="bg-white overflow-hidden group h-full flex flex-col relative rounded-sm border border-transparent hover:border-gray-100 transition-all"
     >
-      <Link to={`/product/${product.id}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50">
+      <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50">
         <img 
           src={product.image} 
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          onError={(e) => {
+            e.target.src = "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800";
+          }}
         />
         
         {/* Rating badge */}
@@ -56,15 +60,17 @@ const ProductCard = ({ product }) => {
       </Link>
       
       <div className="py-2 md:py-4 px-1">
-        <Link to={`/product/${product.id}`}>
+        <Link to={`/product/${productId}`}>
           <h3 className="font-bold text-[10px] md:text-sm text-gray-900 truncate">{product.brand || "KARIGIRI"}</h3>
           <p className="text-[10px] md:text-xs text-gray-500 truncate mb-1">{product.name}</p>
         </Link>
         <div className="flex flex-wrap items-center gap-1 md:gap-2">
-          <span className="font-bold text-xs md:text-sm text-gray-900">₹{product.price.toLocaleString('en-IN')}</span>
-          <span className="text-[8px] md:text-[10px] text-gray-400 line-through">₹{(product.price + 500).toLocaleString('en-IN')}</span>
+          <span className="font-bold text-xs md:text-sm text-gray-900">₹{(product.price || 0).toLocaleString('en-IN')}</span>
+          <span className="text-[8px] md:text-[10px] text-gray-400 line-through">₹{((product.price || 0) + 500).toLocaleString('en-IN')}</span>
           <span className="text-[8px] md:text-[10px] text-orange-400 font-bold whitespace-nowrap">(40% OFF)</span>
         </div>
+
+
       </div>
     </motion.div>
   );

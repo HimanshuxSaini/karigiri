@@ -81,10 +81,13 @@ const Cart = () => {
                   <ArrowRight size={18} />
                 </Link>
               ) : (
-                <Link to="/auth?redirect=checkout" className="w-full btn-primary flex items-center justify-center space-x-2">
+                <button 
+                  onClick={() => window.location.href = '/'}
+                  className="w-full btn-primary flex items-center justify-center space-x-2"
+                >
                   <span>Login to Checkout</span>
                   <ArrowRight size={18} />
-                </Link>
+                </button>
               )}
             </div>
           </div>

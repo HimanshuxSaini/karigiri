@@ -14,6 +14,13 @@ const Navbar = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isInfantsHovered, setIsInfantsHovered] = useState(false);
+  const [isGirlsHovered, setIsGirlsHovered] = useState(false);
+  const [isWomenHovered, setIsWomenHovered] = useState(false);
+  const [isMenHovered, setIsMenHovered] = useState(false);
+  const [isYarnHovered, setIsYarnHovered] = useState(false);
+  
+  const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
@@ -25,9 +32,10 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Men', path: '/shop?category=Men' },
+    { name: 'Infants', path: '/shop?category=Infants' },
+    { name: 'Girls', path: '/shop?category=Girls' },
     { name: 'Women', path: '/shop?category=Women' },
-    { name: 'Kids', path: '/shop?category=Kids' },
+    { name: 'Men', path: '/shop?category=Men' },
     { name: 'Yarn', path: '/shop?category=Yarn' },
     { name: 'Laddu Gopal', path: '/shop?category=Laddu Gopal' },
   ];
@@ -49,8 +57,201 @@ const Navbar = () => {
 
             <div className="hidden lg:flex space-x-10 text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
               {navLinks.map((link) => (
-                <Link key={link.name} to={link.path} className="hover:text-[var(--primary)] border-b-4 border-transparent hover:border-b-[var(--primary)] pb-6 transition-all">{link.name}</Link>
+                <div 
+                  key={link.name} 
+                  className="relative group"
+                  onMouseEnter={() => {
+                    if (link.name === 'Infants') setIsInfantsHovered(true);
+                    if (link.name === 'Girls') setIsGirlsHovered(true);
+                    if (link.name === 'Women') setIsWomenHovered(true);
+                    if (link.name === 'Men') setIsMenHovered(true);
+                    if (link.name === 'Yarn') setIsYarnHovered(true);
+                  }}
+                  onMouseLeave={() => {
+                    if (link.name === 'Infants') setIsInfantsHovered(false);
+                    if (link.name === 'Girls') setIsGirlsHovered(false);
+                    if (link.name === 'Women') setIsWomenHovered(false);
+                    if (link.name === 'Men') setIsMenHovered(false);
+                    if (link.name === 'Yarn') setIsYarnHovered(false);
+                  }}
+                >
+                  <Link 
+                    to={link.path} 
+                    className="hover:text-[var(--primary)] border-b-4 border-transparent hover:border-b-[var(--primary)] pb-6 transition-all block"
+                  >
+                    {link.name}
+                  </Link>
+
+                  {link.name === 'Infants' && (
+                    <AnimatePresence>
+                      {isInfantsHovered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute top-full left-0 w-[800px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-4 gap-8 z-50 mt-1"
+                        >
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Handmade Sweaters', 'Handcrafted Sweaters', 'Frocks', 'Poncho', 'Vests', 'Booties', 'Cap Mitten Set', 'Rompers / Jumpsuits', 'Winterwear Sets', 'Caps'].map(s => (
+                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Photoprops</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Mermaid', 'Beach Theme', 'Jungle Theme', 'Christmas Theme', 'Sports', 'Fruits and Veggies'].map(s => (
+                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Accessories</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Mufflers', 'Cap Muffler Set', 'Headband', 'Socks', 'Gloves', 'Hair Accessories'].map(s => (
+                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Home & Living</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Blankets', 'Cushions'].map(s => (
+                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+
+                  {link.name === 'Girls' && (
+                    <AnimatePresence>
+                      {isGirlsHovered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute top-full left-0 w-[400px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-2 gap-8 z-50 mt-1"
+                        >
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Summerwear</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Crochet Tops for Girls', 'Casual Dresses', 'Girls Co-ords', 'Party Dresses', 'Socks and Tights', 'Ethnic Wear'].map(s => (
+                                <Link key={s} to={`/shop?category=Girls&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Sweaters'].map(s => (
+                                <Link key={s} to={`/shop?category=Girls&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+
+                  {link.name === 'Women' && (
+                    <AnimatePresence>
+                      {isWomenHovered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute top-full left-0 w-[800px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-4 gap-8 z-50 mt-1"
+                        >
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Sweaters', 'Ponchos', 'Caps, Hats, Beanies', 'Neckwarmers', 'Mufflers', 'Socks'].map(s => (
+                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Beachwear</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Bralettes', 'Cover Ups', 'Sarongs'].map(s => (
+                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Resortwear</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Crochet Tops', 'Dresses', 'Co-ord Sets', 'Crochet Shorts', 'Crochet Skirts', 'Jeans'].map(s => (
+                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Accessories</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Macrame Belts', 'Earrings', 'Crochet Scarf', 'Winter Headbands', 'Summer Headbands'].map(s => (
+                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+
+                  {link.name === 'Men' && (
+                    <AnimatePresence>
+                      {isMenHovered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute top-full left-0 w-[200px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 z-50 mt-1"
+                        >
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Sweaters'].map(s => (
+                                <Link key={s} to={`/shop?category=Men&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+
+                  {link.name === 'Yarn' && (
+                    <AnimatePresence>
+                      {isYarnHovered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute top-full left-0 w-[250px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 z-50 mt-1"
+                        >
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Collection</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['100% Acrylic Yarn'].map(s => (
+                                <Link key={s} to={`/shop?category=Yarn&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+                </div>
               ))}
+              {isAdmin && (
+                <Link to="/admin" className="hover:text-red-500 border-b-4 border-transparent hover:border-b-red-500 pb-6 transition-all text-red-600 font-black">Admin</Link>
+              )}
             </div>
           </div>
 
@@ -83,7 +284,7 @@ const Navbar = () => {
             >
               <User size={20} className="group-hover:text-[var(--primary)]" />
               <span className="hidden xs:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">
-                {user ? 'Profile' : 'Login'}
+                {user ? (user.displayName?.split(' ')[0] || 'Profile') : 'Login'}
               </span>
             </div>
 
@@ -168,6 +369,18 @@ const Navbar = () => {
                         </div>
                       </Link>
                     ))}
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center justify-between group py-4 border-b border-gray-100 last:border-none text-red-600"
+                      >
+                        <span className="text-xl font-bold group-hover:text-red-500 transition-colors">Admin Panel</span>
+                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-300 group-hover:text-red-500 transition-all">
+                           <ChevronRight size={16} />
+                        </div>
+                      </Link>
+                    )}
                   </div>
                 </div>
 

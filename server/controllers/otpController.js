@@ -108,3 +108,43 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ message: 'Verification failed', error: error.message });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    // Generate Firebase Password Reset Link
+    const resetLink = await admin.auth().generatePasswordResetLink(email);
+
+    // Send via SMTP
+    const mailOptions = {
+      from: `"Karigiri Support" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: 'Reset Your Karigiri Password',
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: auto; padding: 40px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">KARIGIRI</h1>
+            <p style="color: #A0522D; font-size: 12px; text-transform: uppercase; letter-spacing: 4px; margin-top: 5px;">Handcrafted Excellence</p>
+          </div>
+          <p style="color: #333; font-size: 16px;">Hello,</p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">We received a request to reset your password for your Karigiri account. Click the button below to proceed.</p>
+          <div style="text-align: center; margin: 35px 0;">
+            <a href="${resetLink}" style="background-color: #5C4033; color: white; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 15px rgba(92, 64, 51, 0.2);">RESET PASSWORD</a>
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">If you didn't request this, you can safely ignore this email. This link will expire shortly.</p>
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+            <p style="color: #5C4033; font-weight: bold; font-size: 14px; margin: 0;">Preserving Heritage, One Stitch at a Time.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ success: true, message: 'Reset link sent to your email' });
+  } catch (error) {
+    console.error('Error sending reset link:', error);
+    res.status(500).json({ message: 'Failed to send reset link', error: error.message });
+  }
+};

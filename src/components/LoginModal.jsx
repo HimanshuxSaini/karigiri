@@ -1,84 +1,111 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, LogIn, ChevronRight } from 'lucide-react';
-import { auth } from '../firebase/config';
 import { 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  X, 
+  ChevronRight, 
+  Mail, 
+  Lock, 
+  AlertCircle,
+  CheckCircle2,
+  ArrowLeft,
+  KeyRound
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  fetchSignInMethodsForEmail,
+  sendPasswordResetEmail
 } from 'firebase/auth';
+import { auth } from '../firebase/config';
 import { useAuthStore } from '../store/useStore';
-import { sendOtp, verifyOtp } from '../services/api';
+import { sendOtp, verifyOtp, requestPasswordReset } from '../services/api';
 
 const LoginModal = ({ isOpen, onClose }) => {
-  const [view, setView] = useState('otp'); // 'otp', 'login', 'signup'
-  const [step, setStep] = useState('email'); // 'email', 'verify'
+  const [view, setView] = useState('otp'); // 'otp', 'login', 'signup', 'forgot'
+  const [step, setStep] = useState('number'); // 'number', 'verify'
+  const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
 
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setStep('number');
+      setIdentifier('');
+      setError('');
+      setSuccess('');
+      setLoading(false);
+    }
+  }, [isOpen]);
+
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
-    if (!email) return setError('Email is required');
+    if (!identifier) return setError('Email is required');
+    if (!identifier.includes('@')) return setError('Please enter a valid email');
     
+    const normalizedEmail = identifier.trim().toLowerCase();
     setLoading(true);
     setError('');
+
     try {
-      await sendOtp(email);
+      const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
+      if (methods.length === 0) {
+        setError('ACCOUNT NOT FOUND. PLEASE SIGN UP FIRST.');
+        setLoading(false);
+        return;
+      }
+
+      await sendOtp(normalizedEmail);
       setStep('verify');
-    } catch (error) {
-      console.error('OTP Send Error:', error);
-      const msg = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to send OTP';
-      setError(msg.toUpperCase());
-    } finally {
       setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      const res = await verifyOtp(email, otp);
-      if (res.success) {
-        const mockUser = {
-          email: email,
-          displayName: email.split('@')[0],
-          photoURL: `https://ui-avatars.com/api/?name=${email}&background=random`,
-          uid: 'temp-uid-' + Date.now()
-        };
-        setUser(mockUser);
-        onClose();
+    } catch (err) {
+      console.error('OTP send error:', err);
+      let errorMessage = 'FAILED TO SEND OTP. PLEASE TRY AGAIN.';
+      if (err.message === 'Failed to fetch') {
+        errorMessage = 'SERVER UNREACHABLE. PLEASE ENSURE BACKEND IS RUNNING.';
+      } else if (err.message) {
+        errorMessage = err.message.toUpperCase();
       }
-    } catch (error) {
-      setError(error.response?.data?.message || 'Invalid OTP');
-    } finally {
+      setError(errorMessage);
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError('');
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) return setError('Enter 6-digit code');
     
+    setLoading(true);
+    setError('');
+
     try {
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
+      const verification = await verifyOtp(identifier.trim().toLowerCase(), otp);
+      if (!verification.success) throw new Error(verification.message || 'Invalid code');
+
+      const userEmail = identifier.trim().toLowerCase();
+      const mockUser = {
+        uid: 'otp-' + Date.now(),
+        email: userEmail,
+        displayName: userEmail.split('@')[0],
+        photoURL: null
+      };
+      
+      setUser(mockUser);
       onClose();
-    } catch (error) {
-      if (error.code !== 'auth/popup-closed-by-user') {
-        setError(error.message);
-      }
+      navigate('/profile');
+    } catch (err) {
+      setError(err.message?.toUpperCase() || 'INVALID CODE. PLEASE TRY AGAIN.');
     } finally {
       setLoading(false);
     }
@@ -88,78 +115,151 @@ const LoginModal = ({ isOpen, onClose }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
-      let result;
+      let userCredential;
       if (view === 'login') {
-        result = await signInWithEmailAndPassword(auth, email, password);
-      } else if (view === 'signup') {
-        result = await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName: name });
       }
-      setUser(result.user);
+      
+      setUser(userCredential.user);
       onClose();
+      navigate('/profile');
     } catch (error) {
-      setError(error.message);
+      const msg = error.code?.split('/')[1]?.replace(/-/g, ' ').toUpperCase() || 'AUTH ERROR';
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!email) return setError('Please enter your email address');
+    
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await requestPasswordReset(email);
+      setSuccess('Reset link sent to your email!');
+      setTimeout(() => setView('login'), 3000);
+    } catch (error) {
+      const msg = error.code?.split('/')[1]?.replace(/-/g, ' ').toUpperCase() || 'ERROR SENDING LINK';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        phoneNumber: user.phoneNumber,
+        lastLogin: new Date().toISOString(),
+        provider: 'google.com'
+      };
+
+      setUser(userData);
+      onClose();
+      navigate('/profile');
+    } catch (error) {
+      setError(error.message.toUpperCase());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Enhanced Overlay */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 z-[100] backdrop-blur-md"
           />
           
-          {/* Modal Container - "Up Side Mid" & "Horizontally Mid" */}
-          <div className="fixed inset-0 z-[101] flex flex-col items-center pt-8 md:pt-16 pb-12 px-4 overflow-y-auto scrollbar-hide">
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, y: -50, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -50, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="w-full max-w-[420px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative border border-gray-100 my-auto flex flex-col max-h-[90vh]"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col"
             >
-              {/* Close Button */}
-              <button 
-                onClick={onClose}
-                className="absolute top-5 right-5 text-gray-400 hover:text-gray-800 hover:bg-gray-100 p-2 rounded-full transition-all z-10"
-              >
-                <X size={20} />
-              </button>
+              <div className="p-6 md:p-8 flex-1 overflow-y-auto scrollbar-hide">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex items-center space-x-3">
+                    {view === 'forgot' && (
+                      <button onClick={() => setView('login')} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400">
+                        <ArrowLeft size={20} />
+                      </button>
+                    )}
+                    <div>
+                      <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+                        {view === 'signup' ? 'Create Account' : 
+                         view === 'forgot' ? 'Reset Password' : 'Welcome Back'}
+                      </h2>
+                      <p className="text-gray-500 font-medium text-xs mt-1">Experience Karigiri Excellence</p>
+                    </div>
+                  </div>
+                  <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400">
+                    <X size={20} />
+                  </button>
+                </div>
 
-              {/* Header with Brand Color */}
-              <div className="pt-8 pb-3 px-8 text-center flex-shrink-0">
-                <h2 className="text-3xl font-serif font-bold text-gray-900 mb-2">
-                  {view === 'otp' ? 'Welcome Back' : view === 'login' ? 'Sign In' : 'Create Account'}
-                </h2>
-                <p className="text-gray-500 text-sm">
-                  {view === 'otp' ? 'Login with your email for quick access' : 'Enter your details to proceed'}
-                </p>
-              </div>
+                {error && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center space-x-3 text-red-600"
+                  >
+                    <AlertCircle size={18} />
+                    <span className="text-xs font-bold uppercase tracking-wider">{error}</span>
+                  </motion.div>
+                )}
 
-              {/* Scrollable Content Area */}
-              <div className="px-8 pb-8 overflow-y-auto scrollbar-hide">
+                {success && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center space-x-3 text-emerald-600"
+                  >
+                    <CheckCircle2 size={18} />
+                    <span className="text-xs font-bold uppercase tracking-wider">{success}</span>
+                  </motion.div>
+                )}
+
                 {view === 'otp' ? (
                   <div className="space-y-6">
-                    {step === 'email' ? (
-                      <>
+                    {step === 'number' ? (
+                      <div className="space-y-6">
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">
+                            Email Address for OTP
+                          </label>
                           <div className="relative">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
                               type="email"
-                              placeholder="name@example.com"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-medium"
+                              placeholder="email@example.com"
+                              value={identifier}
+                              onChange={(e) => setIdentifier(e.target.value)}
+                              className="w-full pl-12 pr-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-bold"
                             />
                           </div>
                         </div>
@@ -167,161 +267,176 @@ const LoginModal = ({ isOpen, onClose }) => {
                         <button 
                           onClick={handleSendOtp}
                           disabled={loading}
-                          className="w-full bg-[var(--primary)] text-white py-3.5 rounded-xl font-bold text-lg hover:opacity-90 transition-all shadow-[0_10px_20px_rgba(0,128,128,0.2)] flex items-center justify-center space-x-2 group disabled:opacity-50"
+                          className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-[var(--primary)]/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                         >
-                          <span>{loading ? 'Sending...' : 'Get Secure OTP'}</span>
-                          <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                          <span>{loading ? 'Sending...' : 'Get OTP Code'}</span>
+                          <ChevronRight size={20} />
                         </button>
-                      </>
+                      </div>
                     ) : (
-                      <>
+                      <div className="space-y-6">
                         <div className="space-y-2">
-                          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Enter 6-Digit OTP</label>
-                          <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                              type="text"
-                              maxLength="6"
-                              placeholder="000000"
-                              value={otp}
-                              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-medium tracking-[0.5em] text-center"
-                            />
-                          </div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 text-center block">Enter 6-Digit Code</label>
+                          <input
+                            type="text" maxLength="6" placeholder="000000"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                            className="w-full py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
+                          />
                         </div>
-
                         <button 
                           onClick={handleVerifyOtp}
                           disabled={loading}
-                          className="w-full bg-[var(--primary)] text-white py-3.5 rounded-xl font-bold text-lg hover:opacity-90 transition-all shadow-[0_10px_20px_rgba(0,128,128,0.2)] flex items-center justify-center space-x-2 group disabled:opacity-50"
+                          className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                         >
-                          <span>{loading ? 'Verifying...' : 'Verify & Login'}</span>
-                          <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                          <span>{loading ? 'Verifying...' : 'Verify & Sign In'}</span>
                         </button>
-
-                        <button 
-                          onClick={() => setStep('email')}
-                          className="w-full py-2 text-gray-500 text-xs font-bold hover:text-[var(--primary)] transition-all"
-                        >
-                          Change Email
+                        <button onClick={() => setStep('number')} className="w-full text-gray-400 text-xs font-bold hover:text-[var(--primary)] transition-all uppercase tracking-widest">
+                          Change Email Address
                         </button>
-                      </>
+                      </div>
                     )}
-
-                    <button 
-                      onClick={() => setView('login')}
-                      className="w-full py-2 text-[var(--primary)] text-sm font-bold hover:bg-[var(--primary)]/5 rounded-xl transition-all"
-                    >
-                      Login with Password instead
-                    </button>
                   </div>
-                ) : (
-                  <form onSubmit={handleEmailAuth} className="space-y-5">
-                    {view === 'signup' && (
-                      <motion.div 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-2"
-                      >
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                        <div className="relative">
-                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            placeholder="John Doe"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-medium"
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-
+                ) : view === 'forgot' ? (
+                  <form onSubmit={handleForgotPassword} className="space-y-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email</label>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Account Email</label>
                       <div className="relative">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
-                          type="email"
-                          required
-                          placeholder="your@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-medium"
+                          type="email" required placeholder="your@email.com"
+                          value={email} onChange={(e) => setEmail(e.target.value)}
+                          className="w-full pl-12 pr-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
                         />
                       </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
-                      <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                          type="password"
-                          required
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    <button 
-                      type="submit"
-                      disabled={loading}
-                      className="w-full bg-[var(--primary)] text-white py-3.5 rounded-xl font-bold text-lg hover:opacity-90 transition-all shadow-[0_10px_20px_rgba(0,128,128,0.2)] disabled:opacity-50 mt-2"
-                    >
-                      {loading ? 'Processing...' : (view === 'login' ? 'Sign In' : 'Create Account')}
+                    <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-2xl font-bold text-md shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2">
+                      <KeyRound size={18} />
+                      <span>{loading ? 'Sending...' : 'Send Reset Link'}</span>
                     </button>
-
-                    <button 
-                      type="button"
-                      onClick={() => setView('otp')}
-                      className="w-full py-2 text-[var(--primary)] text-sm font-bold hover:bg-[var(--primary)]/5 rounded-xl transition-all"
-                    >
-                      Use OTP Login
+                  </form>
+                ) : (
+                  <form onSubmit={handleEmailAuth} className="space-y-4">
+                    {view === 'signup' && (
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                        <input
+                          type="text" required placeholder="John Doe"
+                          value={name} onChange={(e) => setName(e.target.value)}
+                          className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email</label>
+                      <input
+                        type="email" required placeholder="your@email.com"
+                        value={email} onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                        {view === 'login' && (
+                          <button 
+                            type="button"
+                            onClick={() => setView('forgot')}
+                            className="text-[9px] font-bold text-[var(--primary)] hover:underline uppercase tracking-tighter"
+                          >
+                            Forgot?
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="password" required placeholder="••••••••"
+                        value={password} onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                      />
+                    </div>
+                    <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-3.5 rounded-xl font-bold text-md shadow-lg shadow-[var(--primary)]/20 disabled:opacity-50 mt-1">
+                      {loading ? 'Processing...' : (view === 'login' ? 'Sign In' : 'Create Account')}
                     </button>
                   </form>
                 )}
 
-                <div className="relative py-4">
-                  <div className="absolute inset-0 flex items-center px-2">
-                    <div className="w-full border-t border-gray-100"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
-                    <span className="px-4 bg-white text-gray-400">Or</span>
-                  </div>
+                <div className="relative py-6">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                  <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em] font-black"><span className="px-4 bg-white text-gray-300">OR</span></div>
                 </div>
 
                 <button 
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full bg-white border border-gray-200 py-3.5 rounded-xl flex items-center justify-center space-x-3 hover:bg-gray-50 hover:border-gray-300 transition-all mb-4 disabled:opacity-50 font-bold text-gray-700"
+                  className="w-full bg-white border border-gray-100 py-3 rounded-xl flex items-center justify-center space-x-3 hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                  <span>{loading ? 'Connecting...' : 'Continue with Google'}</span>
+                  <span className="font-bold text-gray-700 text-sm">Continue with Google</span>
                 </button>
 
-                {error && (
-                  <p className="text-red-500 text-[10px] text-center mb-6 font-bold uppercase tracking-wider bg-red-50 py-3 rounded-xl border border-red-100">
-                    {error}
-                  </p>
-                )}
-
-                <div className="text-center pt-2">
-                  <p className="text-xs text-gray-500 font-medium">
-                    {view === 'signup' ? 'Already have an account?' : "New to Karigiri?"}
+                <div className="mt-6 text-center space-y-3">
+                  {view === 'otp' ? (
+                    <div className="flex flex-col space-y-3">
+                      <p className="text-sm text-gray-500 font-medium">
+                        New to Karigiri? 
+                        <button 
+                          onClick={() => setView('signup')}
+                          className="ml-2 text-[var(--primary)] font-bold hover:underline"
+                        >
+                          Create One Now
+                        </button>
+                      </p>
+                      <button 
+                        onClick={() => setView('login')}
+                        className="text-xs font-bold text-gray-400 hover:text-[var(--primary)] transition-all uppercase tracking-widest"
+                      >
+                        Login with Password instead
+                      </button>
+                    </div>
+                  ) : view === 'login' ? (
+                    <div className="flex flex-col space-y-3">
+                      <p className="text-sm text-gray-500 font-medium">
+                        New here? 
+                        <button 
+                          onClick={() => setView('signup')}
+                          className="ml-2 text-[var(--primary)] font-bold hover:underline"
+                        >
+                          Create One Now
+                        </button>
+                      </p>
+                      <button 
+                        onClick={() => setView('otp')}
+                        className="text-xs font-bold text-gray-400 hover:text-[var(--primary)] transition-all uppercase tracking-widest"
+                      >
+                        Try Email OTP Login
+                      </button>
+                    </div>
+                  ) : view === 'forgot' ? (
                     <button 
-                      onClick={() => setView(view === 'signup' ? 'login' : 'signup')}
-                      className="ml-2 text-[var(--primary)] font-bold hover:underline"
+                      onClick={() => setView('login')}
+                      className="text-xs font-bold text-gray-400 hover:text-[var(--primary)] transition-all uppercase tracking-widest"
                     >
-                      {view === 'signup' ? 'Sign In' : 'Create One Now'}
+                      Back to Login
                     </button>
-                  </p>
+                  ) : (
+                    <div className="flex flex-col space-y-3">
+                      <p className="text-sm text-gray-500 font-medium">
+                        Already have an account? 
+                        <button 
+                          onClick={() => setView('login')}
+                          className="ml-2 text-[var(--primary)] font-bold hover:underline"
+                        >
+                          Sign In
+                        </button>
+                      </p>
+                      <button 
+                        onClick={() => setView('otp')}
+                        className="text-xs font-bold text-gray-400 hover:text-[var(--primary)] transition-all uppercase tracking-widest"
+                      >
+                        Use Email OTP Login
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>

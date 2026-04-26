@@ -1,19 +1,56 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { useCartStore, useWishlistStore } from '../store/useStore';
-import { ShoppingBag, Heart, Star, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
+import { useCartStore, useWishlistStore, useAuthStore } from '../store/useStore';
+import { ShoppingBag, Heart, Star, ShieldCheck, Truck, RotateCcw, Edit3 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { allProducts } from '../data/products';
+import { fetchProductById } from '../services/api';
 
 const ProductDetails = () => {
   const { id } = useParams();
+  const { user } = useAuthStore();
   const [selectedSize, setSelectedSize] = useState('M');
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
 
-  const product = allProducts.find(p => p.id === parseInt(id)) || allProducts[0];
-  const isWishlisted = isInWishlist(product.id);
+  const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
+
+  useEffect(() => {
+    const getProduct = async () => {
+      setLoading(true);
+      try {
+        // Try Firestore first
+        const data = await fetchProductById(id);
+        if (data) {
+          setProduct(data);
+        } else {
+          setProduct(null);
+        }
+      } catch (err) {
+        console.error('Product fetch failed:', err);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getProduct();
+  }, [id]);
+
+  if (loading) return (
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
+    </div>
+  );
+
+  if (!product) return (
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <p className="text-gray-500 font-bold">Product not found.</p>
+    </div>
+  );
+
+  const isWishlisted = isInWishlist(product._id || product.id);
 
   return (
     <div className="min-h-screen bg-white">
@@ -26,25 +63,51 @@ const ProductDetails = () => {
              <motion.img 
                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                src={product.image} className="w-full h-auto object-cover rounded shadow-sm" alt="Product 1" 
+               onError={(e) => {
+                 e.target.src = "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=1200";
+               }}
              />
              <motion.img 
                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
                src={product.image} className="w-full h-auto object-cover rounded shadow-sm brightness-95" alt="Product 2" 
+               onError={(e) => {
+                 e.target.src = "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=1200";
+               }}
              />
              <motion.img 
                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
                src={product.image} className="w-full h-auto object-cover rounded shadow-sm contrast-110" alt="Product 3" 
+               onError={(e) => {
+                 e.target.src = "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1200";
+               }}
              />
              <motion.img 
                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
                src={product.image} className="w-full h-auto object-cover rounded shadow-sm saturate-50" alt="Product 4" 
+               onError={(e) => {
+                 e.target.src = "https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&q=80&w=1200";
+               }}
              />
           </div>
 
           {/* Product Info */}
           <div className="lg:w-2/5">
-            <h2 className="text-2xl font-black text-slate-900 mb-1">{product.brand}</h2>
-            <h3 className="text-xl text-slate-500 mb-4">{product.name}</h3>
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 mb-1">{product.brand}</h2>
+                <h3 className="text-xl text-slate-500 mb-4">{product.name}</h3>
+              </div>
+              {isAdmin && (
+                <Link 
+                  to="/admin" 
+                  state={{ editProduct: product }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-100 transition-all shadow-sm border border-red-100"
+                >
+                  <Edit3 size={14} />
+                  <span>Edit Product</span>
+                </Link>
+              )}
+            </div>
 
             <div className="flex items-center space-x-2 border rounded p-2 w-fit mb-6">
                <span className="font-bold border-r pr-2 flex items-center space-x-1">
@@ -57,8 +120,8 @@ const ProductDetails = () => {
             <hr className="mb-6" />
 
             <div className="flex items-baseline space-x-4 mb-8">
-               <span className="text-3xl font-black text-slate-900">₹{product.price.toLocaleString('en-IN')}</span>
-               <span className="text-xl text-slate-400 line-through">₹{(product.price + 1000).toLocaleString('en-IN')}</span>
+               <span className="text-3xl font-black text-slate-900">₹{(product.price || 0).toLocaleString('en-IN')}</span>
+               <span className="text-xl text-slate-400 line-through">₹{((product.price || 0) + 1000).toLocaleString('en-IN')}</span>
                <span className="text-xl text-[var(--primary)] font-bold">(₹1,000 OFF)</span>
             </div>
 

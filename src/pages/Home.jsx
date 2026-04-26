@@ -6,29 +6,54 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FAQ from '../components/FAQ';
-import { allProducts } from '../data/products';
+import { fetchProducts } from '../services/api';
 
-const featuredProducts = [
-  ...allProducts.filter(p => p.category === 'Men').slice(0, 2),
-  ...allProducts.filter(p => p.category === 'Women').slice(0, 2),
-  ...allProducts.filter(p => p.category === 'Laddu Gopal').slice(0, 2),
-  ...allProducts.filter(p => p.category === 'Yarn').slice(0, 2),
-];
+// Asset Imports
+import bootiesImg from '../assets/booties.png';
+import sweaterImg from '../assets/sweater.png';
+import yarnImg from '../assets/yarn.png';
 
 const Home = () => {
-  const customImages = [
-    "/images/custom-order-1.png",
-    "/images/custom-order-2.png",
-    "/images/custom-order-3.png",
-    "/images/custom-order-4.png",
-    "/images/custom-order-5.png",
-    "/images/custom-order-6.png",
-    "/images/custom-order-7.png",
-  ];
-
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  const customImages = [
+    bootiesImg,
+    sweaterImg,
+    yarnImg,
+    "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800",
+    "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=800",
+    "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=800",
+    "https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&q=80&w=800",
+  ];
+
   useEffect(() => {
+    const getFeaturedProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        if (Array.isArray(data) && data.length > 0) {
+          // Filter products for featured section (2 from each major category)
+          const featured = [
+            ...data.filter(p => p?.category === 'Men').slice(0, 2),
+            ...data.filter(p => p?.category === 'Women').slice(0, 2),
+            ...data.filter(p => p?.category === 'Laddu Gopal').slice(0, 2),
+            ...data.filter(p => p?.category === 'Yarn').slice(0, 2),
+          ];
+          setProducts(featured.length > 0 ? featured : data.slice(0, 8));
+        } else {
+          setProducts([]); 
+        }
+      } catch (err) {
+        console.error('Failed to fetch home products:', err);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getFeaturedProducts();
+
     const timer = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % customImages.length);
     }, 4000);
@@ -70,10 +95,10 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
             {[
-              { name: "Ribbed Beanie", price: 699, img: "/images/yarn-1.png" },
-              { name: "Woolen Socks", price: 499, img: "/images/sweater-1.png" },
-              { name: "Knit Scarf", price: 899, img: "/images/yarn-1.png" },
-              { name: "Woolen Cap", price: 799, img: "/images/sweater-1.png" }
+              { name: "Hand-Knitted Booties", price: 499, img: bootiesImg },
+              { name: "Premium Woolen Sweater", price: 999, img: sweaterImg },
+              { name: "Organic Wool Yarn", price: 299, img: yarnImg },
+              { name: "Woolen Cap", price: 799, img: "https://images.unsplash.com/photo-1534215754734-18e55d13e346?auto=format&fit=crop&q=80&w=600" }
             ].map((deal, i) => (
               <Link key={i} to="/shop" className="group">
                 <div className="aspect-[4/5] bg-[var(--secondary)]/40 overflow-hidden rounded-xl mb-3 md:mb-4">
@@ -103,19 +128,25 @@ const Home = () => {
           <Link to="/shop" className="hidden md:block text-xs md:text-sm font-black uppercase border-b-2 border-[var(--primary)] pb-1 text-[var(--primary)] hover:opacity-70 transition-all mt-4 md:mt-0">View All Collections</Link>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16">
-          {featuredProducts.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16">
+            {products.map((product, index) => (
+              <motion.div
+                key={product._id || product.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-10 text-center md:hidden">
           <Link to="/shop" className="inline-block text-[10px] font-black uppercase tracking-[0.2em] bg-[var(--primary)] text-white px-10 py-4 rounded-full shadow-lg">View Full Catalog</Link>
@@ -201,12 +232,11 @@ const Home = () => {
           </div>
           <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right scrollbar-hide snap-x">
             {[
-              { img: "/images/men-1.png", tag: "Handmade Sweaters" },
-              { img: "/images/laddu-gopal-1.jpg", tag: "Laddu Gopal Specials" },
-              { img: "/images/yarn-1.png", tag: "Pure Merino Yarn" },
-              { img: "/images/men-2.png", tag: "Artisanal Cardigans" },
-              { img: "/images/custom-order-2.png", tag: "Baby Knit Sets" },
-              { img: "/images/men-3.png", tag: "Winter Accessories" }
+              { img: bootiesImg, tag: "Handmade Booties" },
+              { img: sweaterImg, tag: "Premium Sweaters" },
+              { img: yarnImg, tag: "Organic Yarn" },
+              { img: "https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&q=80&w=600", tag: "Artisanal Cardigans" },
+              { img: "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?auto=format&fit=crop&q=80&w=600", tag: "Winter Accessories" }
             ].map((reel, i) => (
               <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all duration-500"></div>

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, CreditCard, ChevronRight, ShoppingBag, Truck, ShieldCheck, Plus, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { createOrder } from '../services/api';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
 
@@ -31,7 +32,7 @@ const Checkout = () => {
     if (paymentMethods.length > 0 && !selectedPayment) setSelectedPayment(paymentMethods[0].id);
   }, [addresses, paymentMethods]);
 
-  if (!user) return <Navigate to="/auth?redirect=checkout" />;
+  if (!user) return <Navigate to="/" />;
   if (items.length === 0 && !isOrdered) return <Navigate to="/shop" />;
 
   const handleOrder = async () => {
@@ -49,33 +50,34 @@ const Checkout = () => {
     const trackingId = `TRK-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
 
     const orderData = {
-      id: orderId,
-      trackingId: trackingId,
-      items,
-      total: getTotal(),
-      date: new Date().toISOString(),
-      status: 'Processing',
-      shippingAddress: addr,
-      paymentMethod: { type: pay.type, last4: pay.last4 },
-      userEmail: user.email,
+      orderItems: items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        image: item.image,
+        price: item.price,
+        product: item._id || item.id // Ensure we pass the database ID if available
+      })),
+      shippingAddress: {
+        address: addr.street,
+        city: addr.city,
+        postalCode: addr.pincode,
+        state: addr.state,
+        phone: addr.phone
+      },
+      paymentMethod: pay.type,
+      totalPrice: getTotal(),
+      user: user.uid, // Firebase UID
+      email: user.email.toLowerCase()
     };
 
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real app, you'd save to Firestore
-      // await addDoc(collection(db, 'orders'), orderData);
-      
-      addOrder(orderData);
+      const createdOrder = await createOrder(orderData);
+      addOrder(createdOrder);
       setIsOrdered(true);
       clearCart();
     } catch (err) {
       console.error("Order failed:", err);
-      // Fallback
-      addOrder(orderData);
-      setIsOrdered(true);
-      clearCart();
+      alert("Failed to place order. Please try again.");
     } finally {
       setIsProcessing(false);
     }

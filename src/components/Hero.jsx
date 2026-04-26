@@ -1,18 +1,21 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import bootiesImg from '../assets/booties.png';
+import sweaterImg from '../assets/sweater.png';
+import yarnImg from '../assets/yarn.png';
 
 const Hero = () => {
   const [current, setCurrent] = useState(0);
 
   const slides = [
-    { title: "Artisanal Edit 2026", head: "The Softest\nCollection.", img: "/images/hero-1.png", pos: "object-center" },
-    { title: "Winter Heritage", head: "Timeless\nCraftsmanship.", img: "/images/hero-2.png", pos: "object-top" },
-    { title: "Pure Wool Luxury", head: "Elegance in\nEvery Stitch.", img: "/images/hero-3.png", pos: "object-center" },
-    { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "/images/hero-4.png", pos: "object-center" },
-    { title: "Hand-Knitted", head: "Patterns of\nTradition.", img: "/images/hero-5.png", pos: "object-center" },
-    { title: "Sustainable Yarn", head: "Earth Friendly\nWarmth.", img: "/images/hero-6.png", pos: "object-center" },
-    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "/images/hero-7.png", pos: "object-top" }
+    { title: "Artisanal Baby Care", head: "Hand-Knitted\nBooties.", img: bootiesImg, pos: "object-center" },
+    { title: "Winter Essentials", head: "Premium\nWoolen Sweaters.", img: sweaterImg, pos: "object-center" },
+    { title: "Craft Your Own", head: "Pure Organic\nWool Yarn.", img: yarnImg, pos: "object-center" },
+    { title: "Winter Heritage", head: "Timeless\nCraftsmanship.", img: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=1200", pos: "object-top" },
+    { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&q=80&w=1200", pos: "object-center" },
+    { title: "Sustainable Yarn", head: "Earth Friendly\nWarmth.", img: "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?auto=format&fit=crop&q=80&w=1200", pos: "object-center" },
+    { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&q=80&w=1200", pos: "object-top" }
   ];
 
   useEffect(() => {
@@ -91,7 +94,14 @@ const Hero = () => {
 
         {/* Categories Bar */}
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6 mt-8 md:mt-16">
-           {['Premium Yarn', 'Sweaters', 'Cardigans', 'Woolen Sets', 'Hand-Knitted', 'Accessories'].map((cat, i) => (
+           {[
+             { name: 'Hand-Knitted', img: bootiesImg },
+             { name: 'Sweaters', img: sweaterImg },
+             { name: 'Premium Yarn', img: yarnImg },
+             { name: 'Cardigans', img: 'https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&q=80&w=200' },
+             { name: 'Woolen Sets', img: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=200' },
+             { name: 'Accessories', img: 'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?auto=format&fit=crop&q=80&w=200' }
+           ].map((cat, i) => (
              <motion.div
                key={i}
                initial={{ opacity: 0, y: 10 }}
@@ -100,9 +110,9 @@ const Hero = () => {
                className="bg-white p-3 md:p-6 text-center shadow-sm hover:shadow-md transition-all cursor-pointer group rounded-sm"
              >
                 <div className="w-12 h-12 md:w-20 md:h-20 bg-[var(--background)] rounded-full mx-auto mb-2 md:mb-4 flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
-                   <img src={`/images/hero-${(i % 7) + 1}.png`} className="w-full h-full object-cover" alt={cat} />
+                   <img src={cat.img} className="w-full h-full object-cover" alt={cat.name} />
                 </div>
-                <h3 className="text-[8px] md:text-[12px] font-bold uppercase tracking-wide text-slate-700">{cat}</h3>
+                <h3 className="text-[8px] md:text-[12px] font-bold uppercase tracking-wide text-slate-700">{cat.name}</h3>
              </motion.div>
            ))}
         </div>

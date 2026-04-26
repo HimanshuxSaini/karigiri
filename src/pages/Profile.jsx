@@ -1,5 +1,6 @@
 import Navbar from '../components/Navbar';
 import { useAuthStore, useOrderStore, useWishlistStore, useUserStore, useCartStore } from '../store/useStore';
+import { fetchOrders } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, 
@@ -10,19 +11,22 @@ import {
   Settings, 
   MapPin, 
   CreditCard,
-  ShoppingBag,
-  Bell,
-  Plus,
   Trash2,
   X,
   CheckCircle2,
   Clock,
   ExternalLink,
-  Truck
+  Truck,
+  LayoutDashboard,
+  Star,
+  Phone,
+  Plus,
+  ShoppingBag,
+  Bell
 } from 'lucide-react';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { auth as firebaseAuth } from '../firebase/config';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { updateProfile } from 'firebase/auth';
 
 const Profile = () => {
@@ -32,20 +36,51 @@ const Profile = () => {
   const { addItem } = useCartStore();
   const { addresses, addAddress, removeAddress, paymentMethods, addPaymentMethod, removePaymentMethod } = useUserStore();
   
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState('overview');
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [addedToCart, setAddedToCart] = useState(null);
+  const navigate = useNavigate();
 
-  // Form States
+   // Form States
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [addressForm, setAddressForm] = useState({ type: 'Home', street: '', city: '', state: '', pincode: '', phone: '' });
   const [paymentForm, setPaymentForm] = useState({ type: 'Visa', last4: '', expiry: '', holder: '' });
+  
+  const [dbOrders, setDbOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
-  if (!user) return <Navigate to="/auth" />;
+  useEffect(() => {
+    if (user?.displayName) {
+      setDisplayName(user.displayName);
+    }
+  }, [user?.displayName]);
+
+  useEffect(() => {
+    const getOrders = async () => {
+      if (!user) return;
+      setLoadingOrders(true);
+      try {
+        const allOrders = await fetchOrders();
+        // Filter orders for current user - check both UID and normalized email
+        const userOrders = allOrders.filter(o => 
+          o.user === user.uid || 
+          (o.email && user.email && o.email.toLowerCase() === user.email.toLowerCase())
+        );
+        setDbOrders(userOrders);
+      } catch (err) {
+        console.error("Failed to fetch user orders:", err);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+    getOrders();
+  }, [user]);
+
+  if (!user) return <Navigate to="/" />;
 
   const handleLogout = () => {
     firebaseAuth.signOut();
@@ -89,10 +124,25 @@ const Profile = () => {
   };
 
   const tabs = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'orders', label: 'My Orders', icon: Package },
     { id: 'wishlist', label: 'Wishlist', icon: Heart },
     { id: 'settings', label: 'Account', icon: Settings },
   ];
+
+  const userStats = useMemo(() => {
+    const totalSpent = dbOrders.reduce((acc, o) => acc + (Number(o.totalPrice || o.total || 0)), 0);
+    const pendingOrders = dbOrders.filter(o => o.status === 'Processing').length;
+    
+    return [
+      { label: 'Total Spent', value: `₹${totalSpent.toLocaleString('en-IN')}`, icon: <CreditCard className="text-emerald-500" />, bg: "bg-emerald-50" },
+      { label: 'Total Orders', value: dbOrders.length, icon: <ShoppingBag className="text-blue-500" />, bg: "bg-blue-50" },
+      { label: 'Wishlist', value: wishlist.length, icon: <Heart className="text-red-500" />, bg: "bg-red-50" },
+      { label: 'Pending', value: pendingOrders, icon: <Clock className="text-amber-500" />, bg: "bg-amber-50" },
+    ];
+  }, [dbOrders, wishlist]);
+
+
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -112,89 +162,169 @@ const Profile = () => {
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
       
-      {/* Decorative Header Background */}
-      <div className="h-64 bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] w-full absolute top-0 left-0 opacity-10 blur-3xl pointer-events-none" />
-      
-      <div className="pt-32 pb-24 max-w-6xl mx-auto px-4 relative z-10">
+      <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
         <motion.div 
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+          className="space-y-8"
         >
-          {/* Sidebar / User Info Card */}
-          <div className="lg:col-span-4 space-y-6">
-            <motion.div variants={itemVariants} className="glass-card p-8 text-center premium-shadow">
-              <div className="relative inline-block">
-                <div className="w-24 h-24 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-4xl font-serif shadow-xl">
-                  {user.email ? user.email[0].toUpperCase() : <UserIcon size={40} />}
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
-              </div>
-              
-              <h2 className="text-2xl font-serif text-[var(--text-main)] mb-1 break-all">
-                {user.displayName || user.email.split('@')[0]}
-              </h2>
-              <p className="text-sm text-[var(--text-muted)] mb-6">{user.email}</p>
-              
-              <div className="flex justify-center space-x-4 mb-8">
-                <div className="text-center px-4 py-2 bg-[var(--background)] rounded-xl">
-                  <p className="text-xl font-bold text-[var(--primary)]">{orders.length}</p>
-                  <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold">Orders</p>
-                </div>
-                <div className="text-center px-4 py-2 bg-[var(--background)] rounded-xl">
-                  <p className="text-xl font-bold text-[var(--primary)]">{wishlist.length}</p>
-                  <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold">Saved</p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-6 py-4 rounded-xl transition-all duration-300 font-medium text-sm ${
-                      activeTab === tab.id 
-                        ? 'bg-[var(--primary)] text-white shadow-lg' 
-                        : 'text-[var(--text-muted)] hover:bg-white hover:text-[var(--primary)]'
-                    }`}
-                  >
-                    <tab.icon size={18} />
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <hr className="my-6 border-white/20" />
-
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-500 mt-2 font-medium">Welcome back, <span className="text-[var(--primary)] font-bold">{user.displayName || user.email?.split('@')[0] || user.phoneNumber || 'Artisan Client'}</span></p>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {(user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com') && (
+                <Link
+                  to="/admin"
+                  className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all"
+                >
+                  <Settings size={14} className="animate-spin-slow" />
+                  <span>Admin Panel</span>
+                </Link>
+              )}
               <button 
                 onClick={handleLogout}
-                className="w-full flex items-center space-x-3 px-6 py-4 rounded-xl text-red-500 hover:bg-red-50 transition-all font-bold text-sm uppercase tracking-widest"
+                className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-100 transition-all"
               >
-                <LogOut size={18} />
-                <span>Sign Out</span>
+                <LogOut size={14} />
+                <span>Logout</span>
               </button>
-            </motion.div>
+            </div>
+          </div>
 
-            {/* Quick Links */}
-            <motion.div variants={itemVariants} className="glass-card p-6 premium-shadow hidden lg:block">
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-4">Quick Support</h4>
-              <div className="space-y-4">
-                <a href="https://wa.me/91XXXXXXXXXX" className="flex items-center space-x-3 text-sm text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors">
-                  <Bell size={16} />
-                  <span>Order Updates</span>
-                </a>
-                <Link to="/shop" className="flex items-center space-x-3 text-sm text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors">
-                  <ShoppingBag size={16} />
-                  <span>Browse Collections</span>
-                </Link>
-              </div>
-            </motion.div>
+          {/* Horizontal Tab Navigation - Styled like the user's request */}
+          <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto no-scrollbar">
+            <div className="flex items-center min-w-max md:min-w-0">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${
+                    activeTab === tab.id 
+                      ? 'bg-black text-white shadow-xl' 
+                      : 'text-gray-400 hover:text-gray-900'
+                  }`}
+                >
+                  <tab.icon size={16} />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-8">
+          <div className="relative">
             <AnimatePresence mode="wait">
+              {activeTab === 'overview' && (
+                <motion.div
+                  key="overview"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-8"
+                >
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {userStats.map((stat, i) => (
+                      <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm flex items-center space-x-4"
+                      >
+                        <div className={`w-12 h-12 ${stat.bg} rounded-2xl flex items-center justify-center`}>
+                          {stat.icon}
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                          <h3 className="text-xl font-bold text-gray-900">{stat.value}</h3>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Recent Activity / Orders Preview */}
+                    <div className="lg:col-span-8 space-y-6">
+                      <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-8">
+                          <h3 className="text-2xl font-serif font-bold">Recent Purchases</h3>
+                          <button 
+                            onClick={() => setActiveTab('orders')}
+                            className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center space-x-1"
+                          >
+                            <span>View All</span>
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {dbOrders.length === 0 ? (
+                            <div className="py-12 text-center">
+                              <ShoppingBag size={40} className="mx-auto text-gray-200 mb-4" />
+                              <p className="text-gray-400 font-medium">No recent orders found.</p>
+                            </div>
+                          ) : (
+                            dbOrders.slice(0, 3).map((order, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-5 bg-gray-50 rounded-[2rem] border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
+                                <div className="flex items-center space-x-4">
+                                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[var(--primary)] shadow-sm">
+                                    <Package size={20} />
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-sm">Order #{String(order.id).slice(-6).toUpperCase()}</p>
+                                    <p className="text-xs text-gray-400">
+                                      {new Date(order.createdAt?.seconds * 1000 || order.date).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                    order.status === 'Processing' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+                                  }`}>
+                                    {order.status || 'Delivered'}
+                                  </span>
+                                  <p className="font-bold text-gray-900">₹{(order.totalPrice || order.total || 0).toLocaleString()}</p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+
+                    </div>
+
+                    {/* Sidebar: Profile Summary & Actions */}
+                    <div className="lg:col-span-4 space-y-6">
+                      <div className="bg-black p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                        <div className="relative z-10">
+                           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl font-serif mb-6 border border-white/30">
+                             {(user.displayName?.[0] || user.email?.[0] || user.phoneNumber?.slice(-1) || 'A').toUpperCase()}
+                           </div>
+                           <h4 className="text-2xl font-serif mb-1">{user.displayName || 'Artisan Client'}</h4>
+                           <p className="text-white/50 text-sm mb-6">{user.email || user.phoneNumber || 'Verified Account'}</p>
+                           <button 
+                            onClick={() => setActiveTab('settings')}
+                            className="w-full py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center space-x-2"
+                           >
+                             <UserIcon size={14} />
+                             <span>Edit Profile</span>
+                           </button>
+                        </div>
+                      </div>
+
+
+                    </div>
+                  </div>
+                </motion.div>
+              )}
               {activeTab === 'orders' && (
                 <motion.div
                   key="orders"
@@ -203,7 +333,7 @@ const Profile = () => {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
-                  <div className="glass-card p-8 premium-shadow min-h-[600px]">
+                  <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <h3 className="text-2xl font-serif text-[var(--primary)]">Order History</h3>
@@ -214,7 +344,12 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {orders.length === 0 ? (
+                    {loadingOrders ? (
+                      <div className="flex flex-col items-center justify-center h-[400px]">
+                        <div className="w-12 h-12 border-4 border-[var(--primary)] border-t-transparent animate-spin rounded-full mb-4"></div>
+                        <p className="text-[var(--text-muted)]">Loading your orders...</p>
+                      </div>
+                    ) : dbOrders.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-[400px] text-center">
                         <div className="w-20 h-20 bg-[var(--background)] rounded-full flex items-center justify-center mb-6 text-[var(--text-muted)]">
                           <ShoppingBag size={32} />
@@ -226,7 +361,13 @@ const Profile = () => {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {orders.map((order, idx) => (
+                        {dbOrders
+                          .sort((a, b) => {
+                            const dateA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.date || 0);
+                            const dateB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.date || 0);
+                            return dateB - dateA;
+                          })
+                          .map((order, idx) => (
                           <motion.div 
                             key={idx}
                             initial={{ opacity: 0, y: 10 }}
@@ -241,7 +382,9 @@ const Profile = () => {
                                   Order #{order.id || Math.random().toString(36).substr(2, 9).toUpperCase()}
                                 </p>
                                 <p className="text-sm font-bold text-[var(--text-main)]">
-                                  Placed on {new Date(order.date || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                  Placed on {order.createdAt?.seconds 
+                                    ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+                                    : new Date(order.date || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </p>
                               </div>
                               <div className="flex flex-col items-end">
@@ -253,14 +396,14 @@ const Profile = () => {
                                   {order.status || 'Delivered'}
                                 </span>
                                 <p className="mt-2 text-lg font-serif text-[var(--primary)]">
-                                  ₹{order.total.toLocaleString('en-IN')}
+                                  ₹{(order.totalPrice || order.total || 0).toLocaleString('en-IN')}
                                 </p>
                               </div>
                             </div>
                             
                             <div className="flex items-center justify-between pt-4 border-t border-white/20">
                               <div className="flex -space-x-3 overflow-hidden">
-                                {order.items.slice(0, 4).map((item, i) => (
+                                {((order.orderItems || order.items) || []).slice(0, 4).map((item, i) => (
                                   <div key={i} className="relative">
                                     <img 
                                       src={item.image} 
@@ -269,9 +412,9 @@ const Profile = () => {
                                     />
                                   </div>
                                 ))}
-                                {order.items.length > 4 && (
+                                {((order.orderItems || order.items) || []).length > 4 && (
                                   <div className="w-12 h-12 rounded-xl bg-[var(--secondary)] flex items-center justify-center text-[10px] font-black text-[var(--primary)] border-4 border-[var(--card-bg)] shadow-md">
-                                    +{order.items.length - 4}
+                                    +{((order.orderItems || order.items) || []).length - 4}
                                   </div>
                                 )}
                               </div>
@@ -295,7 +438,7 @@ const Profile = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <div className="glass-card p-8 premium-shadow min-h-[600px]">
+                  <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <h3 className="text-2xl font-serif text-[var(--primary)]">My Wishlist</h3>
@@ -335,7 +478,7 @@ const Profile = () => {
                               <div className="flex flex-col justify-between py-1 flex-grow">
                                 <div>
                                   <h4 className="font-serif text-[var(--text-main)] group-hover:text-[var(--primary)] transition-colors text-sm">{product.name}</h4>
-                                  <p className="text-lg font-bold text-[var(--primary)] mt-1">₹{product.price.toLocaleString('en-IN')}</p>
+                                  <p className="text-lg font-bold text-[var(--primary)] mt-1">₹{(product.price || 0).toLocaleString('en-IN')}</p>
                                 </div>
                                 <Link 
                                   to={`/product/${product.id}`}
@@ -382,7 +525,7 @@ const Profile = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <div className="glass-card p-8 premium-shadow min-h-[600px]">
+                  <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <h3 className="text-2xl font-serif text-[var(--primary)]">Account Settings</h3>
@@ -457,6 +600,30 @@ const Profile = () => {
                               </div>
                             ))
                           )}
+                        </div>
+                      </section>
+
+                      <section>
+                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6">Security & Verification</h4>
+                        <div className="p-6 rounded-[2rem] border border-gray-100 bg-gray-50/50 flex items-center justify-between group">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[var(--primary)] shadow-sm group-hover:scale-110 transition-transform">
+                              <Phone size={20} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Phone Verification</p>
+                              <p className="text-xs text-gray-500 font-medium">
+                                {user.phoneNumber ? `Verified: ${user.phoneNumber}` : 'Protect your account with SMS verification'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              user.phoneNumber ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                            }`}>
+                              {user.phoneNumber ? 'Active' : 'Not Linked'}
+                            </span>
+                          </div>
                         </div>
                       </section>
 
@@ -619,7 +786,7 @@ const Profile = () => {
                         <p className="text-sm font-bold text-[var(--text-main)]">{item.name}</p>
                         <p className="text-xs text-[var(--text-muted)]">Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-bold text-[var(--primary)]">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                      <p className="font-bold text-[var(--primary)]">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</p>
                     </div>
                   ))}
                 </div>
@@ -627,7 +794,7 @@ const Profile = () => {
                 <div className="bg-[var(--secondary)]/30 rounded-3xl p-6">
                    <div className="flex justify-between mb-2">
                      <span className="text-sm text-[var(--text-muted)]">Items Subtotal</span>
-                     <span className="text-sm font-bold text-[var(--text-main)]">₹{selectedOrder.total.toLocaleString('en-IN')}</span>
+                     <span className="text-sm font-bold text-[var(--text-main)]">₹{(selectedOrder.total || 0).toLocaleString('en-IN')}</span>
                    </div>
                    <div className="flex justify-between mb-4">
                      <span className="text-sm text-[var(--text-muted)]">Shipping</span>
@@ -635,7 +802,7 @@ const Profile = () => {
                    </div>
                    <div className="flex justify-between pt-4 border-t border-white/50">
                      <span className="font-serif text-xl text-[var(--primary)]">Total Paid</span>
-                     <span className="text-xl font-bold text-[var(--primary)]">₹{selectedOrder.total.toLocaleString('en-IN')}</span>
+                     <span className="text-xl font-bold text-[var(--primary)]">₹{(selectedOrder.total || 0).toLocaleString('en-IN')}</span>
                    </div>
                 </div>
               </div>

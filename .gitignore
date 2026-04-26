@@ -30,3 +30,4 @@ dist-ssr
 serviceAccountKey.json
 firebase-debug.log
 .firebase/
+server/uploads

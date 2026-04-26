@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import ProductCard from '../components/ProductCard';
 import { motion } from 'framer-motion';
-import { allProducts } from '../data/products';
+import { fetchProducts } from '../services/api';
+import ProductCard from '../components/ProductCard';
 
 const Shop = () => {
   const [searchParams] = useSearchParams();
@@ -13,24 +13,45 @@ const Shop = () => {
   const searchQuery = searchParams.get('search')?.toLowerCase() || '';
   const urlCategory = searchParams.get('category');
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        if (data && data.length > 0) {
+          setProducts(data);
+        } else {
+          setProducts([]); 
+        }
+      } catch (err) {
+        console.error('API Error:', err);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getProducts();
+
     if (urlCategory) {
       setCategoryFilter(urlCategory);
     }
   }, [urlCategory]);
 
   const filteredProducts = useMemo(() => {
-    return allProducts.filter(p => {
-      const matchesCategory = categoryFilter === 'All' || p.category === categoryFilter;
-      const matchesPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
+    if (!Array.isArray(products)) return [];
+    return products.filter(p => {
+      const matchesCategory = categoryFilter === 'All' || p?.category === categoryFilter;
+      const matchesPrice = (Number(p?.price) || 0) >= priceRange[0] && (Number(p?.price) || 0) <= priceRange[1];
       const matchesSearch = !searchQuery || 
-        p.name.toLowerCase().includes(searchQuery) || 
-        p.brand.toLowerCase().includes(searchQuery) || 
-        p.category.toLowerCase().includes(searchQuery);
+        String(p?.name || '').toLowerCase().includes(searchQuery) || 
+        String(p?.brand || '').toLowerCase().includes(searchQuery) || 
+        String(p?.category || '').toLowerCase().includes(searchQuery);
       
       return matchesCategory && matchesPrice && matchesSearch;
     });
-  }, [categoryFilter, priceRange, searchQuery]);
+  }, [categoryFilter, priceRange, searchQuery, products]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -44,7 +65,7 @@ const Shop = () => {
            <div className="mb-10">
               <h3 className="font-bold text-[13px] uppercase mb-4">Categories</h3>
               <div className="space-y-3">
-                 {['All', 'Men', 'Women', 'Kids', 'Yarn', 'Laddu Gopal'].map(cat => (
+                 {['All', 'Men', 'Women', 'Infants', 'Girls', 'Yarn', 'Laddu Gopal'].map(cat => (
                    <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
                       <input 
                         type="radio" 
@@ -86,15 +107,15 @@ const Shop = () => {
              <div className="text-xs text-gray-500 uppercase tracking-widest font-bold">
                 Home / {categoryFilter} {searchQuery && ` / Search: "${searchQuery}"`}
              </div>
-             <div className="text-sm font-bold text-gray-800">
-                {filteredProducts.length} items found
-             </div>
+              <div className="text-sm font-bold text-gray-800">
+                {loading ? 'Loading...' : `${filteredProducts.length} items found`}
+              </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12">
             {filteredProducts.map((product, index) => (
               <motion.div
-                key={product.id}
+                key={product._id || product.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}

@@ -5,7 +5,21 @@ export const useAuthStore = create(
   persist(
     (set) => ({
       user: null,
-      setUser: (user) => set({ user }),
+      lastUid: null, // Track the UID of the last logged-in user
+      setUser: (userData) => {
+        if (userData) {
+          // Store only necessary, serializable fields
+          const cleanUser = {
+            uid: userData.uid,
+            email: userData.email,
+            displayName: userData.displayName,
+            photoURL: userData.photoURL
+          };
+          set({ user: cleanUser, lastUid: userData.uid });
+        } else {
+          set({ user: null });
+        }
+      },
       logout: () => set({ user: null }),
     }),
     { name: 'auth-storage' }
@@ -65,6 +79,7 @@ export const useWishlistStore = create(
       isInWishlist: (productId) => {
         return !!get().wishlist.find((item) => item.id === productId);
       },
+      clearWishlist: () => set({ wishlist: [] }),
     }),
     { name: 'wishlist-storage' }
   )
@@ -75,6 +90,7 @@ export const useOrderStore = create(
     (set, get) => ({
       orders: [],
       addOrder: (order) => set({ orders: [order, ...get().orders] }),
+      clearOrders: () => set({ orders: [] }),
     }),
     { name: 'order-storage' }
   )
@@ -89,6 +105,7 @@ export const useUserStore = create(
       removeAddress: (id) => set({ addresses: get().addresses.filter((a) => a.id !== id) }),
       addPaymentMethod: (payment) => set({ paymentMethods: [...get().paymentMethods, { ...payment, id: Date.now() }] }),
       removePaymentMethod: (id) => set({ paymentMethods: get().paymentMethods.filter((p) => p.id !== id) }),
+      clearUserData: () => set({ addresses: [], paymentMethods: [] }),
     }),
     { name: 'user-data-storage' }
   )

@@ -11,7 +11,8 @@ const Footer = () => {
             <ul className="space-y-3 text-[13px] font-bold text-slate-500">
               <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Men</Link></li>
               <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Women</Link></li>
-              <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Kids</Link></li>
+              <li><Link to="/shop?category=Infants" className="hover:text-black hover:underline underline-offset-4">Infants</Link></li>
+              <li><Link to="/shop?category=Girls" className="hover:text-black hover:underline underline-offset-4">Girls</Link></li>
               <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Yarn</Link></li>
               <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Laddu Gopal</Link></li>
               <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Artisanal Sets</Link></li>
