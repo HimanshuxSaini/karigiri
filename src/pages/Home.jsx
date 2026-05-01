@@ -88,17 +88,17 @@ const Home = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-8 md:mb-12">
             <div>
-              <span className="text-orange-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest block mb-1 md:mb-2 text-center sm:text-left">Winter Budget Finds</span>
-              <h2 className="text-2xl md:text-4xl font-black text-[var(--primary)] tracking-tighter text-center sm:text-left">Under ₹999 Deals</h2>
+              <span className="text-orange-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest block mb-1 md:mb-2 text-center sm:text-left">Artisanal Winter Finds</span>
+              <h2 className="text-2xl md:text-4xl font-black text-[var(--primary)] tracking-tighter text-center sm:text-left">Woolen Essentials Under ₹999</h2>
             </div>
-            <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b border-[var(--primary)] pb-0.5 md:pb-1 text-[var(--primary)]">Shop The Deals</Link>
+            <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b border-[var(--primary)] pb-0.5 md:pb-1 text-[var(--primary)]">Shop The Collection</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
             {[
-              { name: "Hand-Knitted Booties", price: 499, img: bootiesImg },
-              { name: "Premium Woolen Sweater", price: 999, img: sweaterImg },
-              { name: "Organic Wool Yarn", price: 299, img: yarnImg },
-              { name: "Woolen Cap", price: 799, img: "https://images.unsplash.com/photo-1534215754734-18e55d13e346?auto=format&fit=crop&q=80&w=600" }
+              { name: "Handmade Woolen Shawl", price: 899, img: "/shawl.png" },
+              { name: "Artisanal Crochet Bag", price: 749, img: "/bag.png" },
+              { name: "Hand-Knitted Baby Set", price: 999, img: "/baby_set.png" },
+              { name: "Organic Wool Yarn", price: 299, img: yarnImg }
             ].map((deal, i) => (
               <Link key={i} to="/shop" className="group">
                 <div className="aspect-[4/5] bg-[var(--secondary)]/40 overflow-hidden rounded-xl mb-3 md:mb-4">
@@ -123,7 +123,7 @@ const Home = () => {
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 md:mb-16 text-center md:text-left">
           <div>
             <span className="text-[var(--primary)] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-[10px] md:text-xs mb-2 md:mb-4 block">Our Favorites</span>
-            <h2 className="text-3xl md:text-5xl font-black text-[var(--primary)]">Featured Curations</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-[var(--primary)]">Woolen Masterpieces</h2>
           </div>
           <Link to="/shop" className="hidden md:block text-xs md:text-sm font-black uppercase border-b-2 border-[var(--primary)] pb-1 text-[var(--primary)] hover:opacity-70 transition-all mt-4 md:mt-0">View All Collections</Link>
         </div>
@@ -232,11 +232,11 @@ const Home = () => {
           </div>
           <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right scrollbar-hide snap-x">
             {[
-              { img: bootiesImg, tag: "Handmade Booties" },
+              { img: "/shawl.png", tag: "Handmade Shawls" },
+              { img: "/baby_set.png", tag: "Baby Knitwear" },
+              { img: "/bag.png", tag: "Crochet Bags" },
               { img: sweaterImg, tag: "Premium Sweaters" },
-              { img: yarnImg, tag: "Organic Yarn" },
-              { img: "https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&q=80&w=600", tag: "Artisanal Cardigans" },
-              { img: "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?auto=format&fit=crop&q=80&w=600", tag: "Winter Accessories" }
+              { img: yarnImg, tag: "Organic Yarn" }
             ].map((reel, i) => (
               <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all duration-500"></div>
