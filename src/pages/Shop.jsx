@@ -65,7 +65,7 @@ const Shop = () => {
            <div className="mb-10">
               <h3 className="font-bold text-[13px] uppercase mb-4">Categories</h3>
               <div className="space-y-3">
-                 {['All', 'Men', 'Women', 'Infants', 'Girls', 'Yarn', 'Laddu Gopal'].map(cat => (
+                 {['All', 'Men', 'Women', 'Infants', 'Yarn', 'Laddu Gopal'].map(cat => (
                    <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
                       <input 
                         type="radio" 

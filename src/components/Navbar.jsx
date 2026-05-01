@@ -15,7 +15,6 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInfantsHovered, setIsInfantsHovered] = useState(false);
-  const [isGirlsHovered, setIsGirlsHovered] = useState(false);
   const [isWomenHovered, setIsWomenHovered] = useState(false);
   const [isMenHovered, setIsMenHovered] = useState(false);
   const [isYarnHovered, setIsYarnHovered] = useState(false);
@@ -33,7 +32,6 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Infants', path: '/shop?category=Infants' },
-    { name: 'Girls', path: '/shop?category=Girls' },
     { name: 'Women', path: '/shop?category=Women' },
     { name: 'Men', path: '/shop?category=Men' },
     { name: 'Yarn', path: '/shop?category=Yarn' },
@@ -62,14 +60,12 @@ const Navbar = () => {
                   className="relative group"
                   onMouseEnter={() => {
                     if (link.name === 'Infants') setIsInfantsHovered(true);
-                    if (link.name === 'Girls') setIsGirlsHovered(true);
                     if (link.name === 'Women') setIsWomenHovered(true);
                     if (link.name === 'Men') setIsMenHovered(true);
                     if (link.name === 'Yarn') setIsYarnHovered(true);
                   }}
                   onMouseLeave={() => {
                     if (link.name === 'Infants') setIsInfantsHovered(false);
-                    if (link.name === 'Girls') setIsGirlsHovered(false);
                     if (link.name === 'Women') setIsWomenHovered(false);
                     if (link.name === 'Men') setIsMenHovered(false);
                     if (link.name === 'Yarn') setIsYarnHovered(false);
@@ -128,36 +124,6 @@ const Navbar = () => {
                     </AnimatePresence>
                   )}
 
-                  {link.name === 'Girls' && (
-                    <AnimatePresence>
-                      {isGirlsHovered && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 w-[400px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-2 gap-8 z-50 mt-1"
-                        >
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Summerwear</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Crochet Tops for Girls', 'Casual Dresses', 'Girls Co-ords', 'Party Dresses', 'Socks and Tights', 'Ethnic Wear'].map(s => (
-                                <Link key={s} to={`/shop?category=Girls&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Sweaters'].map(s => (
-                                <Link key={s} to={`/shop?category=Girls&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  )}
-
                   {link.name === 'Women' && (
                     <AnimatePresence>
                       {isWomenHovered && (
@@ -165,7 +131,7 @@ const Navbar = () => {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 w-[800px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-4 gap-8 z-50 mt-1"
+                          className="absolute top-full left-0 w-[1000px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-5 gap-8 z-50 mt-1"
                         >
                           <div>
                             <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
@@ -195,6 +161,14 @@ const Navbar = () => {
                             <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Accessories</h4>
                             <div className="space-y-2 flex flex-col">
                               {['Macrame Belts', 'Earrings', 'Crochet Scarf', 'Winter Headbands', 'Summer Headbands'].map(s => (
+                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Girls</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Crochet Tops for Girls', 'Casual Dresses', 'Girls Co-ords', 'Party Dresses', 'Socks and Tights', 'Ethnic Wear'].map(s => (
                                 <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>

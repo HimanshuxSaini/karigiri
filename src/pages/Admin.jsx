@@ -67,6 +67,7 @@ const Admin = () => {
     subCategory: '',
     description: '',
     image: '',
+    images: [],
     brand: 'KARIGIRI',
     inStock: true
   });
@@ -93,6 +94,7 @@ const Admin = () => {
         subCategory: product.subCategory || '',
         description: product.description,
         image: product.image,
+        images: product.images || [],
         brand: product.brand,
         inStock: product.inStock
       });
@@ -200,6 +202,7 @@ const Admin = () => {
       subCategory: product.subCategory || '',
       description: product.description,
       image: product.image,
+      images: product.images || [],
       brand: product.brand,
       inStock: product.inStock
     });
@@ -207,20 +210,70 @@ const Admin = () => {
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+    const input = e.target;
+    const file = input.files[0];
     if (!file) return;
     
     setUploadingImage(true);
     try {
-      const url = await uploadProductImage(file);
-      setFormData({ ...formData, image: url });
-      showNotification('Image uploaded successfully');
+      console.log("Starting main image upload:", file.name);
+      // 30s timeout
+      const uploadPromise = uploadProductImage(file);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Upload timed out (30s)')), 30000)
+      );
+      
+      const url = await Promise.race([uploadPromise, timeoutPromise]);
+      setFormData(prev => ({ ...prev, image: url }));
+      showNotification('Main image uploaded');
     } catch (err) {
-      console.error("Upload handler error:", err);
+      console.error("Main image upload error:", err);
       showNotification(err.message || 'Failed to upload image', 'error');
     } finally {
       setUploadingImage(false);
+      input.value = '';
     }
+  };
+
+  const handleSubImageUpload = async (e) => {
+    const input = e.target;
+    const files = Array.from(input.files);
+    if (files.length === 0) return;
+    
+    setUploadingImage(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of files) {
+        console.log("Uploading sub-image:", file.name);
+        // 30s timeout per image
+        const uploadPromise = uploadProductImage(file);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Timeout uploading ${file.name}`)), 30000)
+        );
+        
+        const url = await Promise.race([uploadPromise, timeoutPromise]);
+        uploadedUrls.push(url);
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        images: [...(prev.images || []), ...uploadedUrls]
+      }));
+      showNotification(`${uploadedUrls.length} sub-image(s) uploaded`);
+    } catch (err) {
+      console.error("Sub-image upload error:", err);
+      showNotification(err.message || 'Failed to upload sub-images', 'error');
+    } finally {
+      setUploadingImage(false);
+      input.value = '';
+    }
+  };
+
+  const removeSubImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmitProduct = async (e) => {
@@ -242,7 +295,7 @@ const Admin = () => {
       setShowProductModal(false);
       setEditingProduct(null);
       setFormData({
-        name: '', price: '', category: 'Men', subCategory: '', description: '', image: '', brand: 'KARIGIRI', inStock: true
+        name: '', price: '', category: 'Men', subCategory: '', description: '', image: '', images: [], brand: 'KARIGIRI', inStock: true
       });
     } catch (err) {
       showNotification('Failed to save product', 'error');
@@ -427,7 +480,7 @@ const Admin = () => {
                           }, {});
                           
                           // Define the exact order and categories to show
-                          const displayCats = ['Infants', 'Girls', 'Women', 'Men', 'Yarn', 'Laddu Gopal'];
+                          const displayCats = ['Infants', 'Women', 'Men', 'Yarn', 'Laddu Gopal'];
                           
                           return displayCats.map(cat => {
                               const count = catCounts[cat] || 0;
@@ -561,8 +614,8 @@ const Admin = () => {
                               </div>
                               <div>
                                 <p className="font-bold text-gray-900">No products found</p>
-                              <p className="text-sm text-gray-500">Add a new product to get started.</p>
-                            </div>
+                                <p className="text-sm text-gray-500">Add a new product to get started.</p>
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -573,12 +626,12 @@ const Admin = () => {
                               <div className="flex items-center space-x-4">
                                 <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
                                   <img 
-                                    src={p?.image || 'https://placehold.co/150?text=No+Image'} 
+                                    src={p?.image || p?.images?.[0] || 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800'} 
                                     alt={p?.name || 'Product'} 
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
                                     onError={(e) => { 
-                                      e.target.onerror = null; // Prevent infinite loop
-                                      e.target.src = 'https://placehold.co/150?text=Error';
+                                      e.target.onerror = null;
+                                      e.target.src = 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800';
                                     }}
                                   />
                                 </div>
@@ -592,7 +645,6 @@ const Admin = () => {
                               <div className="flex flex-col space-y-1">
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${
                                   p?.category === 'Infants' ? 'bg-blue-50 text-blue-600' :
-                                  p?.category === 'Girls' ? 'bg-pink-50 text-pink-600' :
                                   p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
                                   p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
                                   p?.category === 'Yarn' ? 'bg-emerald-50 text-emerald-600' :
@@ -771,9 +823,9 @@ const Admin = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="p-8">
+              <div className="p-8 overflow-y-auto">
                 <h2 className="text-2xl font-serif font-bold mb-6">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
                 <form onSubmit={handleSubmitProduct} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -804,7 +856,7 @@ const Admin = () => {
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                     >
                       <option value="">Select Category</option>
-                      {['Infants', 'Girls', 'Women', 'Men', 'Yarn', 'Laddu Gopal'].map(cat => (
+                      {['Infants', 'Women', 'Men', 'Yarn', 'Laddu Gopal'].map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
@@ -843,29 +895,6 @@ const Admin = () => {
                     </div>
                   )}
 
-                  {formData.category === 'Girls' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Girls Sub-Category</label>
-                      <select 
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                        value={formData.subCategory}
-                        onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
-                      >
-                        <option value="">Select Sub-Category</option>
-                        <optgroup label="Summerwear">
-                          {['Crochet Tops for Girls', 'Casual Dresses', 'Girls Co-ords', 'Party Dresses', 'Socks and Tights', 'Ethnic Wear'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Winterwear">
-                          {['Sweaters'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    </div>
-                  )}
-
                   {formData.category === 'Women' && (
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Women Sub-Category</label>
@@ -892,6 +921,11 @@ const Admin = () => {
                         </optgroup>
                         <optgroup label="Accessories">
                           {['Macrame Belts', 'Earrings', 'Crochet Scarf', 'Winter Headbands', 'Summer Headbands'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Girls">
+                          {['Crochet Tops for Girls', 'Casual Dresses', 'Girls Co-ords', 'Party Dresses', 'Socks and Tights', 'Ethnic Wear'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
@@ -930,44 +964,94 @@ const Admin = () => {
                       </select>
                     </div>
                   )}
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Product Image</label>
-                    <div className="flex items-center space-x-4">
-                      {formData.image && (
-                        <img src={formData.image} alt="Preview" className="w-20 h-20 rounded-2xl object-cover border border-gray-100" />
-                      )}
-                      <div className="flex-grow">
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                          id="product-image-upload"
-                        />
-                        <label 
-                          htmlFor="product-image-upload"
-                          className={`flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
-                        >
-                          <div className="flex flex-col items-center justify-center py-2">
+                  <div className="md:col-span-2 space-y-6">
+                    {/* Main Image Section */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Main Product Image</label>
+                      <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
+                        {formData.image && (
+                          <div className="relative group flex-shrink-0">
+                            <img src={formData.image} alt="Preview" className="w-32 h-32 rounded-2xl object-cover border-2 border-[var(--primary)] shadow-md" />
+                            <button 
+                              type="button"
+                              onClick={() => setFormData({...formData, image: ''})}
+                              className="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 transition-colors"
+                            >
+                              <XCircle size={16} />
+                            </button>
+                          </div>
+                        )}
+                        
+                        {!formData.image && (
+                          <div className="flex-grow w-full">
+                            <input 
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                              id="main-image-upload"
+                            />
+                            <label 
+                              htmlFor="main-image-upload"
+                              className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all bg-gray-50/50 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
+                            >
+                              {uploadingImage ? (
+                                <div className="flex flex-col items-center">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)] mb-2"></div>
+                                  <p className="text-xs font-bold text-[var(--primary)] uppercase">Uploading...</p>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center text-gray-400">
+                                  <Plus size={32} />
+                                  <p className="text-xs font-bold uppercase mt-2">Upload Main Image</p>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Sub-Images Section */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Sub-Images (Gallery)</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {(formData.images || []).map((url, index) => (
+                          <div key={index} className="relative group aspect-square">
+                            <img src={url} alt={`Gallery ${index}`} className="w-full h-full rounded-xl object-cover border border-gray-100 shadow-sm" />
+                            <button 
+                              type="button"
+                              onClick={() => removeSubImage(index)}
+                              className="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                            >
+                              <XCircle size={14} />
+                            </button>
+                          </div>
+                        ))}
+                        
+                        <div className="aspect-square">
+                          <input 
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleSubImageUpload}
+                            className="hidden"
+                            id="sub-image-upload"
+                          />
+                          <label 
+                            htmlFor="sub-image-upload"
+                            className={`flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all bg-gray-50/30 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
+                          >
                             {uploadingImage ? (
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--primary)]"></div>
                             ) : (
-                              <>
-                                <Plus size={20} className="text-gray-400" />
-                                <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Upload File</p>
-                              </>
+                              <div className="flex flex-col items-center text-gray-400">
+                                <Plus size={24} />
+                                <p className="text-[10px] font-bold uppercase mt-1">Add More</p>
+                              </div>
                             )}
-                          </div>
-                        </label>
-                      </div>
-                      <div className="flex-grow">
-                        <input 
-                          placeholder="Or paste Image URL"
-                          type="text" 
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                          value={formData.image}
-                          onChange={(e) => setFormData({...formData, image: e.target.value})}
-                        />
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1125,12 +1209,12 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus }) => {
             {(order?.orderItems || []).map((item, i) => (
               <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50/50 border border-gray-50">
                 <img 
-                  src={item?.image || 'https://placehold.co/150?text=Item'} 
-                  className="w-16 h-16 object-cover rounded-xl shadow-sm" 
+                  src={item?.image || item?.images?.[0] || 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800'} 
+                  className="w-16 h-16 object-cover rounded-xl shadow-sm bg-gray-100" 
                   alt={item?.name || 'Item'} 
                   onError={(e) => { 
                     e.target.onerror = null;
-                    e.target.src = 'https://placehold.co/150?text=Error';
+                    e.target.src = 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800';
                   }}
                 />
                 <div className="flex-grow">

@@ -17,7 +17,8 @@ import {
   signOut, 
   sendPasswordResetEmail 
 } from 'firebase/auth';
-import { db, auth } from '../firebase/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth, storage } from '../firebase/config';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
@@ -131,31 +132,19 @@ const getAuthHeader = async () => {
 
 export const uploadProductImage = async (file) => {
   try {
-    console.log("Starting server-side upload for file:", file.name);
+    console.log("Starting Firebase Storage upload for file:", file.name);
     
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const authHeader = await getAuthHeader();
-
-    const response = await fetch(`${API_URL}/upload`, {
-      method: 'POST',
-      headers: {
-        ...authHeader
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Server upload failed');
-    }
-
-    const data = await response.json();
-    console.log("Server upload success:", data.url);
-    return data.url;
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}.${fileExt}`;
+    const storageRef = ref(storage, `products/${fileName}`);
+    
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    console.log("Firebase Storage upload success:", downloadURL);
+    return downloadURL;
   } catch (error) {
-    console.error("Server-side Upload Error:", error);
+    console.error("Firebase Storage Upload Error:", error);
     throw error;
   }
 };
