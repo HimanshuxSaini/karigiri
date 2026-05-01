@@ -1,12 +1,12 @@
 const nodemailer = require('nodemailer');
 const admin = require('firebase-admin');
 
-// Configure SMTP Transporter with Port 587 (STARTTLS) and Connection Pooling
+// Configure SMTP Transporter with Port 465 (SSL) and Connection Pooling
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // Use STARTTLS for better compatibility on cloud platforms
-  pool: true,    // Enable connection pooling for faster consecutive emails
+  port: 465,
+  secure: true, // Gmail works best with Port 465 and secure: true
+  pool: true,    // Keep pooling for performance
   maxConnections: 5,
   maxMessages: 100,
   auth: {
@@ -66,11 +66,17 @@ exports.sendOtp = async (req, res) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    console.log(`Attempting to send OTP to: ${email}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('OTP Email Sent Successfully:', info.messageId);
     res.status(200).json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ message: 'Failed to send OTP', error: error.message });
+    console.error('SMTP/OTP Error for', email, ':', error);
+    res.status(500).json({ 
+      message: 'Failed to send OTP', 
+      error: error.message,
+      code: error.code // Include error code for easier debugging
+    });
   }
 };
 
