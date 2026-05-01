@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 10 * 1024 * 1024 // 10MB limit
   }
 });
 
@@ -44,6 +44,29 @@ router.post('/', protectAdmin, upload.single('image'), async (req, res) => {
   } catch (error) {
     console.error('Server Upload Error:', error);
     res.status(500).json({ message: 'Server error during upload', error: error.message });
+  }
+});
+
+router.delete('/', protectAdmin, async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    if (!imageUrl) {
+      return res.status(400).json({ message: 'No image URL provided' });
+    }
+
+    // Extract filename from URL
+    const filename = imageUrl.split('/').pop();
+    const filePath = path.join(__dirname, '..', 'uploads', 'products', filename);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      res.json({ message: 'Image deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Image not found' });
+    }
+  } catch (error) {
+    console.error('Server Delete Error:', error);
+    res.status(500).json({ message: 'Server error during deletion', error: error.message });
   }
 });
 

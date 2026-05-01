@@ -1,10 +1,11 @@
 import Navbar from '../components/Navbar';
-import { useCartStore, useOrderStore, useUserStore, useAuthStore } from '../store/useStore';
+import { useCartStore, useOrderStore, useUserStore, useAuthStore, useToastStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, CreditCard, ChevronRight, ShoppingBag, Truck, ShieldCheck, Plus, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { createOrder } from '../services/api';
+import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
 
@@ -13,6 +14,7 @@ const Checkout = () => {
   const { items, getTotal, clearCart } = useCartStore();
   const { addOrder } = useOrderStore();
   const { addresses, paymentMethods, addAddress, addPaymentMethod } = useUserStore();
+  const { showToast } = useToastStore();
 
   const [isOrdered, setIsOrdered] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -33,7 +35,7 @@ const Checkout = () => {
 
   const handleOrder = async () => {
     if (!selectedAddress) {
-      alert("Please select a shipping address.");
+      showToast("Please select a shipping address.", "error");
       return;
     }
 
@@ -86,7 +88,7 @@ const Checkout = () => {
       clearCart();
     } catch (err) {
       console.error("Order failed:", err);
-      alert("Failed to place order. Please try again.");
+      showToast(getFriendlyErrorMessage('FAILED TO PLACE ORDER'), "error");
     } finally {
       setIsProcessing(false);
     }
@@ -233,8 +235,8 @@ const Checkout = () => {
               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
                 {items.map((item) => (
                   <div key={item.id} className="flex space-x-4">
-                    <div className="relative">
-                      <img src={item.image} className="w-16 h-16 object-cover rounded-xl border border-white/40 shadow-sm" alt={item.name} />
+                    <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm">
+                      <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
                       <span className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--primary)] text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
                         {item.quantity}
                       </span>

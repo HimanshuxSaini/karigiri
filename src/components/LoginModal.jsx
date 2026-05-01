@@ -21,8 +21,9 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
-import { useAuthStore } from '../store/useStore';
+import { useAuthStore, useToastStore } from '../store/useStore';
 import { sendOtp, verifyOtp, requestPasswordReset } from '../services/api';
+import { getFriendlyErrorMessage } from '../utils/errorMessages';
 
 const LoginModal = ({ isOpen, onClose }) => {
   const [view, setView] = useState('otp'); // 'otp', 'login', 'signup', 'forgot'
@@ -38,22 +39,21 @@ const LoginModal = ({ isOpen, onClose }) => {
   
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
+  const { showToast } = useToastStore();
 
   // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setStep('number');
       setIdentifier('');
-      setError('');
-      setSuccess('');
       setLoading(false);
     }
   }, [isOpen]);
 
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
-    if (!identifier) return setError('Email is required');
-    if (!identifier.includes('@')) return setError('Please enter a valid email');
+    if (!identifier) return showToast('Email is required', 'error');
+    if (!identifier.includes('@')) return showToast('Please enter a valid email', 'error');
     
     const normalizedEmail = identifier.trim().toLowerCase();
     setLoading(true);
@@ -62,7 +62,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     try {
       const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
       if (methods.length === 0) {
-        setError('ACCOUNT NOT FOUND. PLEASE SIGN UP FIRST.');
+        showToast(getFriendlyErrorMessage('ACCOUNT NOT FOUND'), 'error');
         setLoading(false);
         return;
       }
@@ -72,19 +72,13 @@ const LoginModal = ({ isOpen, onClose }) => {
       setLoading(false);
     } catch (err) {
       console.error('OTP send error:', err);
-      let errorMessage = 'FAILED TO SEND OTP. PLEASE TRY AGAIN.';
-      if (err.message === 'Failed to fetch') {
-        errorMessage = 'SERVER UNREACHABLE. PLEASE ENSURE BACKEND IS RUNNING.';
-      } else if (err.message) {
-        errorMessage = err.message.toUpperCase();
-      }
-      setError(errorMessage);
+      showToast(getFriendlyErrorMessage(err), 'error');
       setLoading(false);
     }
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length !== 6) return setError('Enter 6-digit code');
+    if (otp.length !== 6) return showToast('Enter 6-digit code', 'error');
     
     setLoading(true);
     setError('');
@@ -105,7 +99,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       onClose();
       navigate('/profile');
     } catch (err) {
-      setError(err.message?.toUpperCase() || 'INVALID CODE. PLEASE TRY AGAIN.');
+      showToast(getFriendlyErrorMessage(err), 'error');
     } finally {
       setLoading(false);
     }
@@ -129,8 +123,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       onClose();
       navigate('/profile');
     } catch (error) {
-      const msg = error.code?.split('/')[1]?.replace(/-/g, ' ').toUpperCase() || 'AUTH ERROR';
-      setError(msg);
+      showToast(getFriendlyErrorMessage(error), 'error');
     } finally {
       setLoading(false);
     }
@@ -138,7 +131,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    if (!email) return setError('Please enter your email address');
+    if (!email) return showToast('Please enter your email address', 'error');
     
     setLoading(true);
     setError('');
@@ -146,11 +139,10 @@ const LoginModal = ({ isOpen, onClose }) => {
 
     try {
       await requestPasswordReset(email);
-      setSuccess('Reset link sent to your email!');
+      showToast('Reset link sent to your email!');
       setTimeout(() => setView('login'), 3000);
     } catch (error) {
-      const msg = error.code?.split('/')[1]?.replace(/-/g, ' ').toUpperCase() || 'ERROR SENDING LINK';
-      setError(msg);
+      showToast(getFriendlyErrorMessage(error), 'error');
     } finally {
       setLoading(false);
     }
@@ -178,7 +170,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       onClose();
       navigate('/profile');
     } catch (error) {
-      setError(error.message.toUpperCase());
+      showToast(getFriendlyErrorMessage(error), 'error');
     } finally {
       setLoading(false);
     }
@@ -224,25 +216,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   </button>
                 </div>
 
-                {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center space-x-3 text-red-600"
-                  >
-                    <AlertCircle size={18} />
-                    <span className="text-xs font-bold uppercase tracking-wider">{error}</span>
-                  </motion.div>
-                )}
 
-                {success && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center space-x-3 text-emerald-600"
-                  >
-                    <CheckCircle2 size={18} />
-                    <span className="text-xs font-bold uppercase tracking-wider">{success}</span>
-                  </motion.div>
-                )}
 
                 {view === 'otp' ? (
                   <div className="space-y-6">

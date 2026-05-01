@@ -24,16 +24,20 @@ import {
 } from 'lucide-react';
 
 import { 
-  fetchProducts, 
-  deleteProduct, 
-  createProduct, 
-  updateProduct, 
-  fetchOrders, 
-  updateOrderStatus, 
-  uploadProductImage 
-} from '../services/api';
-import { useAuthStore } from '../store/useStore';
+  fetchProducts,
+  deleteProduct,
+  createProduct,
+  updateProduct,
+  fetchOrders,
+  updateOrderStatus,
+  uploadProductImage,
+  fetchReels,
+  createReel,
+  updateReel,
+  deleteReel} from '../services/api';
+import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
+import { getFriendlyErrorMessage } from '../utils/errorMessages';
 
 
 const Admin = () => {
@@ -50,20 +54,30 @@ const Admin = () => {
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const { showToast } = useToastStore();
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [reels, setReels] = useState([]);
+  const [showReelModal, setShowReelModal] = useState(false);
+  const [editingReel, setEditingReel] = useState(null);
+  const [reelFormData, setReelFormData] = useState({
+    image: '',
+    tag: '',
+    handle: '@karigiri_official',
+    order: 0
+  });
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products', label: 'Inventory', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingBag },
+    { id: 'reels', label: 'Reels', icon: Eye },
   ];
 
   // Form State
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    category: 'Men',
+    category: 'Women',
     subCategory: '',
     description: '',
     image: '',
@@ -109,15 +123,17 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes] = await Promise.all([
         fetchProducts(),
-        fetchOrders()
+        fetchOrders(),
+        fetchReels()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
+      setReels(reelRes || []);
     } catch (err) {
       console.error('Failed to load admin data:', err);
-      setError('Failed to connect to Firestore. Please check your Firebase configuration and internet connection.');
+      setError(getFriendlyErrorMessage('FAILED TO CONNECT TO FIRESTORE'));
     } finally {
       setLoading(false);
     }
@@ -149,6 +165,7 @@ const Admin = () => {
   const statsData = useMemo(() => {
     const ordersArray = Array.isArray(orders) ? orders : [];
     const productsArray = Array.isArray(products) ? products : [];
+    const reelsArray = Array.isArray(reels) ? reels : [];
 
     const totalRevenue = ordersArray.reduce((acc, o) => acc + (Number(o?.totalPrice) || 0), 0);
     const pendingOrders = ordersArray.filter(o => o?.status === 'Processing').length;
@@ -157,9 +174,9 @@ const Admin = () => {
       { label: 'TOTAL REVENUE', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: <ShoppingBag className="text-emerald-500" />, color: "bg-emerald-50" },
       { label: 'TOTAL ORDERS', value: ordersArray.length, icon: <Package className="text-blue-500" />, color: "bg-blue-50" },
       { label: 'TOTAL PRODUCTS', value: productsArray.length, icon: <LayoutDashboard className="text-purple-500" />, color: "bg-purple-50" },
-      { label: 'PENDING ORDERS', value: pendingOrders, icon: <Clock className="text-amber-500" />, color: "bg-amber-50" },
+      { label: 'REELS (MOTION)', value: reelsArray.length, icon: <Eye className="text-rose-500" />, color: "bg-rose-50" },
     ];
-  }, [orders, products]);
+  }, [orders, products, reels]);
 
   const formatDate = (dateObj) => {
     if (!dateObj) return 'N/A';
@@ -177,8 +194,7 @@ const Admin = () => {
   };
 
   const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+    showToast(message, type);
   };
 
   const handleDeleteProduct = async (id) => {
@@ -188,7 +204,7 @@ const Admin = () => {
         setProducts(products.filter(p => p._id !== id));
         showNotification('Product deleted');
       } catch (err) {
-        showNotification('Failed to delete product', 'error');
+        showNotification(getFriendlyErrorMessage('FAILED TO DELETE PRODUCT'), 'error');
       }
     }
   };
@@ -228,7 +244,7 @@ const Admin = () => {
       showNotification('Main image uploaded');
     } catch (err) {
       console.error("Main image upload error:", err);
-      showNotification(err.message || 'Failed to upload image', 'error');
+      showNotification(getFriendlyErrorMessage(err), 'error');
     } finally {
       setUploadingImage(false);
       input.value = '';
@@ -262,7 +278,7 @@ const Admin = () => {
       showNotification(`${uploadedUrls.length} sub-image(s) uploaded`);
     } catch (err) {
       console.error("Sub-image upload error:", err);
-      showNotification(err.message || 'Failed to upload sub-images', 'error');
+      showNotification(getFriendlyErrorMessage(err), 'error');
     } finally {
       setUploadingImage(false);
       input.value = '';
@@ -295,22 +311,88 @@ const Admin = () => {
       setShowProductModal(false);
       setEditingProduct(null);
       setFormData({
-        name: '', price: '', category: 'Men', subCategory: '', description: '', image: '', images: [], brand: 'KARIGIRI', inStock: true
+        name: '', price: '', category: 'Women', subCategory: '', description: '', image: '', images: [], brand: 'KARIGIRI', inStock: true
       });
     } catch (err) {
-      showNotification('Failed to save product', 'error');
+      showNotification(getFriendlyErrorMessage('FAILED TO SAVE PRODUCT'), 'error');
     }
   };
 
   const handleUpdateOrderStatus = async (id, status) => {
     try {
-      const updated = await updateOrderStatus(id, status);
-      setOrders(orders.map(o => o._id === id ? updated : o));
-      if (selectedOrder?._id === id) setSelectedOrder(updated);
-      showNotification(`Order marked as ${status}`);
+      await updateOrderStatus(id, status);
+      setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, status } : o));
+      showNotification(`Order status updated to ${status}`);
     } catch (err) {
-      console.error('Order update failed:', err);
-      showNotification('Failed to update order status', 'error');
+      showNotification('Failed to update status', 'error');
+    }
+  };
+
+  const handleDeleteReel = async (id) => {
+    if (window.confirm('Are you sure you want to delete this reel?')) {
+      try {
+        await deleteReel(id);
+        setReels(reels.filter(r => r._id !== id));
+        showNotification('Reel deleted');
+      } catch (err) {
+        showNotification('Failed to delete reel', 'error');
+      }
+    }
+  };
+
+  const handleEditReel = (reel) => {
+    setEditingReel(reel);
+    setReelFormData({
+      image: reel.image,
+      tag: reel.tag,
+      handle: reel.handle || '@karigiri_official',
+      order: reel.order || 0
+    });
+    setShowReelModal(true);
+  };
+
+  const handleSubmitReel = async (e) => {
+    e.preventDefault();
+    if (!reelFormData.image) {
+      showNotification('Please upload an image', 'error');
+      return;
+    }
+    try {
+      if (editingReel) {
+        const updated = await updateReel(editingReel._id, reelFormData);
+        setReels(reels.map(r => r._id === editingReel._id ? updated : r));
+        showNotification('Reel updated');
+      } else {
+        const created = await createReel(reelFormData);
+        setReels([...reels, created]);
+        showNotification('Reel created');
+      }
+      setShowReelModal(false);
+      setEditingReel(null);
+      setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: 0 });
+    } catch (err) {
+      showNotification('Failed to save reel', 'error');
+    }
+  };
+
+  const handleReelImageUpload = async (e) => {
+    const input = e.target;
+    const file = input.files[0];
+    if (!file) return;
+    
+    console.log("Admin: Starting reel preview upload...", file.name);
+    setUploadingImage(true);
+    try {
+      const url = await uploadProductImage(file);
+      console.log("Admin: Reel preview uploaded successfully:", url);
+      setReelFormData(prev => ({ ...prev, image: url }));
+      showNotification('Preview image uploaded');
+    } catch (err) {
+      console.error("Admin: Reel preview upload failed:", err);
+      showNotification('Upload failed: ' + (err.message || 'Unknown error'), 'error');
+    } finally {
+      setUploadingImage(false);
+      input.value = ''; // Reset to allow re-uploading same file
     }
   };
 
@@ -344,25 +426,6 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
-      
-      {/* Notification Toast */}
-      <AnimatePresence>
-        {notification && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className={`fixed top-24 left-1/2 z-[100] px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 border ${
-              notification.type === 'error' 
-                ? 'bg-red-50 border-red-100 text-red-800' 
-                : 'bg-emerald-50 border-emerald-100 text-emerald-800'
-            }`}
-          >
-            {notification.type === 'error' ? <XCircle size={18} /> : <CheckCircle size={18} />}
-            <span className="text-sm font-bold">{notification.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
       
       <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
         <motion.div 
@@ -480,7 +543,7 @@ const Admin = () => {
                           }, {});
                           
                           // Define the exact order and categories to show
-                          const displayCats = ['Infants', 'Women', 'Men', 'Yarn', 'Laddu Gopal'];
+                          const displayCats = ['Women', 'Kids', 'Men', 'Bookey', 'Yarn', 'Laddu Gopal'];
                           
                           return displayCats.map(cat => {
                               const count = catCounts[cat] || 0;
@@ -575,7 +638,7 @@ const Admin = () => {
                         setFormData({
                           name: '',
                           price: '',
-                          category: 'Men',
+                          category: 'Women',
                           subCategory: '',
                           description: '',
                           image: '',
@@ -624,14 +687,14 @@ const Admin = () => {
                           <tr key={p?._id || p?.id || `prod-${idx}`} className="hover:bg-gray-50/50 transition-colors">
                             <td className="px-6 py-4">
                               <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
+                                <div className="w-14 aspect-[3/4] rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
                                   <img 
-                                    src={p?.image || p?.images?.[0] || 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800'} 
+                                    src={p?.image || p?.images?.[0] || '/placeholder.png'} 
                                     alt={p?.name || 'Product'} 
-                                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                    className="w-full h-full object-contain bg-white transition-transform group-hover:scale-105"
                                     onError={(e) => { 
                                       e.target.onerror = null;
-                                      e.target.src = 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800';
+                                      e.target.src = '/placeholder.png';
                                     }}
                                   />
                                 </div>
@@ -644,11 +707,12 @@ const Admin = () => {
                             <td className="px-6 py-4">
                               <div className="flex flex-col space-y-1">
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${
-                                  p?.category === 'Infants' ? 'bg-blue-50 text-blue-600' :
+                                  p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
                                   p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
                                   p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
                                   p?.category === 'Yarn' ? 'bg-emerald-50 text-emerald-600' :
                                   p?.category === 'Laddu Gopal' ? 'bg-amber-50 text-amber-700' :
+                                  p?.category === 'Bookey' ? 'bg-pink-50 text-pink-600' :
                                   'bg-gray-100 text-gray-600'
                                 }`}>
                                   {p?.category || 'Uncategorized'}
@@ -802,6 +866,64 @@ const Admin = () => {
                 </div>
               </div>
             )}
+
+            {activeTab === 'reels' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-bold">Karigiri in Motion (Reels)</h3>
+                  <button 
+                    onClick={() => {
+                      setEditingReel(null);
+                      setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: reels.length });
+                      setShowReelModal(true);
+                    }}
+                    className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest hover:shadow-lg transition-all"
+                  >
+                    <Plus size={16} />
+                    <span>Add New Reel</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {Array.isArray(reels) && reels.length > 0 ? (
+                    reels.map((reel) => (
+                      <motion.div 
+                        key={reel._id}
+                        layout
+                        className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500"
+                      >
+                        <div className="aspect-[9/16] overflow-hidden">
+                          <img src={reel.image} alt={reel.tag} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          
+                          <div className="absolute top-4 right-4 flex flex-col space-y-2 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+                            <button onClick={() => handleEditReel(reel)} className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-gray-900 hover:bg-white shadow-lg transition-all">
+                              <Edit3 size={16} />
+                            </button>
+                            <button onClick={() => handleDeleteReel(reel._id)} className="p-2 bg-rose-500/90 backdrop-blur-md rounded-xl text-white hover:bg-rose-500 shadow-lg transition-all">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4">
+                          <p className="text-[10px] font-black text-[var(--primary)] uppercase tracking-widest mb-1">{reel.tag}</p>
+                          <p className="text-xs font-medium text-gray-500">{reel.handle}</p>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-[10px] text-gray-400 font-bold">ORDER: {reel.order}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-20 text-center">
+                      <Eye className="mx-auto text-gray-200 mb-4" size={48} />
+                      <p className="text-gray-400 font-medium">No reels added yet.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
         </motion.div>
@@ -856,38 +978,38 @@ const Admin = () => {
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                     >
                       <option value="">Select Category</option>
-                      {['Infants', 'Women', 'Men', 'Yarn', 'Laddu Gopal'].map(cat => (
+                      {['Women', 'Kids', 'Men', 'Bookey', 'Yarn', 'Laddu Gopal'].map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
                   </div>
                   
-                  {formData.category === 'Infants' && (
+                  {formData.category === 'Kids' && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Infant Sub-Category</label>
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Kids Sub-Category</label>
                       <select 
                         className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                         value={formData.subCategory}
                         onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
                       >
                         <option value="">Select Sub-Category</option>
-                        <optgroup label="Winterwear">
-                          {['Handmade Sweaters', 'Handcrafted Sweaters', 'Frocks', 'Poncho', 'Vests', 'Booties', 'Cap Mitten Set', 'Rompers / Jumpsuits', 'Winterwear Sets', 'Caps'].map(s => (
+                        <optgroup label="Clothing">
+                          {['Handmade Sweaters', 'Frocks', 'Poncho', 'Vests', 'Rompers / Jumpsuits', 'Winterwear Sets'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
-                        <optgroup label="Photoprops">
-                          {['Mermaid', 'Beach Theme', 'Jungle Theme', 'Christmas Theme', 'Sports', 'Fruits and Veggies'].map(s => (
+                        <optgroup label="Girls (2-12 Years)">
+                          {['Crochet Tops', 'Casual Dresses', 'Co-ords', 'Party Dresses', 'Ethnic Wear'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
                         <optgroup label="Accessories">
-                          {['Mufflers', 'Cap Muffler Set', 'Headband', 'Socks', 'Gloves', 'Hair Accessories'].map(s => (
+                          {['Booties', 'Cap Mitten Set', 'Caps', 'Mufflers', 'Headband', 'Socks', 'Hair Accessories'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
-                        <optgroup label="Home & Living">
-                          {['Blankets', 'Cushions'].map(s => (
+                        <optgroup label="Photoprops">
+                          {['Mermaid', 'Beach Theme', 'Jungle Theme', 'Christmas Theme', 'Sports'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
@@ -920,12 +1042,12 @@ const Admin = () => {
                           ))}
                         </optgroup>
                         <optgroup label="Accessories">
-                          {['Macrame Belts', 'Earrings', 'Crochet Scarf', 'Winter Headbands', 'Summer Headbands'].map(s => (
+                          {['Earrings', 'Bracelets', 'Crochet Scarf', 'Neckwarmers', 'Macrame Belts', 'Socks'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
-                        <optgroup label="Girls">
-                          {['Crochet Tops for Girls', 'Casual Dresses', 'Girls Co-ords', 'Party Dresses', 'Socks and Tights', 'Ethnic Wear'].map(s => (
+                        <optgroup label="Bags">
+                          {['Crochet Handbags', 'Tote Bags', 'Sling Bags', 'Clutches'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
@@ -947,6 +1069,47 @@ const Admin = () => {
                     </div>
                   )}
 
+                  {formData.category === 'Bookey' && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Bookey Sub-Category</label>
+                      <select 
+                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        value={formData.subCategory}
+                        onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
+                      >
+                        <option value="">Select Sub-Category</option>
+                        <optgroup label="Floral">
+                          {['Rose Bouquets', 'Tulip Bouquets', 'Sunflower Bouquets', 'Lavender Bunches'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Occasions">
+                          {['Birthday Special', 'Anniversary', 'Custom Designs'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    </div>
+                  )}
+
+
+
+                  {formData.category === 'Laddu Gopal' && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Laddu Gopal Sub-Category</label>
+                      <select 
+                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        value={formData.subCategory}
+                        onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
+                      >
+                        <option value="">Select Sub-Category</option>
+                        {['Dresses', 'Accessories', 'Full Sets', 'Special Occasion'].map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   {formData.category === 'Yarn' && (
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Yarn Sub-Category</label>
@@ -957,7 +1120,7 @@ const Admin = () => {
                       >
                         <option value="">Select Sub-Category</option>
                         <optgroup label="Yarn Types">
-                          {['100% Acrylic Yarn'].map(s => (
+                          {['100% Acrylic Yarn', 'Cotton Yarn', 'Woolen Yarn', 'Velvet Yarn'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
@@ -971,7 +1134,7 @@ const Admin = () => {
                       <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
                         {formData.image && (
                           <div className="relative group flex-shrink-0">
-                            <img src={formData.image} alt="Preview" className="w-32 h-32 rounded-2xl object-cover border-2 border-[var(--primary)] shadow-md" />
+                            <img src={formData.image} alt="Preview" className="w-32 aspect-[3/4] rounded-2xl object-contain bg-white border-2 border-[var(--primary)] shadow-md" />
                             <button 
                               type="button"
                               onClick={() => setFormData({...formData, image: ''})}
@@ -1017,8 +1180,8 @@ const Admin = () => {
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Sub-Images (Gallery)</label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {(formData.images || []).map((url, index) => (
-                          <div key={index} className="relative group aspect-square">
-                            <img src={url} alt={`Gallery ${index}`} className="w-full h-full rounded-xl object-cover border border-gray-100 shadow-sm" />
+                          <div key={index} className="relative group aspect-[3/4]">
+                            <img src={url} alt={`Gallery ${index}`} className="w-full h-full rounded-xl object-contain bg-white border border-gray-100 shadow-sm" />
                             <button 
                               type="button"
                               onClick={() => removeSubImage(index)}
@@ -1029,7 +1192,7 @@ const Admin = () => {
                           </div>
                         ))}
                         
-                        <div className="aspect-square">
+                        <div className="aspect-[3/4]">
                           <input 
                             type="file"
                             accept="image/*"
@@ -1104,6 +1267,116 @@ const Admin = () => {
             onClose={() => setSelectedOrder(null)} 
             onUpdateStatus={handleUpdateOrderStatus}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showReelModal && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setShowReelModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 40 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10"
+            >
+              <div className="h-24 bg-black p-6 flex justify-between items-center">
+                <h3 className="text-white font-serif text-2xl">{editingReel ? 'Edit Reel' : 'Add New Reel'}</h3>
+                <button onClick={() => setShowReelModal(false)} className="text-white hover:opacity-70">
+                  <XCircle size={24} />
+                </button>
+              </div>
+              <div className="p-8">
+                <form onSubmit={handleSubmitReel} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Reel Preview / Image</label>
+                    <div className="flex justify-center">
+                      {reelFormData.image ? (
+                        <div className="relative group w-32 aspect-[9/16] rounded-2xl overflow-hidden border-2 border-[var(--primary)] shadow-lg">
+                          <img src={reelFormData.image} alt="Preview" className="w-full h-full object-cover" />
+                          <button 
+                            type="button"
+                            onClick={() => setReelFormData({...reelFormData, image: ''})}
+                            className="absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md"
+                          >
+                            <XCircle size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className={`w-32 aspect-[9/16] border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all ${uploadingImage ? 'opacity-50' : ''}`}>
+                          <input type="file" className="hidden" accept="image/*" onChange={handleReelImageUpload} />
+                          {uploadingImage ? (
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--primary)]"></div>
+                          ) : (
+                            <div className="flex flex-col items-center text-gray-400">
+                              <Plus size={24} />
+                              <span className="text-[10px] font-black uppercase mt-2">Upload</span>
+                            </div>
+                          )}
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Tag (e.g. #NewArrival)</label>
+                      <input 
+                        type="text" 
+                        required
+                        className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        value={reelFormData.tag}
+                        onChange={(e) => setReelFormData({...reelFormData, tag: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Instagram Handle</label>
+                      <input 
+                        type="text" 
+                        required
+                        className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        value={reelFormData.handle}
+                        onChange={(e) => setReelFormData({...reelFormData, handle: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Display Order</label>
+                      <input 
+                        type="number" 
+                        required
+                        className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        value={reelFormData.order}
+                        onChange={(e) => setReelFormData({...reelFormData, order: parseInt(e.target.value)})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-4 pt-4">
+                    <button 
+                      type="submit"
+                      disabled={uploadingImage}
+                      className="flex-grow bg-[var(--primary)] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg disabled:opacity-50"
+                    >
+                      {editingReel ? 'Update Reel' : 'Create Reel'}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setShowReelModal(false)}
+                      className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
@@ -1209,12 +1482,12 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus }) => {
             {(order?.orderItems || []).map((item, i) => (
               <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50/50 border border-gray-50">
                 <img 
-                  src={item?.image || item?.images?.[0] || 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800'} 
-                  className="w-16 h-16 object-cover rounded-xl shadow-sm bg-gray-100" 
+                  src={item?.image || item?.images?.[0] || '/placeholder.png'} 
+                  className="w-16 aspect-[3/4] object-contain bg-white rounded-xl shadow-sm border border-gray-100" 
                   alt={item?.name || 'Item'} 
                   onError={(e) => { 
                     e.target.onerror = null;
-                    e.target.src = 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800';
+                    e.target.src = '/placeholder.png';
                   }}
                 />
                 <div className="flex-grow">

@@ -94,11 +94,47 @@ export const updateProduct = async (id, productData) => {
   }
 };
 
+export const deleteProductImage = async (imageUrl) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("Unauthorized");
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${API_URL}/upload`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ imageUrl })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to delete image');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting product image:", error);
+    // Don't throw here to allow product deletion even if image deletion fails
+    return null;
+  }
+};
+
 export const deleteProduct = async (id) => {
   try {
+    // 1. Fetch product to get image URL
+    const product = await fetchProductById(id);
+    
+    // 2. Delete image if it exists and is local
+    if (product && product.image && product.image.includes('/uploads/')) {
+      await deleteProductImage(product.image);
+    }
+
+    // 3. Delete Firestore document
     const productDoc = doc(db, 'products', id);
     await deleteDoc(productDoc);
-    return { success: true };
   } catch (error) {
     console.error("Error deleting product:", error);
     throw error;
@@ -297,3 +333,81 @@ export const requestPasswordReset = async (email) => {
   }
 };
 
+
+// Reels
+export const fetchReels = async () => {
+  try {
+    const reelsCol = collection(db, 'reels');
+    const snapshot = await getDocs(reelsCol);
+    return snapshot.docs.map(doc => ({
+      _id: doc.id,
+      id: doc.id,
+      ...doc.data()
+    })).sort((a, b) => (a.order || 0) - (b.order || 0));
+  } catch (error) {
+    console.error("Error fetching reels:", error);
+    return [];
+  }
+};
+
+export const fetchReelById = async (id) => {
+  try {
+    const reelDoc = doc(db, 'reels', id);
+    const snapshot = await getDoc(reelDoc);
+    if (snapshot.exists()) {
+      return { _id: snapshot.id, id: snapshot.id, ...snapshot.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching reel by ID:", error);
+    throw error;
+  }
+};
+
+export const createReel = async (reelData) => {
+  try {
+    const reelsCol = collection(db, 'reels');
+    const docRef = await addDoc(reelsCol, {
+      ...reelData,
+      createdAt: serverTimestamp()
+    });
+    return { _id: docRef.id, id: docRef.id, ...reelData };
+  } catch (error) {
+    console.error("Error creating reel:", error);
+    throw error;
+  }
+};
+
+export const updateReel = async (id, reelData) => {
+  try {
+    const reelDoc = doc(db, 'reels', id);
+    const cleanData = { ...reelData };
+    delete cleanData._id;
+    delete cleanData.id;
+    await updateDoc(reelDoc, cleanData);
+    return { _id: id, id, ...reelData };
+  } catch (error) {
+    console.error("Error updating reel:", error);
+    throw error;
+  }
+};
+
+export const deleteReel = async (id) => {
+  try {
+    // 1. Fetch reel to get preview image URL
+    const reel = await fetchReelById(id);
+    
+    // 2. Delete image if it exists and is local
+    if (reel && reel.image && reel.image.includes('/uploads/')) {
+      await deleteProductImage(reel.image);
+    }
+
+    // 3. Delete Firestore document
+    const reelDoc = doc(db, 'reels', id);
+    await deleteDoc(reelDoc);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting reel:", error);
+    throw error;
+  }
+};

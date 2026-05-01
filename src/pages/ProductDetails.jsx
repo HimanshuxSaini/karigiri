@@ -60,34 +60,42 @@ const ProductDetails = () => {
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Image Gallery */}
           <div className="lg:w-3/5 grid grid-cols-2 gap-4">
-             <motion.img 
-               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-               src={product.image} className="w-full h-auto object-cover rounded shadow-sm" alt="Product 1" 
-               onError={(e) => {
-                 e.target.src = "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=1200";
-               }}
-             />
-             <motion.img 
-               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-               src={product.image} className="w-full h-auto object-cover rounded shadow-sm brightness-95" alt="Product 2" 
-               onError={(e) => {
-                 e.target.src = "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=1200";
-               }}
-             />
-             <motion.img 
-               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-               src={product.image} className="w-full h-auto object-cover rounded shadow-sm contrast-110" alt="Product 3" 
-               onError={(e) => {
-                 e.target.src = "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1200";
-               }}
-             />
-             <motion.img 
-               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-               src={product.image} className="w-full h-auto object-cover rounded shadow-sm saturate-50" alt="Product 4" 
-               onError={(e) => {
-                 e.target.src = "https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&q=80&w=1200";
-               }}
-             />
+             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
+               <motion.img 
+                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                 src={product.image} className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-110" alt="Product 1" 
+                 onError={(e) => {
+                   e.target.src = "/placeholder.png";
+                 }}
+               />
+             </div>
+             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
+               <motion.img 
+                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+                 src={product.image} className="max-w-full max-h-full object-contain brightness-95 transition-all duration-700 hover:scale-110" alt="Product 2" 
+                 onError={(e) => {
+                   e.target.src = "/placeholder.png";
+                 }}
+               />
+             </div>
+             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
+               <motion.img 
+                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+                 src={product.image} className="max-w-full max-h-full object-contain contrast-110 transition-all duration-700 hover:scale-110" alt="Product 3" 
+                 onError={(e) => {
+                   e.target.src = "/placeholder.png";
+                 }}
+               />
+             </div>
+             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
+               <motion.img 
+                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+                 src={product.image} className="max-w-full max-h-full object-contain saturate-50 transition-all duration-700 hover:scale-110" alt="Product 4" 
+                 onError={(e) => {
+                   e.target.src = "/placeholder.png";
+                 }}
+               />
+             </div>
           </div>
 
           {/* Product Info */}

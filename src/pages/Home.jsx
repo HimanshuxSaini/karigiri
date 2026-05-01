@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FAQ from '../components/FAQ';
-import { fetchProducts } from '../services/api';
+import { fetchProducts, fetchReels } from '../services/api';
 
 // Asset Imports
 import bootiesImg from '../assets/booties.png';
@@ -15,17 +15,18 @@ import yarnImg from '../assets/yarn.png';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
+  const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const customImages = [
-    bootiesImg,
-    sweaterImg,
+    "/item4.png",
+    "/bookey.png",
     yarnImg,
-    "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&q=80&w=800",
+    "/shawl.png",
+    "/bag.png",
+    "/bracelet.png",
+    "/blanket.png",
   ];
 
   useEffect(() => {
@@ -35,10 +36,12 @@ const Home = () => {
         if (Array.isArray(data) && data.length > 0) {
           // Filter products for featured section (2 from each major category)
           const featured = [
-            ...data.filter(p => p?.category === 'Men').slice(0, 2),
-            ...data.filter(p => p?.category === 'Women').slice(0, 2),
-            ...data.filter(p => p?.category === 'Laddu Gopal').slice(0, 2),
-            ...data.filter(p => p?.category === 'Yarn').slice(0, 2),
+            ...data.filter(p => p?.category === 'Women').slice(0, 1),
+            ...data.filter(p => p?.category === 'Kids').slice(0, 1),
+            ...data.filter(p => p?.category === 'Bookey').slice(0, 1),
+
+            ...data.filter(p => p?.category === 'Laddu Gopal').slice(0, 1),
+            ...data.filter(p => p?.category === 'Yarn').slice(0, 1),
           ];
           setProducts(featured.length > 0 ? featured : data.slice(0, 8));
         } else {
@@ -52,7 +55,19 @@ const Home = () => {
       }
     };
 
+    const getReels = async () => {
+      try {
+        const data = await fetchReels();
+        if (data && data.length > 0) {
+          setReels(data.sort((a, b) => (a.order || 0) - (b.order || 0)));
+        }
+      } catch (err) {
+        console.error('Failed to fetch reels:', err);
+      }
+    };
+
     getFeaturedProducts();
+    getReels();
 
     const timer = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % customImages.length);
@@ -97,12 +112,12 @@ const Home = () => {
             {[
               { name: "Handmade Woolen Shawl", price: 899, img: "/shawl.png" },
               { name: "Artisanal Crochet Bag", price: 749, img: "/bag.png" },
-              { name: "Hand-Knitted Baby Set", price: 999, img: "/baby_set.png" },
+              { name: "Kids Winter Beanie", price: 499, img: "/item4.png" },
               { name: "Organic Wool Yarn", price: 299, img: yarnImg }
             ].map((deal, i) => (
               <Link key={i} to="/shop" className="group">
-                <div className="aspect-[4/5] bg-[var(--secondary)]/40 overflow-hidden rounded-xl mb-3 md:mb-4">
-                  <img src={deal.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={deal.name} />
+                <div className="aspect-[3/4] bg-[var(--secondary)]/30 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4">
+                  <img src={deal.img} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-xl" alt={deal.name} />
                 </div>
                 <div className="px-1 text-center sm:text-left">
                   <h4 className="text-[10px] md:text-xs font-bold text-[var(--text-main)] truncate">{deal.name}</h4>
@@ -201,12 +216,12 @@ const Home = () => {
                 <motion.img
                   key={currentImageIndex}
                   src={customImages[currentImageIndex]}
-                  alt="Customised Baby Knit Set"
+                  alt="Customised Handmade Creation"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.8 }}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-4"
                 />
               </AnimatePresence>
             </div>
@@ -231,20 +246,21 @@ const Home = () => {
             <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Karigiri in Motion</h2>
           </div>
           <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right scrollbar-hide snap-x">
-            {[
-              { img: "/shawl.png", tag: "Handmade Shawls" },
-              { img: "/baby_set.png", tag: "Baby Knitwear" },
-              { img: "/bag.png", tag: "Crochet Bags" },
-              { img: sweaterImg, tag: "Premium Sweaters" },
-              { img: yarnImg, tag: "Organic Yarn" }
-            ].map((reel, i) => (
+            {(reels.length > 0 ? reels : [
+              { image: "/shawl.png", tag: "Handmade Shawls", handle: "@karigiri_official" },
+              { image: "/item4.png", tag: "Kids Collection", handle: "@karigiri_official" },
+              { image: "/bag.png", tag: "Crochet Bags", handle: "@karigiri_official" },
+              { image: "/bookey.png", tag: "Floral Bookey", handle: "@karigiri_official" },
+              { image: "/blanket.png", tag: "Premium Blankets", handle: "@karigiri_official" }
+            ]).map((reel, i) => (
               <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all duration-500"></div>
-                <img src={reel.img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Karigiri in Motion" />
+                <div className="absolute inset-0 aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
+                  <img src={reel.image || reel.img} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} />
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
                 <div className="absolute bottom-4 left-4 text-white">
                   <p className="text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">{reel.tag}</p>
-                  <p className="text-[8px] md:text-[10px] font-medium opacity-80">@karigiri_official</p>
+                  <p className="text-[8px] md:text-[10px] font-medium opacity-80">{reel.handle || '@karigiri_official'}</p>
                 </div>
               </div>
             ))}

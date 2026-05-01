@@ -37,7 +37,9 @@ const Cart = () => {
                 key={item.id} 
                 className="glass-card p-6 flex items-center space-x-6"
               >
-                <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-xl" />
+                <div className="w-24 aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-xl overflow-hidden shrink-0">
+                  <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain" />
+                </div>
                 <div className="flex-grow">
                   <h3 className="text-lg font-serif text-[var(--primary)]">{item.name}</h3>
                   <p className="text-sm text-[var(--text-muted)]">{item.category}</p>

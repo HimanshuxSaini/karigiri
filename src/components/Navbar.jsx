@@ -14,10 +14,11 @@ const Navbar = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isInfantsHovered, setIsInfantsHovered] = useState(false);
+  const [isKidsHovered, setIsKidsHovered] = useState(false);
   const [isWomenHovered, setIsWomenHovered] = useState(false);
   const [isMenHovered, setIsMenHovered] = useState(false);
   const [isYarnHovered, setIsYarnHovered] = useState(false);
+  const [isBookeyHovered, setIsBookeyHovered] = useState(false);
   
   const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
 
@@ -31,9 +32,10 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Infants', path: '/shop?category=Infants' },
     { name: 'Women', path: '/shop?category=Women' },
+    { name: 'Kids', path: '/shop?category=Kids' },
     { name: 'Men', path: '/shop?category=Men' },
+    { name: 'Bookey', path: '/shop?category=Bookey' },
     { name: 'Yarn', path: '/shop?category=Yarn' },
     { name: 'Laddu Gopal', path: '/shop?category=Laddu Gopal' },
   ];
@@ -59,16 +61,18 @@ const Navbar = () => {
                   key={link.name} 
                   className="relative group"
                   onMouseEnter={() => {
-                    if (link.name === 'Infants') setIsInfantsHovered(true);
+                    if (link.name === 'Kids') setIsKidsHovered(true);
                     if (link.name === 'Women') setIsWomenHovered(true);
                     if (link.name === 'Men') setIsMenHovered(true);
                     if (link.name === 'Yarn') setIsYarnHovered(true);
+                    if (link.name === 'Bookey') setIsBookeyHovered(true);
                   }}
                   onMouseLeave={() => {
-                    if (link.name === 'Infants') setIsInfantsHovered(false);
+                    if (link.name === 'Kids') setIsKidsHovered(false);
                     if (link.name === 'Women') setIsWomenHovered(false);
                     if (link.name === 'Men') setIsMenHovered(false);
                     if (link.name === 'Yarn') setIsYarnHovered(false);
+                    if (link.name === 'Bookey') setIsBookeyHovered(false);
                   }}
                 >
                   <Link 
@@ -78,9 +82,9 @@ const Navbar = () => {
                     {link.name}
                   </Link>
 
-                  {link.name === 'Infants' && (
+                  {link.name === 'Kids' && (
                     <AnimatePresence>
-                      {isInfantsHovered && (
+                      {isKidsHovered && (
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -88,34 +92,34 @@ const Navbar = () => {
                           className="absolute top-full left-0 w-[800px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-4 gap-8 z-50 mt-1"
                         >
                           <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Clothing</h4>
                             <div className="space-y-2 flex flex-col">
-                              {['Handmade Sweaters', 'Handcrafted Sweaters', 'Frocks', 'Poncho', 'Vests', 'Booties', 'Cap Mitten Set', 'Rompers / Jumpsuits', 'Winterwear Sets', 'Caps'].map(s => (
-                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              {['Handmade Sweaters', 'Frocks', 'Poncho', 'Vests', 'Rompers / Jumpsuits', 'Winterwear Sets'].map(s => (
+                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>
                           </div>
                           <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Photoprops</h4>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Girls (Ages 2-12)</h4>
                             <div className="space-y-2 flex flex-col">
-                              {['Mermaid', 'Beach Theme', 'Jungle Theme', 'Christmas Theme', 'Sports', 'Fruits and Veggies'].map(s => (
-                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              {['Crochet Tops', 'Casual Dresses', 'Co-ords', 'Party Dresses', 'Ethnic Wear'].map(s => (
+                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>
                           </div>
                           <div>
                             <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Accessories</h4>
                             <div className="space-y-2 flex flex-col">
-                              {['Mufflers', 'Cap Muffler Set', 'Headband', 'Socks', 'Gloves', 'Hair Accessories'].map(s => (
-                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              {['Booties', 'Cap Mitten Set', 'Caps', 'Mufflers', 'Headband', 'Socks', 'Hair Accessories'].map(s => (
+                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>
                           </div>
                           <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Home & Living</h4>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Photoprops</h4>
                             <div className="space-y-2 flex flex-col">
-                              {['Blankets', 'Cushions'].map(s => (
-                                <Link key={s} to={`/shop?category=Infants&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              {['Mermaid', 'Beach Theme', 'Jungle Theme', 'Christmas Theme', 'Sports'].map(s => (
+                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>
                           </div>
@@ -160,15 +164,15 @@ const Navbar = () => {
                           <div>
                             <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Accessories</h4>
                             <div className="space-y-2 flex flex-col">
-                              {['Macrame Belts', 'Earrings', 'Crochet Scarf', 'Winter Headbands', 'Summer Headbands'].map(s => (
+                              {['Earrings', 'Bracelets', 'Crochet Scarf', 'Neckwarmers', 'Macrame Belts', 'Socks'].map(s => (
                                 <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>
                           </div>
                           <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Girls</h4>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Bags</h4>
                             <div className="space-y-2 flex flex-col">
-                              {['Crochet Tops for Girls', 'Casual Dresses', 'Girls Co-ords', 'Party Dresses', 'Socks and Tights', 'Ethnic Wear'].map(s => (
+                              {['Crochet Handbags', 'Tote Bags', 'Sling Bags', 'Clutches'].map(s => (
                                 <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>
@@ -200,20 +204,28 @@ const Navbar = () => {
                     </AnimatePresence>
                   )}
 
-                  {link.name === 'Yarn' && (
+                  {link.name === 'Bookey' && (
                     <AnimatePresence>
-                      {isYarnHovered && (
+                      {isBookeyHovered && (
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 w-[250px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 z-50 mt-1"
+                          className="absolute top-full left-0 w-[400px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-2 gap-8 z-50 mt-1"
                         >
                           <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Collection</h4>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Floral</h4>
                             <div className="space-y-2 flex flex-col">
-                              {['100% Acrylic Yarn'].map(s => (
-                                <Link key={s} to={`/shop?category=Yarn&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              {['Rose Bouquets', 'Tulip Bouquets', 'Sunflower Bouquets', 'Lavender Bunches'].map(s => (
+                                <Link key={s} to={`/shop?category=Bookey&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Occasions</h4>
+                            <div className="space-y-2 flex flex-col">
+                              {['Birthday Special', 'Anniversary', 'Custom Designs'].map(s => (
+                                <Link key={s} to={`/shop?category=Bookey&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
                               ))}
                             </div>
                           </div>
@@ -221,6 +233,8 @@ const Navbar = () => {
                       )}
                     </AnimatePresence>
                   )}
+
+
                 </div>
               ))}
               {isAdmin && (

@@ -13,6 +13,7 @@ import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import ScrollToTop from './components/ScrollToTop';
+import ToastContainer from './components/Toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -60,6 +61,7 @@ function App() {
     <Router>
       <ScrollToTop />
       <div className="min-h-screen relative">
+        <ToastContainer />
         <WhatsAppButton />
         <AnnouncementBar />
         <AmbientBackground />

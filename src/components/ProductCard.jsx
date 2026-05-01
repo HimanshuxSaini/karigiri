@@ -15,13 +15,13 @@ const ProductCard = ({ product }) => {
       whileHover={{ y: -5 }}
       className="bg-white overflow-hidden group h-full flex flex-col relative rounded-sm border border-transparent hover:border-gray-100 transition-all"
     >
-      <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50">
+      <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
         <img 
           src={product.image} 
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg"
           onError={(e) => {
-            e.target.src = "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800";
+            e.target.src = "/placeholder.png";
           }}
         />
         

@@ -404,10 +404,10 @@ const Profile = () => {
                             <div className="flex items-center justify-between pt-4 border-t border-white/20">
                               <div className="flex -space-x-3 overflow-hidden">
                                 {((order.orderItems || order.items) || []).slice(0, 4).map((item, i) => (
-                                  <div key={i} className="relative">
+                                  <div key={i} className="relative aspect-[3/4] w-12 bg-[var(--secondary)] rounded-xl overflow-hidden border-4 border-[var(--card-bg)] shadow-md group-hover:scale-110 transition-transform">
                                     <img 
                                       src={item.image} 
-                                      className="w-12 h-12 rounded-xl border-4 border-[var(--card-bg)] object-cover shadow-md group-hover:scale-110 transition-transform" 
+                                      className="w-full h-full object-contain" 
                                       alt="product" 
                                     />
                                   </div>
@@ -470,11 +470,13 @@ const Profile = () => {
                             className="flex flex-col p-4 rounded-2xl bg-white/30 border border-white/40 group hover:shadow-lg transition-all"
                           >
                             <div className="flex space-x-4 mb-4">
-                              <img 
-                                src={product.image} 
-                                alt={product.name}
-                                className="w-20 h-24 object-cover rounded-xl shadow-sm"
-                              />
+                              <div className="aspect-[3/4] w-20 bg-[var(--secondary)]/30 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+                                <img 
+                                  src={product.image} 
+                                  alt={product.name}
+                                  className="max-w-full max-h-full object-contain"
+                                />
+                              </div>
                               <div className="flex flex-col justify-between py-1 flex-grow">
                                 <div>
                                   <h4 className="font-serif text-[var(--text-main)] group-hover:text-[var(--primary)] transition-colors text-sm">{product.name}</h4>
@@ -781,7 +783,9 @@ const Profile = () => {
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">Order Items</h4>
                   {selectedOrder.items.map((item, i) => (
                     <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50/50">
-                      <img src={item.image} className="w-16 h-16 object-cover rounded-xl shadow-sm" alt="" />
+                      <div className="aspect-[3/4] w-16 bg-gray-100 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+                        <img src={item.image} className="max-w-full max-h-full object-contain" alt="" />
+                      </div>
                       <div className="flex-grow">
                         <p className="text-sm font-bold text-[var(--text-main)]">{item.name}</p>
                         <p className="text-xs text-[var(--text-muted)]">Qty: {item.quantity}</p>

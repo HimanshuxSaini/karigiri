@@ -10,11 +10,13 @@ const Footer = () => {
             <h4 className="font-black uppercase text-xs tracking-widest mb-6 text-slate-900">Online Shopping</h4>
             <ul className="space-y-3 text-[13px] font-bold text-slate-500">
               <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Men</Link></li>
-              <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Women</Link></li>
-              <li><Link to="/shop?category=Infants" className="hover:text-black hover:underline underline-offset-4">Infants</Link></li>
-              <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Yarn</Link></li>
-              <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Laddu Gopal</Link></li>
-              <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Artisanal Sets</Link></li>
+              <li><Link to="/shop?category=Women" className="hover:text-black hover:underline underline-offset-4">Women</Link></li>
+              <li><Link to="/shop?category=Kids" className="hover:text-black hover:underline underline-offset-4">Kids</Link></li>
+              <li><Link to="/shop?category=Men" className="hover:text-black hover:underline underline-offset-4">Men</Link></li>
+              <li><Link to="/shop?category=Bookey" className="hover:text-black hover:underline underline-offset-4">Bookey</Link></li>
+
+              <li><Link to="/shop?category=Yarn" className="hover:text-black hover:underline underline-offset-4">Yarn</Link></li>
+              <li><Link to="/shop?category=Laddu Gopal" className="hover:text-black hover:underline underline-offset-4">Laddu Gopal</Link></li>
             </ul>
           </div>
 
