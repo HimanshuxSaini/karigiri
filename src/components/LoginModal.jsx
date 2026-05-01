@@ -36,6 +36,8 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [slowConnection, setSlowConnection] = useState(false);
   
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
@@ -47,8 +49,20 @@ const LoginModal = ({ isOpen, onClose }) => {
       setStep('number');
       setIdentifier('');
       setLoading(false);
+      setSlowConnection(false);
     }
   }, [isOpen]);
+
+  // Resend Timer logic
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
@@ -58,22 +72,35 @@ const LoginModal = ({ isOpen, onClose }) => {
     const normalizedEmail = identifier.trim().toLowerCase();
     setLoading(true);
     setError('');
+    setSlowConnection(false);
+
+    // Show slow connection warning after 5 seconds
+    const slowTimer = setTimeout(() => {
+      setSlowConnection(true);
+    }, 5000);
 
     try {
       const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
       if (methods.length === 0) {
         showToast(getFriendlyErrorMessage('ACCOUNT NOT FOUND'), 'error');
         setLoading(false);
+        clearTimeout(slowTimer);
         return;
       }
 
       await sendOtp(normalizedEmail);
       setStep('verify');
+      setResendTimer(60);
       setLoading(false);
+      clearTimeout(slowTimer);
+      setSlowConnection(false);
+      showToast('OTP sent successfully!');
     } catch (err) {
       console.error('OTP send error:', err);
       showToast(getFriendlyErrorMessage(err), 'error');
       setLoading(false);
+      clearTimeout(slowTimer);
+      setSlowConnection(false);
     }
   };
 
@@ -241,10 +268,15 @@ const LoginModal = ({ isOpen, onClose }) => {
                         <button 
                           onClick={handleSendOtp}
                           disabled={loading}
-                          className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-[var(--primary)]/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                          className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-[var(--primary)]/20 active:scale-[0.98] transition-all flex flex-col items-center justify-center space-y-1 disabled:opacity-50"
                         >
-                          <span>{loading ? 'Sending...' : 'Get OTP Code'}</span>
-                          <ChevronRight size={20} />
+                          <div className="flex items-center space-x-2">
+                            <span>{loading ? (slowConnection ? 'Still Sending...' : 'Sending...') : 'Get OTP Code'}</span>
+                            {!loading && <ChevronRight size={20} />}
+                          </div>
+                          {loading && slowConnection && (
+                            <span className="text-[10px] opacity-70 animate-pulse">Connection is slow, please wait...</span>
+                          )}
                         </button>
                       </div>
                     ) : (
@@ -265,9 +297,20 @@ const LoginModal = ({ isOpen, onClose }) => {
                         >
                           <span>{loading ? 'Verifying...' : 'Verify & Sign In'}</span>
                         </button>
-                        <button onClick={() => setStep('number')} className="w-full text-gray-400 text-xs font-bold hover:text-[var(--primary)] transition-all uppercase tracking-widest">
-                          Change Email Address
-                        </button>
+                        
+                        <div className="flex flex-col space-y-4">
+                          <button 
+                            onClick={handleSendOtp}
+                            disabled={loading || resendTimer > 0}
+                            className="w-full text-xs font-bold text-[var(--primary)] hover:underline disabled:opacity-50 disabled:no-underline"
+                          >
+                            {resendTimer > 0 ? `Resend Code in ${resendTimer}s` : 'Resend OTP Code'}
+                          </button>
+                          
+                          <button onClick={() => setStep('number')} className="w-full text-gray-400 text-xs font-bold hover:text-[var(--primary)] transition-all uppercase tracking-widest">
+                            Change Email Address
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
