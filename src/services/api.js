@@ -17,8 +17,7 @@ import {
   signOut, 
   sendPasswordResetEmail 
 } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, auth, storage } from '../firebase/config';
+import { db, auth } from '../firebase/config';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
@@ -132,19 +131,34 @@ const getAuthHeader = async () => {
 
 export const uploadProductImage = async (file) => {
   try {
-    console.log("Starting Firebase Storage upload for file:", file.name);
+    console.log("Starting backend upload for file:", file.name);
     
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}.${fileExt}`;
-    const storageRef = ref(storage, `products/${fileName}`);
-    
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    
-    console.log("Firebase Storage upload success:", downloadURL);
-    return downloadURL;
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Get current user's Firebase token for auth
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${API_URL}/upload`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Upload failed');
+    }
+
+    const data = await response.json();
+    console.log("Backend upload success:", data.url);
+    return data.url;
   } catch (error) {
-    console.error("Firebase Storage Upload Error:", error);
+    console.error("Backend Upload Error:", error);
     throw error;
   }
 };
