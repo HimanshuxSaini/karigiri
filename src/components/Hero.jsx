@@ -13,7 +13,7 @@ const Hero = () => {
     { title: "Winter Essentials", head: "Premium\nWoolen Sweaters.", img: sweaterImg, pos: "object-center" },
     { title: "Craft Your Own", head: "Pure Organic\nWool Yarn.", img: yarnImg, pos: "object-center" },
     { title: "Winter Heritage", head: "Timeless\nCraftsmanship.", img: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=1200", pos: "object-top" },
-    { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "https://images.unsplash.com/photo-1614676471928-2ed0ad1061a4?auto=format&fit=crop&q=80&w=1200", pos: "object-center" },
+    { title: "Mountain Cozy", head: "Warmth for\nThe Wild.", img: "/woolen_hero.png", pos: "object-center" },
     { title: "Sustainable Yarn", head: "Earth Friendly\nWarmth.", img: "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?auto=format&fit=crop&q=80&w=1200", pos: "object-center" },
     { title: "Daily Comfort", head: "Styled for\nEvery Day.", img: "https://images.unsplash.com/photo-1582738411706-bfc8e691d1c2?auto=format&fit=crop&q=80&w=1200", pos: "object-top" }
   ];
