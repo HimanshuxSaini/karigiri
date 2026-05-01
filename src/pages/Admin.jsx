@@ -20,7 +20,11 @@ import {
   Eye,
   ShieldCheck,
   Users,
-  Smartphone
+  Smartphone,
+  Printer,
+  User,
+  MapPin,
+  CreditCard
 } from 'lucide-react';
 
 import { 
@@ -39,6 +43,19 @@ import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 
+
+const formatDate = (dateObj) => {
+  if (!dateObj) return 'N/A';
+  try {
+    if (dateObj.toDate && typeof dateObj.toDate === 'function') {
+      return dateObj.toDate().toLocaleDateString('en-IN');
+    }
+    const date = new Date(dateObj);
+    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-IN');
+  } catch (e) {
+    return 'N/A';
+  }
+};
 
 const Admin = () => {
   const { user } = useAuthStore();
@@ -70,6 +87,7 @@ const Admin = () => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products', label: 'Inventory', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingBag },
+    { id: 'billing', label: 'Billing', icon: Printer },
     { id: 'reels', label: 'Reels', icon: Eye },
   ];
 
@@ -178,21 +196,6 @@ const Admin = () => {
     ];
   }, [orders, products, reels]);
 
-  const formatDate = (dateObj) => {
-    if (!dateObj) return 'N/A';
-    try {
-      // Handle Firestore Timestamp
-      if (dateObj.toDate && typeof dateObj.toDate === 'function') {
-        return dateObj.toDate().toLocaleDateString();
-      }
-      // Handle Date object or string
-      const date = new Date(dateObj);
-      return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
-    } catch (e) {
-      return 'N/A';
-    }
-  };
-
   const showNotification = (message, type = 'success') => {
     showToast(message, type);
   };
@@ -233,7 +236,6 @@ const Admin = () => {
     setUploadingImage(true);
     try {
       console.log("Starting main image upload:", file.name);
-      // 30s timeout
       const uploadPromise = uploadProductImage(file);
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Upload timed out (30s)')), 30000)
@@ -261,7 +263,6 @@ const Admin = () => {
       const uploadedUrls = [];
       for (const file of files) {
         console.log("Uploading sub-image:", file.name);
-        // 30s timeout per image
         const uploadPromise = uploadProductImage(file);
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error(`Timeout uploading ${file.name}`)), 30000)
@@ -392,12 +393,146 @@ const Admin = () => {
       showNotification('Upload failed: ' + (err.message || 'Unknown error'), 'error');
     } finally {
       setUploadingImage(false);
-      input.value = ''; // Reset to allow re-uploading same file
+      input.value = '';
     }
   };
 
+  const handlePrintBill = (orderData) => {
+    const printWindow = window.open('', '_blank');
+    const orderId = String(orderData?._id || orderData?.id || '').toUpperCase();
+    const date = formatDate(orderData?.createdAt);
+    const total = Number(orderData?.totalPrice || 0).toLocaleString('en-IN');
+    
+    const brandName = "KARIGIRI";
+    const brandAddress = "Sonipat, Haryana, India";
+    const brandPhone = "+91 93158 55431";
+    const brandEmail = "karigiri@gmail.com";
 
+    const itemsHtml = (orderData?.orderItems || []).map(item => {
+      const price = Number(item.price || 0);
+      const quantity = Number(item.quantity || 1);
+      const subtotal = price * quantity;
+      return `
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #eee;">
+            <div style="font-weight: bold; font-size: 14px;">${item.name || 'Unnamed Item'}</div>
+            <div style="font-size: 11px; color: #666;">Category: ${item.category || 'Handmade'}</div>
+          </td>
+          <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">${quantity}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">₹${price.toLocaleString('en-IN')}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">₹${subtotal.toLocaleString('en-IN')}</td>
+        </tr>
+      `;
+    }).join('');
 
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice - ${orderId}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:wght@700&display=swap');
+            body { font-family: 'Inter', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 40px; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+            .logo-container { display: flex; flex-direction: column; }
+            .logo { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: bold; letter-spacing: 2px; line-height: 1; }
+            .brand-details { font-size: 10px; color: #666; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+            .invoice-info { text-align: right; }
+            .invoice-title { font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+            .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+            .section-title { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #999; letter-spacing: 1.5px; margin-bottom: 10px; }
+            .info-card { background: #f9f9f9; padding: 20px; border-radius: 12px; font-size: 13px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+            th { text-align: left; background: #f4f4f4; padding: 12px; font-size: 11px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
+            .totals { float: right; width: 300px; }
+            .total-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+            .grand-total { font-size: 20px; font-weight: bold; border-bottom: none; padding-top: 15px; margin-top: 10px; border-top: 2px solid #000; }
+            .footer { margin-top: 100px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }
+            @media print {
+              body { padding: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo-container">
+              <div class="logo">${brandName}</div>
+              <div class="brand-details">
+                ${brandAddress}<br>
+                ${brandPhone} | ${brandEmail}
+              </div>
+            </div>
+            <div class="invoice-info">
+              <div class="invoice-title">Invoice</div>
+              <div>Order ID: #${orderId}</div>
+              <div>Date: ${date}</div>
+              <div style="margin-top: 5px; font-weight: bold; color: ${orderData.status === 'Delivered' ? '#059669' : '#d97706'}">Status: ${orderData.status || 'Processing'}</div>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div>
+              <div class="section-title">Billed To</div>
+              <div class="info-card">
+                <strong>${orderData.email}</strong><br>
+                Phone: ${orderData.shippingAddress?.phone || 'N/A'}<br>
+                Payment: ${orderData.paymentMethod || 'COD'}
+              </div>
+            </div>
+            <div>
+              <div class="section-title">Shipping Address</div>
+              <div class="info-card">
+                ${orderData.shippingAddress?.street || orderData.shippingAddress?.address || 'N/A'}<br>
+                ${orderData.shippingAddress?.city || 'N/A'}, ${orderData.shippingAddress?.state || 'N/A'}<br>
+                PIN: ${orderData.shippingAddress?.pincode || orderData.shippingAddress?.postalCode || 'N/A'}
+              </div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span>₹${total}</span>
+            </div>
+            <div class="total-row">
+              <span>Shipping</span>
+              <span>₹0.00</span>
+            </div>
+            <div class="total-row grand-total">
+              <span>Grand Total</span>
+              <span>₹${total}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Thank you for shopping with Karigiri Artisanal Collection!</p>
+            <p>This is a computer generated invoice and does not require a physical signature.</p>
+          </div>
+
+          <script>
+            window.onload = () => {
+              window.print();
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   // Auth check is handled by ProtectedRoute in App.jsx
 
@@ -867,63 +1002,168 @@ const Admin = () => {
               </div>
             )}
 
-            {activeTab === 'reels' && (
+            {activeTab === 'billing' && (
               <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between gap-4">
+                  <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-fit">
+                    <div className="px-5 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      Order Billing & Invoices
+                    </div>
+                  </div>
+                  
+                  <div className="relative flex-grow max-w-md">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input 
+                      type="text"
+                      placeholder="Search by ID or Phone..."
+                      value={orderSearch}
+                      onChange={(e) => setOrderSearch(e.target.value)}
+                      className="w-full pl-12 pr-6 py-2.5 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
+                  <table className="w-full text-left">
+                    <thead className="bg-gray-50 border-b border-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Order ID</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Date</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Customer</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Total</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Status</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {filteredOrders.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="px-6 py-20 text-center text-gray-400">
+                            No orders found for billing.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredOrders.map((order, idx) => (
+                          <tr key={order?._id || order?.id || `bill-${idx}`} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-6 py-4">
+                              <span className="font-bold text-gray-900 font-mono">#{String(order?._id || order?.id || '').slice(-8).toUpperCase()}</span>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-500">
+                              {formatDate(order?.createdAt)}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-gray-900">{order?.shippingAddress?.phone || 'N/A'}</span>
+                                <span className="text-[10px] text-gray-400 uppercase tracking-wider">{order?.email?.split('@')[0]}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 font-bold text-gray-900">
+                              ₹{(Number(order?.totalPrice) || 0).toLocaleString()}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                order?.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : 
+                                order?.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
+                                'bg-amber-50 text-amber-600'
+                              }`}>
+                                {order?.status || 'Processing'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center space-x-2">
+                                <button 
+                                  onClick={() => handlePrintBill(order)}
+                                  className="flex items-center space-x-2 bg-black text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all"
+                                >
+                                  <Printer size={14} />
+                                  <span>Print Bill</span>
+                                </button>
+                                <button 
+                                  onClick={() => setSelectedOrder(order)}
+                                  className="p-2 text-gray-400 hover:text-[var(--primary)] hover:bg-[var(--primary)]/5 rounded-lg transition-all"
+                                  title="View Details"
+                                >
+                                  <Eye size={18} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'reels' && (
+              <div className="space-y-8">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold">Karigiri in Motion (Reels)</h3>
+                  <div>
+                    <h3 className="text-2xl font-serif font-bold text-gray-900">Shoppable Reels</h3>
+                    <p className="text-sm text-gray-500">Manage video content and instagram integration</p>
+                  </div>
                   <button 
                     onClick={() => {
                       setEditingReel(null);
-                      setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: reels.length });
+                      setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: 0 });
                       setShowReelModal(true);
                     }}
-                    className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest hover:shadow-lg transition-all"
+                    className="flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
                   >
-                    <Plus size={16} />
+                    <Plus size={20} />
                     <span>Add New Reel</span>
                   </button>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                  {Array.isArray(reels) && reels.length > 0 ? (
-                    reels.map((reel) => (
-                      <motion.div 
-                        key={reel._id}
-                        layout
-                        className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500"
-                      >
-                        <div className="aspect-[9/16] overflow-hidden">
-                          <img src={reel.image} alt={reel.tag} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          
-                          <div className="absolute top-4 right-4 flex flex-col space-y-2 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-                            <button onClick={() => handleEditReel(reel)} className="p-2 bg-white/90 backdrop-blur-md rounded-xl text-gray-900 hover:bg-white shadow-lg transition-all">
-                              <Edit3 size={16} />
-                            </button>
-                            <button onClick={() => handleDeleteReel(reel._id)} className="p-2 bg-rose-500/90 backdrop-blur-md rounded-xl text-white hover:bg-rose-500 shadow-lg transition-all">
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div className="p-4">
-                          <p className="text-[10px] font-black text-[var(--primary)] uppercase tracking-widest mb-1">{reel.tag}</p>
-                          <p className="text-xs font-medium text-gray-500">{reel.handle}</p>
-                          <div className="mt-2 flex items-center justify-between">
-                            <span className="text-[10px] text-gray-400 font-bold">ORDER: {reel.order}</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="col-span-full py-20 text-center">
-                      <Eye className="mx-auto text-gray-200 mb-4" size={48} />
+                  {reels.length === 0 ? (
+                    <div className="col-span-full py-20 text-center bg-white rounded-[32px] border border-gray-100">
+                      <Eye size={48} className="mx-auto text-gray-200 mb-4" />
                       <p className="text-gray-400 font-medium">No reels added yet.</p>
                     </div>
+                  ) : (
+                    reels.sort((a, b) => (a.order || 0) - (b.order || 0)).map((reel) => (
+                      <div key={reel._id} className="group bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all duration-500">
+                        <div className="aspect-[9/16] relative overflow-hidden bg-gray-100">
+                          <img 
+                            src={reel.image} 
+                            alt={reel.tag} 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                            <div className="flex space-x-2">
+                              <button 
+                                onClick={() => handleEditReel(reel)}
+                                className="flex-grow bg-white text-black py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteReel(reel._id)}
+                                className="p-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="absolute top-4 left-4">
+                            <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
+                              #{reel.order || 0}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-5">
+                          <p className="text-[10px] font-black text-[var(--primary)] uppercase tracking-widest mb-1">{reel.tag}</p>
+                          <p className="text-xs font-bold text-gray-400">{reel.handle}</p>
+                        </div>
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
             )}
+
           </motion.div>
         )}
         </motion.div>
@@ -1266,6 +1506,7 @@ const Admin = () => {
             order={selectedOrder} 
             onClose={() => setSelectedOrder(null)} 
             onUpdateStatus={handleUpdateOrderStatus}
+            onPrintBill={handlePrintBill}
           />
         )}
       </AnimatePresence>
@@ -1384,21 +1625,10 @@ const Admin = () => {
 };
 
 // Sub-components for Admin
-const OrderDetailModal = ({ order, onClose, onUpdateStatus }) => {
+const OrderDetailModal = ({ order, onClose, onUpdateStatus, onPrintBill }) => {
   if (!order) return null;
 
-  const formatDate = (dateObj) => {
-    if (!dateObj) return 'N/A';
-    try {
-      if (dateObj.toDate && typeof dateObj.toDate === 'function') {
-        return dateObj.toDate().toLocaleDateString();
-      }
-      const date = new Date(dateObj);
-      return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
-    } catch (e) {
-      return 'N/A';
-    }
-  };
+
 
   const orderId = String(order?._id || order?.id || '').toUpperCase();
 
@@ -1420,7 +1650,16 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus }) => {
         <div className="h-32 bg-black p-8 flex justify-between items-start">
           <div>
             <h3 className="text-white font-serif text-3xl">Order Management</h3>
-            <p className="text-white/70 text-xs font-black uppercase tracking-widest mt-1">Order #{orderId || 'N/A'}</p>
+            <div className="flex items-center space-x-4 mt-1">
+              <p className="text-white/70 text-xs font-black uppercase tracking-widest">Order #{orderId || 'N/A'}</p>
+              <button 
+                onClick={() => onPrintBill(order)}
+                className="flex items-center space-x-2 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white text-[10px] font-black uppercase tracking-widest transition-all"
+              >
+                <Printer size={12} />
+                <span>Print Bill</span>
+              </button>
+            </div>
           </div>
           <button onClick={onClose} className="p-2 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors">
             <XCircle size={24} />
