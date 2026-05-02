@@ -11,6 +11,7 @@ require('dotenv').config({ path: envPath });
 const otpRoutes = require('./routes/otpRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const couponRoutes = require('./routes/couponRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
@@ -34,6 +35,9 @@ app.use((req, res, next) => {
 app.use('/api/otp', otpRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/products', productRoutes);
+
+
 
 // Health Check
 app.get('/', (req, res) => {
@@ -83,7 +87,20 @@ try {
   console.error('Firebase Initialization Error:', error.message);
 }
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('SERVER ERROR:', err);
+  if (err.stack) console.error(err.stack);
+  
+  const status = err.status || 500;
+  res.status(status).json({
+    message: err.message || 'Internal Server Error',
+    error: err
+  });
+});
+
 const PORT = process.env.PORT || 5001;
+
 
 // Start Server with detailed error handling
 const server = app.listen(PORT, '0.0.0.0', () => {

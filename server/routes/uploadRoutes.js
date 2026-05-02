@@ -1,24 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { storage, cloudinary } = require('../config/cloudinary');
 const { protectAdmin } = require('../middleware/authMiddleware');
-
-// Configure multer for disk storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '..', 'uploads', 'products');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
 
 const upload = multer({
   storage: storage,
@@ -27,47 +11,65 @@ const upload = multer({
   }
 });
 
+// @desc    Upload product image to Cloudinary
+// @route   POST /api/upload
+// @access  Private/Admin
 router.post('/', protectAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // Generate local URL
-    // In production, you might want to use a relative path or an environment variable for the base URL
-    const protocol = req.protocol;
-    const host = req.get('host');
-    const imageUrl = `${protocol}://${host}/uploads/products/${req.file.filename}`;
-
-    res.json({ url: imageUrl });
+    // req.file.path contains the Cloudinary URL
+    res.json({ 
+      url: req.file.path,
+      public_id: req.file.filename 
+    });
 
   } catch (error) {
-    console.error('Server Upload Error:', error);
-    res.status(500).json({ message: 'Server error during upload', error: error.message });
+    console.error('Cloudinary Upload Error Details:', error);
+    res.status(500).json({ 
+      message: 'Server error during upload', 
+      error: error.message,
+      details: error
+    });
   }
 });
 
+// @desc    Delete image from Cloudinary
+// @route   DELETE /api/upload
+// @access  Private/Admin
 router.delete('/', protectAdmin, async (req, res) => {
   try {
-    const { imageUrl } = req.body;
-    if (!imageUrl) {
-      return res.status(400).json({ message: 'No image URL provided' });
+    const { imageUrl, public_id } = req.body;
+    
+    if (!imageUrl && !public_id) {
+      return res.status(400).json({ message: 'No image identifier provided' });
     }
 
-    // Extract filename from URL
-    const filename = imageUrl.split('/').pop();
-    const filePath = path.join(__dirname, '..', 'uploads', 'products', filename);
-
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      res.json({ message: 'Image deleted successfully' });
+    let result;
+    if (public_id) {
+      result = await cloudinary.uploader.destroy(public_id);
     } else {
-      res.status(404).json({ message: 'Image not found' });
+      // Try to extract public_id from URL if not provided
+      // Cloudinary URL format: .../upload/v12345/folder/public_id.jpg
+      const parts = imageUrl.split('/');
+      const filename = parts[parts.length - 1].split('.')[0];
+      const folder = parts[parts.length - 2];
+      const derivedPublicId = `${folder}/${filename}`;
+      result = await cloudinary.uploader.destroy(derivedPublicId);
+    }
+
+    if (result.result === 'ok') {
+      res.json({ message: 'Image deleted successfully from Cloudinary' });
+    } else {
+      res.status(400).json({ message: 'Failed to delete image from Cloudinary', result });
     }
   } catch (error) {
-    console.error('Server Delete Error:', error);
+    console.error('Cloudinary Delete Error:', error);
     res.status(500).json({ message: 'Server error during deletion', error: error.message });
   }
 });
 
 module.exports = router;
+

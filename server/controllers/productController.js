@@ -1,25 +1,32 @@
-const Product = require('../models/Product');
+const admin = require('firebase-admin');
 
-// @desc    Fetch all products
+// @desc    Fetch all products from Firestore
 // @route   GET /api/products
 // @access  Public
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({});
+    const db = admin.firestore();
+    const snapshot = await db.collection('products').orderBy('createdAt', 'desc').get();
+    const products = snapshot.docs.map(doc => ({
+      _id: doc.id,
+      id: doc.id,
+      ...doc.data()
+    }));
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Fetch single product
+// @desc    Fetch single product from Firestore
 // @route   GET /api/products/:id
 // @access  Public
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (product) {
-      res.json(product);
+    const db = admin.firestore();
+    const doc = await db.collection('products').doc(req.params.id).get();
+    if (doc.exists) {
+      res.json({ _id: doc.id, id: doc.id, ...doc.data() });
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
@@ -28,15 +35,18 @@ const getProductById = async (req, res) => {
   }
 };
 
-// @desc    Delete a product
+// @desc    Delete a product from Firestore
 // @route   DELETE /api/products/:id
 // @access  Private/Admin
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (product) {
-      await product.deleteOne();
-      res.json({ message: 'Product removed' });
+    const db = admin.firestore();
+    const productRef = db.collection('products').doc(req.params.id);
+    const doc = await productRef.get();
+    
+    if (doc.exists) {
+      await productRef.delete();
+      res.json({ message: 'Product removed from Firestore' });
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
@@ -45,48 +55,74 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-// @desc    Create a product
+// @desc    Create a product in Firestore
 // @route   POST /api/products
 // @access  Private/Admin
 const createProduct = async (req, res) => {
   try {
-    const { name, price, description, image, brand, category, inStock } = req.body;
-    const product = new Product({
+    const db = admin.firestore();
+    const { name, price, description, image, images, brand, category, inStock, subCategory } = req.body;
+    
+    const productData = {
       name,
-      price,
+      price: Number(price),
       description,
       image,
-      brand,
+      images: images || [],
+      brand: brand || 'KARIGIRI',
       category,
-      inStock
-    });
+      subCategory: subCategory || '',
+      inStock: inStock !== undefined ? inStock : true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
 
-    const createdProduct = await product.save();
-    res.status(201).json(createdProduct);
+    const docRef = await db.collection('products').add(productData);
+    const savedProduct = await docRef.get();
+    
+    res.status(201).json({
+      _id: docRef.id,
+      id: docRef.id,
+      ...savedProduct.data()
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// @desc    Update a product
+// @desc    Update a product in Firestore
 // @route   PUT /api/products/:id
 // @access  Private/Admin
 const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, image, brand, category, inStock } = req.body;
-    const product = await Product.findById(req.params.id);
+    const db = admin.firestore();
+    const { name, price, description, image, images, brand, category, inStock, subCategory } = req.body;
+    
+    const productRef = db.collection('products').doc(req.params.id);
+    const doc = await productRef.get();
 
-    if (product) {
-      product.name = name || product.name;
-      product.price = price || product.price;
-      product.description = description || product.description;
-      product.image = image || product.image;
-      product.brand = brand || product.brand;
-      product.category = category || product.category;
-      product.inStock = inStock !== undefined ? inStock : product.inStock;
+    if (doc.exists) {
+      const updateData = {
+        name: name || doc.data().name,
+        price: price !== undefined ? Number(price) : doc.data().price,
+        description: description || doc.data().description,
+        image: image || doc.data().image,
+        images: images || doc.data().images || [],
+        brand: brand || doc.data().brand,
+        category: category || doc.data().category,
+        subCategory: subCategory || doc.data().subCategory || '',
+        inStock: inStock !== undefined ? inStock : doc.data().inStock,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      };
 
-      const updatedProduct = await product.save();
-      res.json(updatedProduct);
+      await productRef.update(updateData);
+      const updatedDoc = await productRef.get();
+      
+      res.json({
+        _id: updatedDoc.id,
+        id: updatedDoc.id,
+        ...updatedDoc.data()
+      });
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
@@ -102,3 +138,4 @@ module.exports = {
   createProduct,
   updateProduct
 };
+

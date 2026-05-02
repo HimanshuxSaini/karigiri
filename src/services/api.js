@@ -59,23 +59,9 @@ const fetchAdminCouponApi = async (path, options = {}) => {
 // Products
 export const fetchProducts = async () => {
   try {
-    const productsCol = collection(db, 'products');
-    // Fetch all products first to ensure we don't miss ones without createdAt
-    // If you have a massive amount of products, you'd use a better query, 
-    // but for this MVP, fetching all and sorting is safer.
-    const productSnapshot = await getDocs(productsCol);
-    const products = productSnapshot.docs.map(doc => ({
-      _id: doc.id,
-      id: doc.id, 
-      ...doc.data()
-    }));
-
-    // Sort in memory to handle missing createdAt gracefully
-    return products.sort((a, b) => {
-      const dateA = a.createdAt?.toDate?.() || new Date(0);
-      const dateB = b.createdAt?.toDate?.() || new Date(0);
-      return dateB - dateA;
-    });
+    const response = await fetch(`${API_URL}/products`);
+    if (!response.ok) throw new Error('Failed to fetch products');
+    return await response.json();
   } catch (error) {
     console.error("Error fetching products:", error);
     return [];
@@ -85,12 +71,9 @@ export const fetchProducts = async () => {
 
 export const fetchProductById = async (id) => {
   try {
-    const productDoc = doc(db, 'products', id);
-    const snapshot = await getDoc(productDoc);
-    if (snapshot.exists()) {
-      return { _id: snapshot.id, id: snapshot.id, ...snapshot.data() };
-    }
-    return null;
+    const response = await fetch(`${API_URL}/products/${id}`);
+    if (!response.ok) throw new Error('Product not found');
+    return await response.json();
   } catch (error) {
     console.error("Error fetching product by ID:", error);
     throw error;
@@ -99,13 +82,22 @@ export const fetchProductById = async (id) => {
 
 export const createProduct = async (productData) => {
   try {
-    const productsCol = collection(db, 'products');
-    const docRef = await addDoc(productsCol, {
-      ...productData,
-      createdAt: serverTimestamp(),
-      price: Number(productData.price)
+    const token = await getAdminToken();
+    const response = await fetch(`${API_URL}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(productData)
     });
-    return { _id: docRef.id, id: docRef.id, ...productData };
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create product');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error("Error creating product:", error);
     throw error;
@@ -114,20 +106,28 @@ export const createProduct = async (productData) => {
 
 export const updateProduct = async (id, productData) => {
   try {
-    const productDoc = doc(db, 'products', id);
-    const cleanData = { ...productData };
-    delete cleanData._id;
-    delete cleanData.id;
-    await updateDoc(productDoc, {
-      ...cleanData,
-      price: Number(cleanData.price)
+    const token = await getAdminToken();
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(productData)
     });
-    return { _id: id, id, ...productData };
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update product');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error("Error updating product:", error);
     throw error;
   }
 };
+
 
 export const deleteProductImage = async (imageUrl) => {
   try {
@@ -160,22 +160,37 @@ export const deleteProductImage = async (imageUrl) => {
 
 export const deleteProduct = async (id) => {
   try {
-    // 1. Fetch product to get image URL
+    const token = await getAdminToken();
+    
+    // 1. Fetch product to get image URL/public_id if needed
+    // (Optional: The backend could handle image deletion too, but we keep it separate for now or integrate it)
     const product = await fetchProductById(id);
     
-    // 2. Delete image if it exists and is local
-    if (product && product.image && product.image.includes('/uploads/')) {
+    // 2. Delete image if it exists
+    if (product && product.image) {
       await deleteProductImage(product.image);
     }
 
-    // 3. Delete Firestore document
-    const productDoc = doc(db, 'products', id);
-    await deleteDoc(productDoc);
+    // 3. Delete from Backend (which deletes from Firestore)
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to delete product');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error("Error deleting product:", error);
     throw error;
   }
 };
+
 
 export const bulkUploadProducts = async (products) => {
   const results = { success: 0, failed: 0 };
