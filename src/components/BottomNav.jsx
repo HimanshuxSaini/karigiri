@@ -1,12 +1,16 @@
 import { Home, ShoppingBag, Heart, User, Search } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useCartStore, useWishlistStore } from '../store/useStore';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore';
+import LoginModal from './LoginModal';
 
 const BottomNav = () => {
   const location = useLocation();
+  const { user } = useAuthStore();
   const { items } = useCartStore();
   const { wishlist } = useWishlistStore();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const navItems = [
     { name: 'Home', icon: Home, path: '/' },
@@ -17,16 +21,13 @@ const BottomNav = () => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md border-t border-gray-100 px-2 pt-3 pb-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-      <div className="flex justify-around items-center max-w-md mx-auto">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.name}
-              to={item.path}
-              className="relative flex flex-col items-center justify-center py-1"
-            >
+    <>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md border-t border-gray-100 px-2 pt-3 pb-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <div className="flex justify-around items-center max-w-md mx-auto">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            const requiresLogin = item.path === '/profile' && !user;
+            const navContent = (
               <motion.div
                 whileTap={{ scale: 0.9 }}
                 className="flex flex-col items-center"
@@ -49,11 +50,39 @@ const BottomNav = () => {
                   {item.name}
                 </span>
               </motion.div>
-            </Link>
-          );
-        })}
+            );
+
+            if (requiresLogin) {
+              return (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="relative flex flex-col items-center justify-center py-1"
+                >
+                  {navContent}
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="relative flex flex-col items-center justify-center py-1"
+              >
+                {navContent}
+              </Link>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+    </>
   );
 };
 

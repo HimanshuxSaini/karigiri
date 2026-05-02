@@ -56,7 +56,7 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       
-      <div className="pt-32 pb-24 max-w-[1440px] mx-auto px-4 md:px-12">
+      <div className="pt-32 pb-44 md:pb-24 max-w-[1440px] mx-auto px-4 md:px-12">
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Image Gallery */}
           <div className="lg:w-3/5">
@@ -212,10 +212,10 @@ const ProductDetails = () => {
       </div>
 
       {/* Mobile Sticky Actions */}
-      <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-4 z-50 flex space-x-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden fixed bottom-24 left-0 right-0 bg-white border-t border-gray-100 p-4 z-50 flex items-center space-x-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
          <button 
            onClick={() => toggleWishlist(product)}
-           className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all ${
+           className={`h-14 w-14 shrink-0 border rounded-xl flex items-center justify-center transition-all ${
              isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400'
            }`}
          >
@@ -223,10 +223,10 @@ const ProductDetails = () => {
          </button>
          <button 
            onClick={() => addItem(product)}
-           className="flex-grow bg-[var(--primary)] text-white rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg"
+           className="min-h-14 flex-grow bg-[var(--primary)] px-4 text-white rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg"
          >
            <ShoppingBag size={20} />
-           <span>Add to Bag</span>
+           <span className="whitespace-nowrap">Add to Bag</span>
          </button>
       </div>
     </div>
