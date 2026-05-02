@@ -78,13 +78,13 @@ try {
         projectId: process.env.VITE_FIREBASE_PROJECT_ID,
         storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET
       });
-      console.log('Firebase Admin:  Initialized');
+      console.log('✅ Firebase Admin initialized successfully');
     } else {
-      console.warn('Firebase Admin:  Not initialized (No credentials found)');
+      console.error('❌ Firebase Admin: No credentials found! Admin routes will fail.');
     }
   }
 } catch (error) {
-  console.error('Firebase Initialization Error:', error.message);
+  console.error('❌ Firebase Admin initialization error:', error);
 }
 
 // Global Error Handler
