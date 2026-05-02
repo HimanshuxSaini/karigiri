@@ -468,13 +468,9 @@ export const deleteReel = async (id) => {
 // Coupons
 export const fetchCoupons = async () => {
   try {
-    const couponsCol = collection(db, 'coupons');
-    const snapshot = await getDocs(couponsCol);
-    return snapshot.docs.map(doc => ({
-      _id: doc.id,
-      id: doc.id,
-      ...doc.data()
-    }));
+    const response = await fetch(`${API_URL}/coupons`);
+    if (!response.ok) throw new Error('Failed to fetch coupons');
+    return await response.json();
   } catch (error) {
     console.error("Error fetching coupons:", error);
     return [];
@@ -563,28 +559,29 @@ export const getCouponEligibility = (coupon, cartTotal, cartCategories = []) => 
   };
 };
 
-export const validateCoupon = async (code, cartTotal, cartCategories = []) => {
+export const validateCoupon = async (code, orderAmount) => {
   try {
-    const couponsCol = collection(db, 'coupons');
-    const q = query(couponsCol, where('code', '==', code.toUpperCase().trim()));
-    const snapshot = await getDocs(q);
+    const response = await fetch(`${API_URL}/coupons/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, orderAmount })
+    });
     
-    if (snapshot.empty) {
-      return { valid: false, message: 'Invalid coupon code' };
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return { valid: false, message: data.message || 'Invalid coupon' };
     }
 
-    const couponDoc = snapshot.docs[0];
-    const coupon = { _id: couponDoc.id, id: couponDoc.id, ...couponDoc.data() };
-    const result = getCouponEligibility(coupon, cartTotal, cartCategories);
-
-    if (!result.valid) {
-      return result;
-    }
-
-    return { ...result, coupon };
+    return { 
+      valid: true, 
+      coupon: data.coupon, 
+      discount: data.coupon.discountAmount,
+      message: 'Coupon applied successfully!'
+    };
   } catch (error) {
     console.error("Error validating coupon:", error);
-    return { valid: false, message: 'Error validating coupon' };
+    return { valid: false, message: 'Error connecting to coupon service' };
   }
 };
 
