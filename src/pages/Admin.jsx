@@ -14,6 +14,7 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  X,
   Truck,
   ExternalLink,
   RotateCcw,
@@ -412,9 +413,10 @@ const Admin = () => {
 
   // Coupon handlers
   const handleDeleteCoupon = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this coupon?')) return;
     try {
       await deleteCoupon(id);
-      setCoupons((currentCoupons) => currentCoupons.filter(c => (c._id || c.id) !== id));
+      setCoupons((prev) => prev.filter(c => (c._id || c.id) !== id));
       showNotification('Coupon deleted');
     } catch (error) {
       showNotification(error.message || 'Failed to delete coupon', 'error');
@@ -424,37 +426,66 @@ const Admin = () => {
   const handleEditCoupon = (coupon) => {
     setEditingCoupon(coupon);
     setCouponFormData({
-      code: coupon.code || '', description: coupon.description || '',
-      discountType: coupon.discountType || 'percentage', discountPercent: coupon.discountPercent || 10,
-      discountAmount: coupon.discountAmount || 0, maxDiscount: coupon.maxDiscount || 500,
-      minOrderAmount: coupon.minOrderAmount || 499, usageLimit: coupon.usageLimit || 100, isActive: coupon.isActive !== false
+      code: coupon.code || '',
+      description: coupon.description || '',
+      discountType: coupon.discountType || 'percentage',
+      discountPercent: Number(coupon.discountPercent) || 10,
+      discountAmount: Number(coupon.discountAmount) || 0,
+      maxDiscount: Number(coupon.maxDiscount) || 500,
+      minOrderAmount: Number(coupon.minOrderAmount) || 499,
+      usageLimit: Number(coupon.usageLimit) || 100,
+      isActive: coupon.isActive !== false
     });
     setShowCouponModal(true);
   };
 
+  const [isSubmittingCoupon, setIsSubmittingCoupon] = useState(false);
+
   const handleSubmitCoupon = async (e) => {
     e.preventDefault();
-    if (!couponFormData.code.trim()) { showNotification('Coupon code is required', 'error'); return; }
-    const data = { ...couponFormData, code: couponFormData.code.toUpperCase().trim() };
+    if (!couponFormData.code.trim()) {
+      showNotification('Coupon code is required', 'error');
+      return;
+    }
+
+    setIsSubmittingCoupon(true);
+    const payload = {
+      ...couponFormData,
+      code: couponFormData.code.toUpperCase().trim(),
+      discountPercent: Number(couponFormData.discountPercent) || 0,
+      discountAmount: Number(couponFormData.discountAmount) || 0,
+      maxDiscount: Number(couponFormData.maxDiscount) || 0,
+      minOrderAmount: Number(couponFormData.minOrderAmount) || 0,
+      usageLimit: Number(couponFormData.usageLimit) || 0
+    };
+
     try {
       if (editingCoupon) {
-        const updated = await updateCoupon(editingCoupon._id || editingCoupon.id, data);
-        setCoupons((currentCoupons) =>
-          currentCoupons.map((coupon) =>
-            (coupon._id || coupon.id) === (editingCoupon._id || editingCoupon.id) ? updated : coupon
-          )
-        );
-        showNotification('Coupon updated');
+        const couponId = editingCoupon._id || editingCoupon.id;
+        const updated = await updateCoupon(couponId, payload);
+        
+        setCoupons(prev => prev.map(c => 
+          (c._id || c.id) === couponId ? { ...c, ...updated } : c
+        ));
+        showNotification('Coupon updated successfully');
       } else {
-        const created = await createCoupon(data);
-        setCoupons((currentCoupons) => [created, ...currentCoupons]);
-        showNotification('Coupon created');
+        const created = await createCoupon(payload);
+        setCoupons(prev => [created, ...prev]);
+        showNotification('Coupon created successfully');
       }
+      
       setShowCouponModal(false);
       setEditingCoupon(null);
-      setCouponFormData({ code: '', description: '', discountType: 'percentage', discountPercent: 10, discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true });
+      setCouponFormData({
+        code: '', description: '', discountType: 'percentage', 
+        discountPercent: 10, discountAmount: 0, maxDiscount: 500, 
+        minOrderAmount: 499, usageLimit: 100, isActive: true
+      });
     } catch (error) {
+      console.error('Coupon Submit Error:', error);
       showNotification(error.message || 'Failed to save coupon', 'error');
+    } finally {
+      setIsSubmittingCoupon(false);
     }
   };
 
@@ -1969,8 +2000,16 @@ const Admin = () => {
                     <label className="text-sm font-bold text-gray-700">Coupon is Active</label>
                   </div>
                   <div className="flex space-x-3 pt-2">
-                    <button type="submit" className="flex-grow bg-purple-600 text-white py-3.5 rounded-2xl font-bold hover:bg-purple-700 transition-all shadow-lg">
-                      {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
+                    <button 
+                      type="submit" 
+                      disabled={isSubmittingCoupon}
+                      className={`flex-grow bg-purple-600 text-white py-3.5 rounded-2xl font-bold hover:bg-purple-700 transition-all shadow-lg flex items-center justify-center ${isSubmittingCoupon ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                      {isSubmittingCoupon ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        editingCoupon ? 'Update Coupon' : 'Create Coupon'
+                      )}
                     </button>
                     <button type="button" onClick={() => setShowCouponModal(false)} className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
                   </div>
