@@ -1,6 +1,6 @@
 import Navbar from '../components/Navbar';
 import { useAuthStore, useOrderStore, useWishlistStore, useUserStore, useCartStore } from '../store/useStore';
-import { fetchOrders } from '../services/api';
+import { fetchOrders, fetchUserProfile, saveUserProfile } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, 
@@ -10,7 +10,6 @@ import {
   Heart, 
   Settings, 
   MapPin, 
-  CreditCard,
   Trash2,
   X,
   CheckCircle2,
@@ -34,11 +33,10 @@ const Profile = () => {
   const { orders } = useOrderStore();
   const { wishlist, toggleWishlist } = useWishlistStore();
   const { addItem } = useCartStore();
-  const { addresses, addAddress, removeAddress, paymentMethods, addPaymentMethod, removePaymentMethod } = useUserStore();
+  const { addresses, addAddress, removeAddress } = useUserStore();
   
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddressModal, setShowAddressModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -47,8 +45,13 @@ const Profile = () => {
 
    // Form States
   const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [altPhone, setAltPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [bio, setBio] = useState('');
+  const [gender, setGender] = useState('Prefer not to say');
   const [addressForm, setAddressForm] = useState({ type: 'Home', street: '', city: '', state: '', pincode: '', phone: '' });
-  const [paymentForm, setPaymentForm] = useState({ type: 'Visa', last4: '', expiry: '', holder: '' });
   
   const [dbOrders, setDbOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
@@ -57,7 +60,22 @@ const Profile = () => {
     if (user?.displayName) {
       setDisplayName(user.displayName);
     }
-  }, [user?.displayName]);
+    
+    const loadProfile = async () => {
+      if (user?.uid) {
+        const profile = await fetchUserProfile(user.uid);
+        if (profile) {
+          setPhoneNumber(profile.phoneNumber || user.phoneNumber || '');
+          setWhatsappNumber(profile.whatsappNumber || '');
+          setAltPhone(profile.altPhone || '');
+          setDob(profile.dob || '');
+          setBio(profile.bio || '');
+          setGender(profile.gender || 'Prefer not to say');
+        }
+      }
+    };
+    loadProfile();
+  }, [user]);
 
   useEffect(() => {
     const getOrders = async () => {
@@ -66,9 +84,11 @@ const Profile = () => {
       try {
         const allOrders = await fetchOrders();
         // Filter orders for current user - check both UID and normalized email
-        const userOrders = allOrders.filter(o => 
-          o.user === user.uid || 
-          (o.email && user.email && o.email.toLowerCase() === user.email.toLowerCase())
+        const userOrders = (allOrders || []).filter(o => 
+          o && (
+            o.user === user.uid || 
+            (o.email && user.email && o.email.toLowerCase() === user.email.toLowerCase())
+          )
         );
         setDbOrders(userOrders);
       } catch (err) {
@@ -92,7 +112,20 @@ const Profile = () => {
     try {
       if (firebaseAuth.currentUser) {
         await updateProfile(firebaseAuth.currentUser, { displayName });
-        setUser({ ...user, displayName });
+        
+        // Save additional details to Firestore
+        await saveUserProfile(user.uid, {
+          displayName,
+          phoneNumber,
+          whatsappNumber,
+          altPhone,
+          dob,
+          bio,
+          gender,
+          email: user.email
+        });
+
+        setUser({ ...user, displayName, phoneNumber });
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       }
@@ -110,13 +143,6 @@ const Profile = () => {
     setAddressForm({ type: 'Home', street: '', city: '', state: '', pincode: '', phone: '' });
   };
 
-  const handleAddPayment = (e) => {
-    e.preventDefault();
-    addPaymentMethod(paymentForm);
-    setShowPaymentModal(false);
-    setPaymentForm({ type: 'Visa', last4: '', expiry: '', holder: '' });
-  };
-
   const handleAddToBag = (product) => {
     addItem(product);
     setAddedToCart(product.id);
@@ -129,16 +155,13 @@ const Profile = () => {
     { id: 'wishlist', label: 'Wishlist', icon: Heart },
     { id: 'settings', label: 'Account', icon: Settings },
   ];
-
   const userStats = useMemo(() => {
-    const totalSpent = dbOrders.reduce((acc, o) => acc + (Number(o.totalPrice || o.total || 0)), 0);
     const pendingOrders = dbOrders.filter(o => o.status === 'Processing').length;
-    
     return [
-      { label: 'Total Spent', value: `₹${totalSpent.toLocaleString('en-IN')}`, icon: <CreditCard className="text-emerald-500" />, bg: "bg-emerald-50" },
-      { label: 'Total Orders', value: dbOrders.length, icon: <ShoppingBag className="text-blue-500" />, bg: "bg-blue-50" },
+      { label: 'Purchases', value: dbOrders.length, icon: <ShoppingBag className="text-blue-500" />, bg: "bg-blue-50" },
       { label: 'Wishlist', value: wishlist.length, icon: <Heart className="text-red-500" />, bg: "bg-red-50" },
       { label: 'Pending', value: pendingOrders, icon: <Clock className="text-amber-500" />, bg: "bg-amber-50" },
+      { label: 'Saved', value: "5", icon: <Star className="text-amber-500" />, bg: "bg-amber-50" },
     ];
   }, [dbOrders, wishlist]);
 
@@ -197,7 +220,7 @@ const Profile = () => {
           </div>
 
           {/* Horizontal Tab Navigation - Styled like the user's request */}
-          <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto no-scrollbar">
+          <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
             <div className="flex items-center min-w-max md:min-w-0">
               {tabs.map((tab) => (
                 <button
@@ -306,7 +329,7 @@ const Profile = () => {
                         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
                         <div className="relative z-10">
                            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl font-serif mb-6 border border-white/30">
-                             {(user.displayName?.[0] || user.email?.[0] || user.phoneNumber?.slice(-1) || 'A').toUpperCase()}
+                             {((user.displayName?.[0] || user.email?.[0] || 'A')).toUpperCase()}
                            </div>
                            <h4 className="text-2xl font-serif mb-1">{user.displayName || 'Artisan Client'}</h4>
                            <p className="text-white/50 text-sm mb-6">{user.email || user.phoneNumber || 'Verified Account'}</p>
@@ -561,6 +584,73 @@ const Profile = () => {
                               className="checkout-input opacity-60 cursor-not-allowed"
                             />
                           </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">WhatsApp Number</label>
+                            <input 
+                              type="tel" 
+                              value={whatsappNumber}
+                              onChange={(e) => setWhatsappNumber(e.target.value)}
+                              className="checkout-input"
+                              placeholder="For Order Updates"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Alternative Contact</label>
+                            <input 
+                              type="tel" 
+                              value={altPhone}
+                              onChange={(e) => setAltPhone(e.target.value)}
+                              className="checkout-input"
+                              placeholder="Emergency Phone"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Phone Number</label>
+                            <input 
+                              type="tel" 
+                              value={phoneNumber}
+                              onChange={(e) => setPhoneNumber(e.target.value)}
+                              className="checkout-input"
+                              placeholder="+91 99999 99999"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Date of Birth</label>
+                            <input 
+                              type="date" 
+                              value={dob}
+                              onChange={(e) => setDob(e.target.value)}
+                              className="checkout-input"
+                            />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Personal Preferences / Bio</label>
+                            <textarea 
+                              value={bio}
+                              onChange={(e) => setBio(e.target.value)}
+                              className="checkout-input min-h-[100px] py-4"
+                              placeholder="Tell us about your style preferences or special requests..."
+                            />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Gender</label>
+                            <div className="flex space-x-4">
+                              {['Male', 'Female', 'Other', 'Prefer not to say'].map((g) => (
+                                <button
+                                  key={g}
+                                  type="button"
+                                  onClick={() => setGender(g)}
+                                  className={`px-6 py-3 rounded-xl text-xs font-bold border transition-all ${
+                                    gender === g 
+                                      ? 'bg-black text-white border-black' 
+                                      : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'
+                                  }`}
+                                >
+                                  {g}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </section>
 
@@ -605,73 +695,29 @@ const Profile = () => {
                         </div>
                       </section>
 
-                      <section>
-                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6">Security & Verification</h4>
-                        <div className="p-6 rounded-[2rem] border border-gray-100 bg-gray-50/50 flex items-center justify-between group">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[var(--primary)] shadow-sm group-hover:scale-110 transition-transform">
-                              <Phone size={20} />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900">Phone Verification</p>
-                              <p className="text-xs text-gray-500 font-medium">
-                                {user.phoneNumber ? `Verified: ${user.phoneNumber}` : 'Protect your account with SMS verification'}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                              user.phoneNumber ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
-                            }`}>
-                              {user.phoneNumber ? 'Active' : 'Not Linked'}
-                            </span>
-                          </div>
-                        </div>
-                      </section>
+
 
                       <section>
-                        <div className="flex items-center justify-between mb-6">
-                          <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)]">Saved Payments</h4>
-                          <button 
-                            onClick={() => setShowPaymentModal(true)}
-                            className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)] flex items-center space-x-1 hover:opacity-70"
-                          >
-                            <Plus size={14} />
-                            <span>Add New</span>
-                          </button>
-                        </div>
-
+                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6">Preferences</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {paymentMethods.length === 0 ? (
-                            <div 
-                              onClick={() => setShowPaymentModal(true)}
-                              className="p-6 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center hover:border-[var(--primary)] hover:bg-[var(--background)] transition-all cursor-pointer group col-span-full"
-                            >
-                              <CreditCard size={24} className="text-[var(--text-muted)] mb-2 group-hover:text-[var(--primary)]" />
-                              <p className="text-sm font-bold text-[var(--text-main)]">Add Payment Method</p>
-                              <p className="text-xs text-[var(--text-muted)]">Securely save cards for faster checkout</p>
-                            </div>
-                          ) : (
-                            paymentMethods.map((pay) => (
-                              <div key={pay.id} className="p-4 rounded-xl border border-white/40 bg-white/30 relative group overflow-hidden">
-                                <div className="absolute top-0 right-0 w-12 h-12 bg-[var(--primary)] opacity-5 rounded-bl-full"></div>
-                                <span className="absolute top-4 right-4 p-1.5 bg-red-50 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10" onClick={(e) => { e.stopPropagation(); removePaymentMethod(pay.id); }}>
-                                  <Trash2 size={14} />
-                                </span>
-                                <div className="flex items-center justify-between mb-4">
-                                  <div className="flex items-center space-x-2">
-                                    <CreditCard size={14} className="text-[var(--primary)]" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">{pay.type}</span>
-                                  </div>
-                                </div>
-                                <p className="text-lg font-bold text-[var(--text-main)] mb-1 tracking-[0.2em]">•••• {pay.last4}</p>
-                                <div className="flex justify-between items-end mt-4">
-                                  <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest">{pay.holder}</p>
-                                  <p className="text-[10px] text-[var(--text-muted)] font-bold">{pay.expiry}</p>
-                                </div>
+                            <div className="p-6 rounded-2xl border border-gray-100 flex flex-col hover:border-[var(--primary)] transition-all cursor-pointer bg-white shadow-sm">
+                              <Bell size={24} className="text-[var(--primary)] mb-4" />
+                              <p className="text-sm font-bold text-[var(--text-main)] mb-1">Order Notifications</p>
+                              <p className="text-xs text-[var(--text-muted)]">Receive updates on your order status and shipping details directly to your email.</p>
+                              <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-50">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Status</span>
+                                <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-black uppercase tracking-widest">Active</span>
                               </div>
-                            ))
-                          )}
+                            </div>
+                            <div className="p-6 rounded-2xl border border-gray-100 flex flex-col hover:border-[var(--primary)] transition-all cursor-pointer bg-white shadow-sm">
+                              <Star size={24} className="text-[var(--primary)] mb-4" />
+                              <p className="text-sm font-bold text-[var(--text-main)] mb-1">Artisan Updates</p>
+                              <p className="text-xs text-[var(--text-muted)]">Get notified when we add new traditional handicrafts or artisan collections.</p>
+                               <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-50">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Status</span>
+                                <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-black uppercase tracking-widest">Subscribed</span>
+                              </div>
+                            </div>
                         </div>
                       </section>
 
@@ -781,7 +827,7 @@ const Profile = () => {
 
                 <div className="space-y-6 mb-10">
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">Order Items</h4>
-                  {selectedOrder.items.map((item, i) => (
+                  {(selectedOrder.orderItems || selectedOrder.items || []).map((item, i) => (
                     <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50/50">
                       <div className="aspect-[3/4] w-16 bg-gray-100 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
                         <img src={item.image} className="max-w-full max-h-full object-contain" alt="" />
@@ -798,7 +844,7 @@ const Profile = () => {
                 <div className="bg-[var(--secondary)]/30 rounded-3xl p-6">
                    <div className="flex justify-between mb-2">
                      <span className="text-sm text-[var(--text-muted)]">Items Subtotal</span>
-                     <span className="text-sm font-bold text-[var(--text-main)]">₹{(selectedOrder.total || 0).toLocaleString('en-IN')}</span>
+                     <span className="text-sm font-bold text-[var(--text-main)]">₹{(selectedOrder.totalPrice || selectedOrder.total || 0).toLocaleString('en-IN')}</span>
                    </div>
                    <div className="flex justify-between mb-4">
                      <span className="text-sm text-[var(--text-muted)]">Shipping</span>
@@ -806,7 +852,7 @@ const Profile = () => {
                    </div>
                    <div className="flex justify-between pt-4 border-t border-white/50">
                      <span className="font-serif text-xl text-[var(--primary)]">Total Paid</span>
-                     <span className="text-xl font-bold text-[var(--primary)]">₹{(selectedOrder.total || 0).toLocaleString('en-IN')}</span>
+                     <span className="text-xl font-bold text-[var(--primary)]">₹{(selectedOrder.totalPrice || selectedOrder.total || 0).toLocaleString('en-IN')}</span>
                    </div>
                 </div>
               </div>
@@ -919,76 +965,7 @@ const Profile = () => {
           </div>
         )}
 
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowPaymentModal(false)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl relative z-10"
-            >
-              <button onClick={() => setShowPaymentModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-black">
-                <X size={24} />
-              </button>
-              <h3 className="text-2xl font-serif text-[var(--primary)] mb-6">Add Payment Method</h3>
-              <form onSubmit={handleAddPayment} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Card Holder Name</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={paymentForm.holder}
-                    onChange={(e) => setPaymentForm({...paymentForm, holder: e.target.value})}
-                    className="checkout-input uppercase" 
-                    placeholder="JOHN DOE"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Card Type</label>
-                  <select 
-                    value={paymentForm.type}
-                    onChange={(e) => setPaymentForm({...paymentForm, type: e.target.value})}
-                    className="checkout-input"
-                  >
-                    <option>Visa</option>
-                    <option>MasterCard</option>
-                    <option>Rupay</option>
-                    <option>Amex</option>
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Last 4 Digits</label>
-                    <input 
-                      type="text" 
-                      required
-                      maxLength="4"
-                      value={paymentForm.last4}
-                      onChange={(e) => setPaymentForm({...paymentForm, last4: e.target.value})}
-                      className="checkout-input" 
-                      placeholder="4242"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Expiry</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={paymentForm.expiry}
-                      onChange={(e) => setPaymentForm({...paymentForm, expiry: e.target.value})}
-                      className="checkout-input" 
-                      placeholder="MM/YY"
-                    />
-                  </div>
-                </div>
-                <button type="submit" className="btn-primary w-full mt-4">Save Payment Method</button>
-              </form>
-            </motion.div>
-          </div>
-        )}
+
       </AnimatePresence>
     </div>
   );

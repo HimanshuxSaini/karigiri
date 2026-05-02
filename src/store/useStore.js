@@ -13,7 +13,8 @@ export const useAuthStore = create(
             uid: userData.uid,
             email: userData.email,
             displayName: userData.displayName,
-            photoURL: userData.photoURL
+            photoURL: userData.photoURL,
+            phoneNumber: userData.phoneNumber
           };
           set({ user: cleanUser, lastUid: userData.uid });
         } else {
@@ -100,12 +101,9 @@ export const useUserStore = create(
   persist(
     (set, get) => ({
       addresses: [],
-      paymentMethods: [],
       addAddress: (address) => set({ addresses: [...get().addresses, { ...address, id: Date.now() }] }),
       removeAddress: (id) => set({ addresses: get().addresses.filter((a) => a.id !== id) }),
-      addPaymentMethod: (payment) => set({ paymentMethods: [...get().paymentMethods, { ...payment, id: Date.now() }] }),
-      removePaymentMethod: (id) => set({ paymentMethods: get().paymentMethods.filter((p) => p.id !== id) }),
-      clearUserData: () => set({ addresses: [], paymentMethods: [] }),
+      clearUserData: () => set({ addresses: [] }),
     }),
     { name: 'user-data-storage' }
   )

@@ -13,7 +13,7 @@ const Checkout = () => {
   const { user } = useAuthStore();
   const { items, getTotal, clearCart } = useCartStore();
   const { addOrder } = useOrderStore();
-  const { addresses, paymentMethods, addAddress, addPaymentMethod } = useUserStore();
+  const { addresses, addAddress } = useUserStore();
   const { showToast } = useToastStore();
 
   const [isOrdered, setIsOrdered] = useState(false);
@@ -144,14 +144,14 @@ const Checkout = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[var(--primary)] opacity-[0.03] blur-[120px] rounded-full"></div>
       </div>
 
-      <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
-        <div className="flex flex-col lg:flex-row gap-12">
+      <div className="pt-20 md:pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
           
           {/* Checkout Steps */}
-          <div className="flex-grow space-y-8">
-            <header className="mb-10">
-              <h1 className="text-4xl font-serif text-[var(--primary)] mb-2">Secure Checkout</h1>
-              <p className="text-[var(--text-muted)]">Complete your purchase to bring home handcrafted excellence.</p>
+          <div className="flex-grow space-y-6 md:space-y-8">
+            <header className="mb-6 md:mb-10">
+              <h1 className="text-2xl md:text-4xl font-serif text-[var(--primary)] mb-2">Secure Checkout</h1>
+              <p className="text-xs md:text-sm text-[var(--text-muted)]">Complete your purchase to bring home handcrafted excellence.</p>
             </header>
 
             {/* Step 1: Shipping */}
@@ -206,22 +206,23 @@ const Checkout = () => {
               </div>
             </section>
 
-            {/* Step 2: Payment */}
-            <section className="glass-card p-8 premium-shadow border-l-4 border-emerald-500">
-              <div className="flex items-center space-x-4 mb-6">
+            {/* Step 2: How it Works */}
+            <section className="glass-card p-6 md:p-8 premium-shadow border-l-4 border-emerald-500">
+              <div className="flex items-center space-x-4 mb-4 md:mb-6">
                 <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
-                  <CreditCard size={20} />
+                  <ShieldCheck size={20} />
                 </div>
-                <h2 className="text-xl font-serif text-[var(--text-main)]">Payment via WhatsApp</h2>
+                <h2 className="text-lg md:text-xl font-serif text-[var(--text-main)]">How it Works</h2>
               </div>
 
-              <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100/50">
-                <p className="text-[var(--text-muted)] leading-relaxed">
-                  To ensure a secure and personalized experience, we process all payments via WhatsApp. Once you place the order, you will be redirected to WhatsApp with your order details. We will share a QR Code for secure UPI payment.
+              <div className="bg-emerald-50/50 p-4 md:p-6 rounded-2xl border border-emerald-100/50">
+                <p className="text-xs md:text-sm text-emerald-800 font-medium leading-relaxed">
+                  Your order will be processed directly with our artisan team via WhatsApp. 
+                  We will confirm your order details, share final product images, and coordinate delivery directly with you for a truly handcrafted experience.
                 </p>
                 <div className="mt-4 flex items-center space-x-3 text-emerald-700">
-                  <ShieldCheck size={20} />
-                  <span className="font-bold text-sm tracking-widest uppercase">100% Secure & Verified</span>
+                  <ShieldCheck size={18} />
+                  <span className="font-bold text-[10px] uppercase tracking-widest">Handcrafted & Authenticated via WhatsApp</span>
                 </div>
               </div>
             </section>
@@ -267,20 +268,22 @@ const Checkout = () => {
                 </div>
               </div>
 
-              <button 
-                onClick={handleOrder}
-                disabled={isProcessing || !selectedAddress}
-                className="btn-primary w-full py-4 mt-8 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed group !bg-[#25D366] hover:!bg-[#128C7E] !border-[#25D366] !text-white"
-              >
-                {isProcessing ? (
-                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <span className="font-bold">Place Order on WhatsApp</span>
-                    <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
+              <div className="hidden md:block">
+                <button 
+                  onClick={handleOrder}
+                  disabled={isProcessing || !selectedAddress}
+                  className="btn-primary w-full py-4 mt-8 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed group !bg-[#25D366] hover:!bg-[#128C7E] !border-[#25D366] !text-white"
+                >
+                  {isProcessing ? (
+                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span className="font-bold">Place Order on WhatsApp</span>
+                      <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </div>
 
               <div className="mt-6 flex items-center justify-center space-x-3 text-[var(--text-muted)]">
                 <ShieldCheck size={16} />
@@ -288,6 +291,30 @@ const Checkout = () => {
               </div>
             </div>
           </aside>
+        </div>
+
+        {/* Mobile Sticky CTA Bar */}
+        <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-4 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+           <div className="flex items-center justify-between mb-4">
+              <div>
+                 <p className="text-[10px] text-gray-400 font-bold uppercase">Total Order</p>
+                 <p className="text-xl font-black text-[var(--primary)]">₹{getTotal().toLocaleString('en-IN')}</p>
+              </div>
+              <button 
+                onClick={handleOrder}
+                disabled={isProcessing || !selectedAddress}
+                className="bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg disabled:opacity-50"
+              >
+                {isProcessing ? (
+                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <span>Order Now</span>
+                    <ChevronRight size={16} />
+                  </>
+                )}
+              </button>
+           </div>
         </div>
       </div>
 

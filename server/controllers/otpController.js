@@ -111,7 +111,21 @@ exports.verifyOtp = async (req, res) => {
     // Delete after use
     await db.collection('otps').doc(email).delete();
 
-    res.status(200).json({ success: true, message: 'OTP verified successfully' });
+    // Create Firebase custom token
+    let userRecord;
+    try {
+      userRecord = await admin.auth().getUserByEmail(email);
+    } catch (e) {
+      if (e.code === 'auth/user-not-found') {
+        userRecord = await admin.auth().createUser({ email });
+      } else {
+        throw e;
+      }
+    }
+
+    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+
+    res.status(200).json({ success: true, message: 'OTP verified successfully', token: customToken });
   } catch (error) {
     console.error('Error verifying OTP:', error);
     res.status(500).json({ message: 'Verification failed', error: error.message });

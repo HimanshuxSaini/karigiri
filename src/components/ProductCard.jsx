@@ -7,6 +7,8 @@ const ProductCard = ({ product }) => {
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
 
+  if (!product) return null;
+
   const productId = product._id || product.id;
   const isWishlisted = isInWishlist(productId);
 

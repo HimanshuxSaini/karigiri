@@ -11,10 +11,7 @@ const faqData = [
     question: "How do you support local artisans?",
     answer: "Karigiri works directly with master weavers and knitters based in Sonipat. We eliminate middlemen to ensure that the majority of the product value goes directly to the artisans, helping preserve ancestral techniques while providing sustainable livelihoods in our local community."
   },
-  {
-    question: "Can I request a custom design?",
-    answer: "Yes! Our 'Customised Orders' service allows you to be the designer. You can share your desired pattern, size, and color preferences via WhatsApp, and our master knitters will create a bespoke piece tailored exclusively for you."
-  },
+
   {
     question: "Is Karigiri a sustainable brand?",
     answer: "Sustainability is at our core. We use 100% biodegradable natural fibers, low-impact traditional dyes, and follow a zero-waste production model. By focusing on quality over quantity, we promote 'Slow Fashion' that lasts for generations."

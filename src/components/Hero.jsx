@@ -54,7 +54,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <div className="pt-20 md:pt-24 bg-white border-b border-gray-100">
+    <div className="pt-14 md:pt-24 bg-white border-b border-gray-100">
       <div className="max-w-[1440px] mx-auto min-h-[60vh] md:min-h-[80vh] flex flex-col md:flex-row items-center overflow-hidden relative">
         
         {/* Left Side: Content */}

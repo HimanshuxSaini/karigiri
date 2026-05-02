@@ -562,26 +562,27 @@ const Admin = () => {
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
       
-      <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
+      <div className="pt-24 md:pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-8"
+          className="space-y-6 md:space-y-8"
         >
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 md:gap-6">
             <div>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900">Admin Control</h1>
-              <p className="text-gray-500 mt-2 font-medium">Managing <span className="text-[var(--primary)] font-bold">Karigiri Artisanal Collection</span></p>
+              <h1 className="text-3xl md:text-5xl font-serif font-bold text-gray-900">Admin Control</h1>
+              <p className="text-sm md:text-base text-gray-500 mt-1 md:mt-2 font-medium">Managing <span className="text-[var(--primary)] font-bold">Karigiri Artisanal Collection</span></p>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3 w-full sm:w-auto">
               <Link
                 to="/"
-                className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-100 transition-all"
+                className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-2xl bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-100 transition-all"
               >
                 <ExternalLink size={14} />
-                <span>View Site</span>
+                <span className="hidden sm:inline">View Site</span>
+                <span className="sm:hidden">Site</span>
               </Link>
             </div>
           </div>
@@ -678,7 +679,7 @@ const Admin = () => {
                           }, {});
                           
                           // Define the exact order and categories to show
-                          const displayCats = ['Women', 'Kids', 'Men', 'Bookey', 'Yarn', 'Laddu Gopal'];
+                          const displayCats = ['Women', 'Kids', 'Men', 'Bookey', 'Laddu Gopal', 'Yarn'];
                           
                           return displayCats.map(cat => {
                               const count = catCounts[cat] || 0;
@@ -792,100 +793,174 @@ const Admin = () => {
                 </div>
 
                 <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-gray-100">
-                      <tr>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Product</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Category</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Price</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Stock</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {filteredProducts.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-20 text-center">
-                            <div className="flex flex-col items-center justify-center space-y-4">
-                              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
-                                <ShoppingBag size={32} />
-                              </div>
-                              <div>
-                                <p className="font-bold text-gray-900">No products found</p>
-                                <p className="text-sm text-gray-500">Add a new product to get started.</p>
-                              </div>
+                  {/* Mobile Cards View */}
+                  <div className="md:hidden divide-y divide-gray-50">
+                    {filteredProducts.length === 0 ? (
+                        <div className="py-20 text-center">
+                          <div className="flex flex-col items-center justify-center space-y-4">
+                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
+                              <ShoppingBag size={32} />
                             </div>
-                          </td>
-                        </tr>
-                      ) : (
+                            <div>
+                              <p className="font-bold text-gray-900">No products found</p>
+                              <p className="text-sm text-gray-500">Add a new product to get started.</p>
+                            </div>
+                          </div>
+                        </div>
+                    ) : (
                         filteredProducts.map((p, idx) => (
-                          <tr key={p?._id || p?.id || `prod-${idx}`} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4">
-                              <div className="flex items-center space-x-4">
-                                <div className="w-14 aspect-[3/4] rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
+                          <div key={p?._id || p?.id || `prod-mob-${idx}`} className="p-4 hover:bg-gray-50/50 transition-colors">
+                            <div className="flex items-center space-x-4 mb-4">
+                                <div className="w-16 aspect-[3/4] rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
                                   <img 
                                     src={p?.image || p?.images?.[0] || '/placeholder.png'} 
                                     alt={p?.name || 'Product'} 
-                                    className="w-full h-full object-contain bg-white transition-transform group-hover:scale-105"
+                                    className="w-full h-full object-contain bg-white"
                                     onError={(e) => { 
                                       e.target.onerror = null;
                                       e.target.src = '/placeholder.png';
                                     }}
                                   />
                                 </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-bold text-gray-900 truncate">{p?.name || 'Unnamed Product'}</p>
+                                  <p className="text-xs text-gray-400 mb-1">{p?.brand || 'KARIGIRI'}</p>
+                                  <p className="font-bold text-[var(--primary)]">₹{(Number(p?.price) || 0).toLocaleString()}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                    p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
+                                    p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
+                                    p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
+                                    p?.category === 'Bookey' ? 'bg-pink-50 text-pink-600' :
+                                    p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
+                                    p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
+                                    'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    {p?.category || 'Uncategorized'}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                    p?.inStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                                  }`}>
+                                    {p?.inStock ? 'In Stock' : 'Out of Stock'}
+                                  </span>
+                                </div>
+                                <div className="flex space-x-1">
+                                  <Link 
+                                    to={`/product/${p?._id || p?.id}`} 
+                                    target="_blank"
+                                    className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors"
+                                  >
+                                    <Eye size={16} />
+                                  </Link>
+                                  <button onClick={() => handleEditProduct(p)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><Edit3 size={16} /></button>
+                                  <button onClick={() => handleDeleteProduct(p?._id || p?.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                                </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left min-w-[800px]">
+                      <thead className="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Product</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Category</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Price</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Stock</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {filteredProducts.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="px-6 py-20 text-center">
+                              <div className="flex flex-col items-center justify-center space-y-4">
+                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
+                                  <ShoppingBag size={32} />
+                                </div>
                                 <div>
-                                  <p className="font-bold text-gray-900">{p?.name || 'Unnamed Product'}</p>
-                                  <p className="text-xs text-gray-400">{p?.brand || 'KARIGIRI'}</p>
+                                  <p className="font-bold text-gray-900">No products found</p>
+                                  <p className="text-sm text-gray-500">Add a new product to get started.</p>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col space-y-1">
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${
-                                  p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
-                                  p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
-                                  p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
-                                  p?.category === 'Yarn' ? 'bg-emerald-50 text-emerald-600' :
-                                  p?.category === 'Laddu Gopal' ? 'bg-amber-50 text-amber-700' :
-                                  p?.category === 'Bookey' ? 'bg-pink-50 text-pink-600' :
-                                  'bg-gray-100 text-gray-600'
-                                }`}>
-                                  {p?.category || 'Uncategorized'}
-                                </span>
-                                {p?.subCategory && (
-                                  <span className="text-[10px] text-gray-400 font-bold ml-1">{p.subCategory}</span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <p className="font-bold text-gray-900">₹{(Number(p?.price) || 0).toLocaleString()}</p>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                p?.inStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-                              }`}>
-                                {p?.inStock ? 'In Stock' : 'Out of Stock'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex space-x-2">
-                                <Link 
-                                  to={`/product/${p?._id || p?.id}`} 
-                                  target="_blank"
-                                  className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors"
-                                  title="View Live"
-                                >
-                                  <Eye size={18} />
-                                </Link>
-                                <button onClick={() => handleEditProduct(p)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><Edit3 size={18} /></button>
-                                <button onClick={() => handleDeleteProduct(p?._id || p?.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
-                              </div>
-                            </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          filteredProducts.map((p, idx) => (
+                            <tr key={p?._id || p?.id || `prod-${idx}`} className="hover:bg-gray-50/50 transition-colors">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-4">
+                                  <div className="w-14 aspect-[3/4] rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
+                                    <img 
+                                      src={p?.image || p?.images?.[0] || '/placeholder.png'} 
+                                      alt={p?.name || 'Product'} 
+                                      className="w-full h-full object-contain bg-white transition-transform group-hover:scale-105"
+                                      onError={(e) => { 
+                                        e.target.onerror = null;
+                                        e.target.src = '/placeholder.png';
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-gray-900">{p?.name || 'Unnamed Product'}</p>
+                                    <p className="text-xs text-gray-400">{p?.brand || 'KARIGIRI'}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-col space-y-1">
+                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${
+                                    p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
+                                    p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
+                                    p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
+                                    p?.category === 'Bookey' ? 'bg-pink-50 text-pink-600' :
+                                    p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
+                                    p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
+                                    'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    {p?.category || 'Uncategorized'}
+                                  </span>
+                                  {p?.subCategory && (
+                                    <span className="text-[10px] text-gray-400 font-bold ml-1">{p.subCategory}</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <p className="font-bold text-gray-900">₹{(Number(p?.price) || 0).toLocaleString()}</p>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                  p?.inStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                                }`}>
+                                  {p?.inStock ? 'In Stock' : 'Out of Stock'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex space-x-2">
+                                  <Link 
+                                    to={`/product/${p?._id || p?.id}`} 
+                                    target="_blank"
+                                    className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors"
+                                    title="View Live"
+                                  >
+                                    <Eye size={18} />
+                                  </Link>
+                                  <button onClick={() => handleEditProduct(p)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><Edit3 size={18} /></button>
+                                  <button onClick={() => handleDeleteProduct(p?._id || p?.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -1024,74 +1099,136 @@ const Admin = () => {
                 </div>
 
                 <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-gray-100">
-                      <tr>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Order ID</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Date</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Customer</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Total</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Status</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {filteredOrders.length === 0 ? (
-                        <tr>
-                          <td colSpan="6" className="px-6 py-20 text-center text-gray-400">
-                            No orders found for billing.
-                          </td>
-                        </tr>
-                      ) : (
+                  {/* Mobile Cards View */}
+                  <div className="md:hidden divide-y divide-gray-50">
+                    {filteredOrders.length === 0 ? (
+                        <div className="py-20 text-center text-gray-400">
+                          No orders found for billing.
+                        </div>
+                    ) : (
                         filteredOrders.map((order, idx) => (
-                          <tr key={order?._id || order?.id || `bill-${idx}`} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4">
-                              <span className="font-bold text-gray-900 font-mono">#{String(order?._id || order?.id || '').slice(-8).toUpperCase()}</span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-500">
-                              {formatDate(order?.createdAt)}
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-bold text-gray-900">{order?.shippingAddress?.phone || 'N/A'}</span>
-                                <span className="text-[10px] text-gray-400 uppercase tracking-wider">{order?.email?.split('@')[0]}</span>
+                          <div key={order?._id || order?.id || `bill-mob-${idx}`} className="p-4 hover:bg-gray-50/50 transition-colors">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Order ID</span>
+                                <p className="font-bold text-gray-900 font-mono">#{String(order?._id || order?.id || '').slice(-8).toUpperCase()}</p>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 font-bold text-gray-900">
-                              ₹{(Number(order?.totalPrice) || 0).toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                 order?.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : 
                                 order?.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
                                 'bg-amber-50 text-amber-600'
                               }`}>
                                 {order?.status || 'Processing'}
                               </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center space-x-2">
-                                <button 
-                                  onClick={() => handlePrintBill(order)}
-                                  className="flex items-center space-x-2 bg-black text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all"
-                                >
-                                  <Printer size={14} />
-                                  <span>Print Bill</span>
-                                </button>
-                                <button 
-                                  onClick={() => setSelectedOrder(order)}
-                                  className="p-2 text-gray-400 hover:text-[var(--primary)] hover:bg-[var(--primary)]/5 rounded-lg transition-all"
-                                  title="View Details"
-                                >
-                                  <Eye size={18} />
-                                </button>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+                              <div>
+                                <p className="text-xs font-bold text-gray-400">Date</p>
+                                <p className="text-gray-600">{formatDate(order?.createdAt)}</p>
                               </div>
+                              <div>
+                                <p className="text-xs font-bold text-gray-400">Total</p>
+                                <p className="font-bold text-gray-900">₹{(Number(order?.totalPrice) || 0).toLocaleString()}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <p className="text-xs font-bold text-gray-400">Customer</p>
+                                <p className="font-bold text-gray-900">{order?.shippingAddress?.phone || 'N/A'}</p>
+                                <p className="text-[10px] text-gray-500 truncate">{order?.email}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex space-x-2 pt-2 border-t border-gray-50">
+                              <button 
+                                onClick={() => handlePrintBill(order)}
+                                className="flex-1 flex items-center justify-center space-x-2 bg-black text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all"
+                              >
+                                <Printer size={14} />
+                                <span>Print Bill</span>
+                              </button>
+                              <button 
+                                onClick={() => setSelectedOrder(order)}
+                                className="px-4 py-2 text-gray-500 border border-gray-100 hover:bg-gray-50 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                              >
+                                Details
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left min-w-[800px]">
+                      <thead className="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Order ID</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Date</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Customer</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Total</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Status</th>
+                          <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {filteredOrders.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-20 text-center text-gray-400">
+                              No orders found for billing.
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          filteredOrders.map((order, idx) => (
+                            <tr key={order?._id || order?.id || `bill-${idx}`} className="hover:bg-gray-50/50 transition-colors">
+                              <td className="px-6 py-4">
+                                <span className="font-bold text-gray-900 font-mono">#{String(order?._id || order?.id || '').slice(-8).toUpperCase()}</span>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-500">
+                                {formatDate(order?.createdAt)}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-col">
+                                  <span className="text-sm font-bold text-gray-900">{order?.shippingAddress?.phone || 'N/A'}</span>
+                                  <span className="text-[10px] text-gray-400 uppercase tracking-wider">{order?.email?.split('@')[0]}</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 font-bold text-gray-900">
+                                ₹{(Number(order?.totalPrice) || 0).toLocaleString()}
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                  order?.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' : 
+                                  order?.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
+                                  'bg-amber-50 text-amber-600'
+                                }`}>
+                                  {order?.status || 'Processing'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <button 
+                                    onClick={() => handlePrintBill(order)}
+                                    className="flex items-center space-x-2 bg-black text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all"
+                                  >
+                                    <Printer size={14} />
+                                    <span>Print Bill</span>
+                                  </button>
+                                  <button 
+                                    onClick={() => setSelectedOrder(order)}
+                                    className="p-2 text-gray-400 hover:text-[var(--primary)] hover:bg-[var(--primary)]/5 rounded-lg transition-all"
+                                    title="View Details"
+                                  >
+                                    <Eye size={18} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -1218,7 +1355,7 @@ const Admin = () => {
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                     >
                       <option value="">Select Category</option>
-                      {['Women', 'Kids', 'Men', 'Bookey', 'Yarn', 'Laddu Gopal'].map(cat => (
+                      {['Women', 'Kids', 'Men', 'Bookey', 'Laddu Gopal', 'Yarn'].map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
@@ -1304,7 +1441,26 @@ const Admin = () => {
                         onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
                       >
                         <option value="">Select Sub-Category</option>
-                        <option value="Sweaters">Sweaters (Winterwear)</option>
+                        <optgroup label="Winterwear">
+                          {['Sweaters', 'Cardigans', 'Vests', 'Hoodies', 'Jackets', 'Coats'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Topwear">
+                          {['Handmade Shirts', 'Pullovers', 'Knitted Tees'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Accessories">
+                          {['Mufflers', 'Caps & Beanies', 'Handmade Gloves', 'Woolen Socks', 'Neck Warmers', 'Belts'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Gifting">
+                          {['Gift Sets', 'Winter Combos'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
                       </select>
                     </div>
                   )}
@@ -1324,15 +1480,13 @@ const Admin = () => {
                           ))}
                         </optgroup>
                         <optgroup label="Occasions">
-                          {['Birthday Special', 'Anniversary', 'Custom Designs'].map(s => (
+                          {['Birthday Special', 'Anniversary'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
                       </select>
                     </div>
                   )}
-
-
 
                   {formData.category === 'Laddu Gopal' && (
                     <div className="space-y-2">
@@ -1343,9 +1497,11 @@ const Admin = () => {
                         onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
                       >
                         <option value="">Select Sub-Category</option>
-                        {['Dresses', 'Accessories', 'Full Sets', 'Special Occasion'].map(s => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
+                        <optgroup label="Collection">
+                          {['Handmade Dresses', 'Mukut & Shringar', 'Bedding & Pillows'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </optgroup>
                       </select>
                     </div>
                   )}
@@ -1359,14 +1515,15 @@ const Admin = () => {
                         onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
                       >
                         <option value="">Select Sub-Category</option>
-                        <optgroup label="Yarn Types">
-                          {['100% Acrylic Yarn', 'Cotton Yarn', 'Woolen Yarn', 'Velvet Yarn'].map(s => (
+                        <optgroup label="Collection">
+                          {['Organic Woolen Yarn', 'Cotton Yarn', 'Milk Cotton Yarn'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>
                       </select>
                     </div>
                   )}
+
                   <div className="md:col-span-2 space-y-6">
                     {/* Main Image Section */}
                     <div className="space-y-2">

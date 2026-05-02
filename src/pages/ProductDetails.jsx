@@ -59,60 +59,37 @@ const ProductDetails = () => {
       <div className="pt-32 pb-24 max-w-[1440px] mx-auto px-4 md:px-12">
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Image Gallery */}
-          <div className="lg:w-3/5 grid grid-cols-2 gap-4">
-             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
-               <motion.img 
-                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                 src={product.image} className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-110" alt="Product 1" 
-                 onError={(e) => {
-                   e.target.src = "/placeholder.png";
-                 }}
-               />
-             </div>
-             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
-               <motion.img 
-                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-                 src={product.image} className="max-w-full max-h-full object-contain brightness-95 transition-all duration-700 hover:scale-110" alt="Product 2" 
-                 onError={(e) => {
-                   e.target.src = "/placeholder.png";
-                 }}
-               />
-             </div>
-             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
-               <motion.img 
-                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                 src={product.image} className="max-w-full max-h-full object-contain contrast-110 transition-all duration-700 hover:scale-110" alt="Product 3" 
-                 onError={(e) => {
-                   e.target.src = "/placeholder.png";
-                 }}
-               />
-             </div>
-             <div className="aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden">
-               <motion.img 
-                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-                 src={product.image} className="max-w-full max-h-full object-contain saturate-50 transition-all duration-700 hover:scale-110" alt="Product 4" 
-                 onError={(e) => {
-                   e.target.src = "/placeholder.png";
-                 }}
-               />
+          <div className="lg:w-3/5">
+             <div className="flex lg:grid lg:grid-cols-2 gap-4 overflow-x-auto snap-x no-scrollbar mask-fade-right -mx-4 px-4 md:mx-0 md:px-0">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="min-w-[85vw] md:min-w-0 aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden snap-center">
+                    <motion.img 
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }}
+                      src={product.image} className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-110" alt={`Product ${i}`} 
+                      onError={(e) => {
+                        e.target.src = "/placeholder.png";
+                      }}
+                    />
+                  </div>
+                ))}
              </div>
           </div>
 
           {/* Product Info */}
           <div className="lg:w-2/5">
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start mt-8 md:mt-0">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 mb-1">{product.brand}</h2>
-                <h3 className="text-xl text-slate-500 mb-4">{product.name}</h3>
+                <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-1">{product.brand}</h2>
+                <h3 className="text-lg md:text-xl text-slate-500 mb-4">{product.name}</h3>
               </div>
               {isAdmin && (
                 <Link 
                   to="/admin" 
                   state={{ editProduct: product }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-100 transition-all shadow-sm border border-red-100"
+                  className="flex items-center space-x-2 px-3 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100"
                 >
-                  <Edit3 size={14} />
-                  <span>Edit Product</span>
+                  <Edit3 size={12} />
+                  <span>Edit</span>
                 </Link>
               )}
             </div>
@@ -157,7 +134,7 @@ const ProductDetails = () => {
                </div>
             </div>
 
-            <div className="flex space-x-4 mb-12">
+            <div className="hidden md:flex space-x-4 mb-12">
                <button 
                  onClick={() => addItem(product)}
                  className="flex-grow bg-[var(--primary)] text-white py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 hover:opacity-90 shadow-xl"
@@ -232,6 +209,25 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Sticky Actions */}
+      <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-4 z-50 flex space-x-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+         <button 
+           onClick={() => toggleWishlist(product)}
+           className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all ${
+             isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400'
+           }`}
+         >
+           <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
+         </button>
+         <button 
+           onClick={() => addItem(product)}
+           className="flex-grow bg-[var(--primary)] text-white rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg"
+         >
+           <ShoppingBag size={20} />
+           <span>Add to Bag</span>
+         </button>
       </div>
     </div>
   );

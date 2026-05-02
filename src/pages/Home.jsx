@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FAQ from '../components/FAQ';
 import { fetchProducts, fetchReels } from '../services/api';
+import { categoryStructure } from '../data/categories';
+
 
 // Asset Imports
 import bootiesImg from '../assets/booties.png';
@@ -15,19 +17,11 @@ import yarnImg from '../assets/yarn.png';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
+
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const categories = ['All', ...Object.keys(categoryStructure)];
 
-  const customImages = [
-    "/item4.png",
-    "/bookey.png",
-    yarnImg,
-    "/shawl.png",
-    "/bag.png",
-    "/bracelet.png",
-    "/blanket.png",
-  ];
 
   useEffect(() => {
     const getFeaturedProducts = async () => {
@@ -39,7 +33,6 @@ const Home = () => {
             ...data.filter(p => p?.category === 'Women').slice(0, 1),
             ...data.filter(p => p?.category === 'Kids').slice(0, 1),
             ...data.filter(p => p?.category === 'Bookey').slice(0, 1),
-
             ...data.filter(p => p?.category === 'Laddu Gopal').slice(0, 1),
             ...data.filter(p => p?.category === 'Yarn').slice(0, 1),
           ];
@@ -69,10 +62,7 @@ const Home = () => {
     getFeaturedProducts();
     getReels();
 
-    const timer = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % customImages.length);
-    }, 4000);
-    return () => clearInterval(timer);
+
   }, []);
 
   return (
@@ -84,6 +74,21 @@ const Home = () => {
     >
       <Navbar />
       <Hero />
+
+      {/* Mobile Category Pills - Quick Navigation */}
+      <div className="md:hidden sticky top-14 z-40 bg-white shadow-sm border-b border-gray-50 overflow-hidden">
+        <div className="flex overflow-x-auto py-4 px-4 space-x-3 no-scrollbar mask-fade-right">
+          {categories.map((cat) => (
+            <Link
+              key={cat}
+              to={cat === 'All' ? '/shop' : `/shop?category=${cat}`}
+              className="flex-shrink-0 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 app-tab-inactive"
+            >
+              {cat}
+            </Link>
+          ))}
+        </div>
+      </div>
 
       {/* Flash Sale Countdown */}
       <section className="bg-[var(--primary)] text-white py-4 md:py-4 text-center overflow-hidden">
@@ -108,19 +113,18 @@ const Home = () => {
             </div>
             <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b border-[var(--primary)] pb-0.5 md:pb-1 text-[var(--primary)]">Shop The Collection</Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+          <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x mask-fade-right">
             {[
               { name: "Handmade Woolen Shawl", price: 899, img: "/shawl.png" },
               { name: "Artisanal Crochet Bag", price: 749, img: "/bag.png" },
               { name: "Kids Winter Beanie", price: 499, img: "/item4.png" },
-              { name: "Organic Wool Yarn", price: 299, img: yarnImg }
             ].map((deal, i) => (
-              <Link key={i} to="/shop" className="group">
-                <div className="aspect-[3/4] bg-[var(--secondary)]/30 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4">
-                  <img src={deal.img} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-xl" alt={deal.name} />
+              <Link key={i} to="/shop" className="group min-w-[170px] md:min-w-0 snap-center bg-white p-3 rounded-3xl border border-gray-50 shadow-sm md:shadow-none md:border-none md:bg-transparent">
+                <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4">
+                  <img src={deal.img} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-lg" alt={deal.name} />
                 </div>
                 <div className="px-1 text-center sm:text-left">
-                  <h4 className="text-[10px] md:text-xs font-bold text-[var(--text-main)] truncate">{deal.name}</h4>
+                  <h4 className="text-[10px] md:text-xs font-bold text-[var(--text-main)] truncate mb-1">{deal.name}</h4>
                   <p className="text-xs md:text-sm font-black text-[var(--primary)]">₹{deal.price.toLocaleString('en-IN')}</p>
                 </div>
               </Link>
@@ -148,7 +152,7 @@ const Home = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16">
+          <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x mask-fade-right">
             {products.map((product, index) => (
               <motion.div
                 key={product._id || product.id}
@@ -156,6 +160,7 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="min-w-[220px] md:min-w-0 snap-center"
               >
                 <ProductCard product={product} />
               </motion.div>
@@ -168,73 +173,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Customised Orders Section */}
-      <section className="py-16 md:py-32 px-4 md:px-12 bg-[var(--secondary)]/30 overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="w-full lg:w-1/2 space-y-6 md:space-y-8 text-center lg:text-left"
-          >
-            <h2 className="text-4xl md:text-6xl font-black text-[var(--primary)] leading-tight">
-              Customised <br className="hidden md:block" /> Orders
-            </h2>
-            <div className="space-y-4 md:space-y-6">
-              <p className="text-base md:text-xl text-[var(--text-main)] leading-relaxed px-2 md:px-0">
-                You said, we did! You design and we will knit it for you. Now get handmade products or accessories as per your choice of colours, size, wool and designs.
-              </p>
-              <div className="p-4 bg-white/50 rounded-2xl border border-white/20 inline-block mx-auto lg:mx-0">
-                <p className="text-sm md:text-lg text-[var(--text-muted)] italic mb-1">
-                  Expert will call you within 2 hours!
-                </p>
-                <a href="https://wa.me/917027311213" target="_blank" rel="noopener noreferrer" className="font-black text-lg md:text-2xl text-[var(--primary)] hover:underline tracking-tight">+91-70273 11213</a>
-              </div>
-            </div>
-            <div className="pt-2">
-              <motion.a
-                href="https://wa.me/917027311213"
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-block w-full md:w-auto bg-[var(--primary)] text-[var(--secondary)] px-10 md:px-12 py-5 md:py-6 rounded-full font-black uppercase tracking-[0.2em] text-[10px] md:text-xs shadow-2xl transition-all text-center"
-              >
-                Start Custom Design
-              </motion.a>
-            </div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="w-full lg:w-1/2 relative flex items-center justify-center"
-          >
-            <div className="relative z-10 w-full max-w-[450px] rounded-3xl overflow-hidden shadow-2xl border-[6px] md:border-[16px] border-white aspect-square bg-white">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={currentImageIndex}
-                  src={customImages[currentImageIndex]}
-                  alt="Customised Handmade Creation"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8 }}
-                  className="w-full h-full object-contain p-4"
-                />
-              </AnimatePresence>
-            </div>
-
-            {/* Decorative Element Hidden on Small Mobile */}
-            <div className="absolute top-0 md:top-4 left-0 right-0 z-30 hidden sm:flex justify-center px-4">
-              <h3 className="text-4xl md:text-7xl font-black text-[var(--primary)] opacity-40 tracking-tighter leading-none select-none uppercase italic whitespace-nowrap">
-                Handmade Love
-              </h3>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
 
 
@@ -245,7 +184,7 @@ const Home = () => {
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Karigiri in Motion</h2>
           </div>
-          <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right scrollbar-hide snap-x">
+          <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right no-scrollbar snap-x">
             {(reels.length > 0 ? reels : [
               { image: "/shawl.png", tag: "Handmade Shawls", handle: "@karigiri_official" },
               { image: "/item4.png", tag: "Kids Collection", handle: "@karigiri_official" },
@@ -276,7 +215,7 @@ const Home = () => {
           <p className="text-sm md:text-lg text-[var(--text-muted)] italic max-w-2xl mx-auto leading-relaxed">Behind every Karigiri creation is a master artisan. We work directly with weavers and knitters to preserve age-old traditions.</p>
         </div>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-6 md:gap-12 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x mask-fade-right">
           {[
             { name: "Nisha Devi", region: "Sonipat, Haryana", craft: "Master Knitter", story: "Nisha leads our local knitting circle in Sonipat, specializing in intricate geometric patterns passed down through generations of her family." },
             { name: "Ajay Kumar Pandey", region: "Sonipat, Haryana", craft: "Premium Weaver", story: "Ajay transforms raw ethically sourced wool into gossamer-thin wraps using traditional looms preserved in our Sonipat studio." }
@@ -287,7 +226,7 @@ const Home = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.2 }}
-              className="bg-[var(--secondary)]/20 p-8 md:p-12 rounded-3xl flex flex-col md:flex-row gap-8 md:gap-10 items-center text-center md:text-left border border-[var(--secondary)]/30"
+              className="bg-[var(--secondary)]/20 p-8 md:p-12 rounded-3xl flex flex-col md:flex-row gap-8 md:gap-10 items-center text-center md:text-left border border-[var(--secondary)]/30 min-w-[280px] md:min-w-0 snap-center"
             >
               <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-white shadow-xl flex-shrink-0 flex items-center justify-center text-3xl font-black text-[var(--primary)] border-4 border-white overflow-hidden">
                 <div className="w-full h-full bg-slate-100 flex items-center justify-center">{artisan.name[0]}</div>

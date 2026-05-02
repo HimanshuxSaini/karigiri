@@ -1,16 +1,38 @@
-# React + Vite
+# Karigiri - Artisanal E-commerce Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Karigiri is a premium e-commerce platform dedicated to handcrafted woolen products and artisanal crafts. It features a modern, mobile-first shopping experience with real-time inventory management and seamless navigation.
 
-Currently, two official plugins are available:
+## Tech Stack
+- **Frontend**: React.js with Vite
+- **Styling**: Tailwind CSS, Framer Motion
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB (via Firebase Firestore)
+- **Authentication**: Firebase Auth
+- **Storage**: Firebase Storage
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Key Features
+- **Modern Shop Interface**: Filter by categories, price range, and subcategories with URL-synced state.
+- **Robust Search**: Search across product names, brands, categories, and subcategories.
+- **Mobile First Design**: Optimized for mobile with horizontal scrolling categories and app-like navigation.
+- **Admin Dashboard**: Comprehensive management for products, orders, and reels.
+- **Custom Orders**: Specialized messaging for handcrafted artisanal requests via WhatsApp.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
+1. Install dependencies: `npm install`
+2. Run development server: `npm run dev`
 
-## Expanding the ESLint configuration
+### Backend
+1. Navigate to server: `cd server`
+2. Install dependencies: `npm install`
+3. Set up environment variables in `.env` (Firebase credentials)
+4. Start server: `node index.js`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Environment Variables
+Required variables in `.env`:
+- `VITE_API_URL`: Backend API endpoint
+- `VITE_FIREBASE_API_KEY`: Firebase API Key
+- `VITE_FIREBASE_AUTH_DOMAIN`: Firebase Auth Domain
+- `VITE_FIREBASE_PROJECT_ID`: Firebase Project ID
+- `FIREBASE_SERVICE_ACCOUNT`: Service account JSON for admin SDK

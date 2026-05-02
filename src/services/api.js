@@ -96,6 +96,7 @@ export const updateProduct = async (id, productData) => {
 
 export const deleteProductImage = async (imageUrl) => {
   try {
+    await auth.authStateReady();
     const user = auth.currentUser;
     if (!user) throw new Error("Unauthorized");
     const token = await user.getIdToken();
@@ -167,14 +168,13 @@ const getAuthHeader = async () => {
 
 export const uploadProductImage = async (file) => {
   try {
-    console.log("Starting backend upload for file:", file.name);
-    
     const formData = new FormData();
     formData.append('image', file);
 
     // Get current user's Firebase token for auth
+    await auth.authStateReady();
     const user = auth.currentUser;
-    if (!user) throw new Error("User not authenticated");
+    if (!user) throw new Error("User not authenticated. Please log in again.");
     const token = await user.getIdToken();
 
     const response = await fetch(`${API_URL}/upload`, {
@@ -191,7 +191,6 @@ export const uploadProductImage = async (file) => {
     }
 
     const data = await response.json();
-    console.log("Backend upload success:", data.url);
     return data.url;
   } catch (error) {
     console.error("Backend Upload Error:", error);
@@ -280,6 +279,48 @@ export const resetPassword = async (email) => {
     await sendPasswordResetEmail(auth, email);
     return { success: true };
   } catch (error) {
+    throw error;
+  }
+};
+
+// User Profile
+export const fetchUserProfile = async (uid) => {
+  try {
+    const userDoc = doc(db, 'users', uid);
+    const snapshot = await getDoc(userDoc);
+    if (snapshot.exists()) {
+      return snapshot.data();
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
+};
+
+export const saveUserProfile = async (uid, profileData) => {
+  try {
+    const userDoc = doc(db, 'users', uid);
+    await updateDoc(userDoc, {
+      ...profileData,
+      updatedAt: serverTimestamp()
+    }).catch(async (err) => {
+      // If document doesn't exist, create it
+      if (err.code === 'not-found') {
+        const { collection, addDoc, setDoc } = await import('firebase/firestore');
+        await setDoc(userDoc, {
+          ...profileData,
+          uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        throw err;
+      }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving user profile:", error);
     throw error;
   }
 };

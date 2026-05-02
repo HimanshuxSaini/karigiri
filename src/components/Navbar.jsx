@@ -6,21 +6,21 @@ import { auth as firebaseAuth } from '../firebase/config';
 import { useState } from 'react';
 import LoginModal from './LoginModal';
 
+import { categoryStructure, navLinks } from '../data/categories';
+
 const Navbar = () => {
   const { user } = useAuthStore();
   const { items } = useCartStore();
   const { wishlist } = useWishlistStore();
   const navigate = useNavigate();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isKidsHovered, setIsKidsHovered] = useState(false);
-  const [isWomenHovered, setIsWomenHovered] = useState(false);
-  const [isMenHovered, setIsMenHovered] = useState(false);
-  const [isYarnHovered, setIsYarnHovered] = useState(false);
-  const [isBookeyHovered, setIsBookeyHovered] = useState(false);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
   const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
+
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
@@ -31,25 +31,16 @@ const Navbar = () => {
     }
   };
 
-  const navLinks = [
-    { name: 'Women', path: '/shop?category=Women' },
-    { name: 'Kids', path: '/shop?category=Kids' },
-    { name: 'Men', path: '/shop?category=Men' },
-    { name: 'Bookey', path: '/shop?category=Bookey' },
-    { name: 'Yarn', path: '/shop?category=Yarn' },
-    { name: 'Laddu Gopal', path: '/shop?category=Laddu Gopal' },
-  ];
-
   return (
     <>
-      <nav className="fixed top-9 left-0 right-0 z-50 bg-white border-b border-gray-100 px-4 md:px-12 py-2 md:py-4 transition-all">
-        <div className="max-w-[1440px] mx-auto flex justify-between items-center h-12 md:h-16">
+      <nav className="fixed top-0 md:top-9 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-2 md:py-4 transition-all">
+        <div className="max-w-[1440px] mx-auto flex justify-between items-center h-14 md:h-16">
           <div className="flex items-center space-x-4 md:space-x-12">
             <button 
-              className="lg:hidden text-gray-800"
+              className="lg:hidden text-gray-800 p-2 hover:bg-gray-100 rounded-full transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
-              <Menu size={24} />
+              <Menu size={22} />
             </button>
             <Link to="/" className="text-xl md:text-2xl font-black tracking-tighter text-black flex items-center">
               KARI<span className="text-[var(--primary)]">GIRI</span>
@@ -60,20 +51,8 @@ const Navbar = () => {
                 <div 
                   key={link.name} 
                   className="relative group"
-                  onMouseEnter={() => {
-                    if (link.name === 'Kids') setIsKidsHovered(true);
-                    if (link.name === 'Women') setIsWomenHovered(true);
-                    if (link.name === 'Men') setIsMenHovered(true);
-                    if (link.name === 'Yarn') setIsYarnHovered(true);
-                    if (link.name === 'Bookey') setIsBookeyHovered(true);
-                  }}
-                  onMouseLeave={() => {
-                    if (link.name === 'Kids') setIsKidsHovered(false);
-                    if (link.name === 'Women') setIsWomenHovered(false);
-                    if (link.name === 'Men') setIsMenHovered(false);
-                    if (link.name === 'Yarn') setIsYarnHovered(false);
-                    if (link.name === 'Bookey') setIsBookeyHovered(false);
-                  }}
+                  onMouseEnter={() => setHoveredCategory(link.name)}
+                  onMouseLeave={() => setHoveredCategory(null)}
                 >
                   <Link 
                     to={link.path} 
@@ -82,159 +61,43 @@ const Navbar = () => {
                     {link.name}
                   </Link>
 
-                  {link.name === 'Kids' && (
-                    <AnimatePresence>
-                      {isKidsHovered && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 w-[800px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-4 gap-8 z-50 mt-1"
-                        >
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Clothing</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Handmade Sweaters', 'Frocks', 'Poncho', 'Vests', 'Rompers / Jumpsuits', 'Winterwear Sets'].map(s => (
-                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
+                  <AnimatePresence>
+                    {hoveredCategory === link.name && categoryStructure[link.name] && categoryStructure[link.name].sections && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className={`absolute top-full left-0 ${categoryStructure[link.name].width} bg-white/95 backdrop-blur-xl shadow-[0_25px_60px_rgba(0,0,0,0.1)] rounded-[3rem] border border-gray-100 p-12 grid ${categoryStructure[link.name].gridCols} gap-10 z-50 mt-0 overflow-hidden`}
+                        onMouseEnter={() => setHoveredCategory(link.name)}
+                        onMouseLeave={() => setHoveredCategory(null)}
+                      >
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent opacity-20"></div>
+                        
+                        {categoryStructure[link.name].sections.map((section, idx) => (
+                          <div key={idx} className="space-y-6">
+                            <h4 className="text-[10px] font-black text-[var(--primary)] uppercase tracking-[0.3em] mb-4 border-b border-gray-50 pb-3 flex items-center">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mr-2"></span>
+                              {section.title}
+                            </h4>
+                            <div className="space-y-4 flex flex-col">
+                              {section.items.map(item => (
+                                <Link 
+                                  key={item} 
+                                  to={`/shop?category=${link.name}&sub=${item}`}
+                                  className="text-gray-500 hover:text-black font-semibold transition-all duration-300 hover:translate-x-2 flex items-center group/item text-[13px]"
+                                  onClick={() => setHoveredCategory(null)}
+                                >
+                                  <span className="w-0 group-hover/item:w-3 h-[1px] bg-[var(--primary)] mr-0 group-hover/item:mr-3 transition-all"></span>
+                                  <span className="lowercase first-letter:uppercase">{item}</span>
+                                </Link>
                               ))}
                             </div>
                           </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Girls (Ages 2-12)</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Crochet Tops', 'Casual Dresses', 'Co-ords', 'Party Dresses', 'Ethnic Wear'].map(s => (
-                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Accessories</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Booties', 'Cap Mitten Set', 'Caps', 'Mufflers', 'Headband', 'Socks', 'Hair Accessories'].map(s => (
-                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Photoprops</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Mermaid', 'Beach Theme', 'Jungle Theme', 'Christmas Theme', 'Sports'].map(s => (
-                                <Link key={s} to={`/shop?category=Kids&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  )}
-
-                  {link.name === 'Women' && (
-                    <AnimatePresence>
-                      {isWomenHovered && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 w-[1000px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-5 gap-8 z-50 mt-1"
-                        >
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Sweaters', 'Ponchos', 'Caps, Hats, Beanies', 'Neckwarmers', 'Mufflers', 'Socks'].map(s => (
-                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Beachwear</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Bralettes', 'Cover Ups', 'Sarongs'].map(s => (
-                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Resortwear</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Crochet Tops', 'Dresses', 'Co-ord Sets', 'Crochet Shorts', 'Crochet Skirts', 'Jeans'].map(s => (
-                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Accessories</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Earrings', 'Bracelets', 'Crochet Scarf', 'Neckwarmers', 'Macrame Belts', 'Socks'].map(s => (
-                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Bags</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Crochet Handbags', 'Tote Bags', 'Sling Bags', 'Clutches'].map(s => (
-                                <Link key={s} to={`/shop?category=Women&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  )}
-
-                  {link.name === 'Men' && (
-                    <AnimatePresence>
-                      {isMenHovered && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 w-[200px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 z-50 mt-1"
-                        >
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Winterwear</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Sweaters'].map(s => (
-                                <Link key={s} to={`/shop?category=Men&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  )}
-
-                  {link.name === 'Bookey' && (
-                    <AnimatePresence>
-                      {isBookeyHovered && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute top-full left-0 w-[400px] bg-white shadow-2xl rounded-b-[2rem] border-t border-gray-100 p-10 grid grid-cols-2 gap-8 z-50 mt-1"
-                        >
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Floral</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Rose Bouquets', 'Tulip Bouquets', 'Sunflower Bouquets', 'Lavender Bunches'].map(s => (
-                                <Link key={s} to={`/shop?category=Bookey&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="text-[11px] font-black text-[var(--primary)] uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-2">Occasions</h4>
-                            <div className="space-y-2 flex flex-col">
-                              {['Birthday Special', 'Anniversary', 'Custom Designs'].map(s => (
-                                <Link key={s} to={`/shop?category=Bookey&sub=${s}`} className="text-gray-500 hover:text-black font-medium transition-colors lowercase first-letter:uppercase">{s}</Link>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  )}
-
-
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
               {isAdmin && (
@@ -261,24 +124,20 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-6 md:space-x-10">
-            <div className="hidden sm:flex flex-col items-center cursor-pointer group" onClick={handleSearch}>
-               <Search size={20} className="md:hidden group-hover:text-[var(--primary)]" />
-            </div>
-
+          <div className="flex items-center space-x-4 md:space-x-10">
             <div 
-              className="flex flex-col items-center cursor-pointer group"
+              className="flex flex-col items-center cursor-pointer group p-2"
               onClick={() => user ? navigate('/profile') : setIsLoginModalOpen(true)}
             >
               <User size={20} className="group-hover:text-[var(--primary)]" />
-              <span className="hidden xs:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">
+              <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">
                 {user ? (user.displayName?.split(' ')[0] || 'Profile') : 'Login'}
               </span>
             </div>
 
-            <Link to="/wishlist" className="flex flex-col items-center relative group">
+            <Link to="/wishlist" className="hidden md:flex flex-col items-center relative group">
               <Heart size={20} className="group-hover:text-[var(--primary)]" />
-              <span className="hidden xs:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">Wishlist</span>
+              <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">Wishlist</span>
               {wishlist.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[var(--primary)] text-white text-[8px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black">
                   {wishlist.length}
@@ -286,9 +145,9 @@ const Navbar = () => {
               )}
             </Link>
 
-            <Link to="/cart" className="flex flex-col items-center relative group">
+            <Link to="/cart" className="hidden md:flex flex-col items-center relative group">
               <ShoppingCart size={20} className="group-hover:text-[var(--primary)]" />
-              <span className="hidden xs:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">Bag</span>
+              <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">Bag</span>
               {items.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[var(--primary)] text-white text-[8px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black">
                   {items.length}
@@ -326,7 +185,7 @@ const Navbar = () => {
                 </button>
               </div>
 
-              <div className="p-6 space-y-2 flex-grow overflow-y-auto bg-gray-50/30">
+              <div className="p-6 space-y-2 flex-grow overflow-y-auto bg-gray-50/30 no-scrollbar">
                 <div className="mb-10 relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                     <Search size={18} />
@@ -345,17 +204,60 @@ const Navbar = () => {
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--primary)] opacity-40 mb-6">Collections</p>
                   <div className="space-y-1">
                     {navLinks.map((link) => (
-                      <Link
-                        key={link.name}
-                        to={link.path}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center justify-between group py-4 border-b border-gray-100 last:border-none"
-                      >
-                        <span className="text-xl font-bold text-gray-800 group-hover:text-[var(--primary)] transition-colors">{link.name}</span>
-                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-300 group-hover:text-[var(--primary)] transition-all">
-                           <ChevronRight size={16} />
+                      <div key={link.name} className="border-b border-gray-100 last:border-none">
+                        <div 
+                          className="flex items-center justify-between group py-4 cursor-pointer"
+                          onClick={() => setExpandedMobileCategory(expandedMobileCategory === link.name ? null : link.name)}
+                        >
+                          <span className="text-xl font-bold text-gray-800 group-hover:text-[var(--primary)] transition-colors">{link.name}</span>
+                          <motion.div 
+                            animate={{ rotate: expandedMobileCategory === link.name ? 90 : 0 }}
+                            className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-300 group-hover:text-[var(--primary)] transition-all"
+                          >
+                             <ChevronRight size={16} />
+                          </motion.div>
                         </div>
-                      </Link>
+                        
+                        <AnimatePresence>
+                          {expandedMobileCategory === link.name && categoryStructure[link.name] && categoryStructure[link.name].sections && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="overflow-hidden bg-gray-50/50 rounded-2xl mb-4"
+                            >
+                              <div className="p-4 space-y-6">
+                                {categoryStructure[link.name].sections.map((section, idx) => (
+                                  <div key={idx} className="space-y-3">
+                                    <h4 className="text-[10px] font-black text-[var(--primary)] uppercase tracking-widest opacity-60">
+                                      {section.title}
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-2">
+                                      {section.items.map(item => (
+                                        <Link 
+                                          key={item} 
+                                          to={`/shop?category=${link.name}&sub=${item}`}
+                                          onClick={() => setIsMobileMenuOpen(false)}
+                                          className="text-sm font-medium text-gray-600 hover:text-black py-1"
+                                        >
+                                          {item}
+                                        </Link>
+                                      ))}
+                                      <Link 
+                                        to={link.path}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="text-sm font-bold text-[var(--primary)] py-1 mt-2 flex items-center"
+                                      >
+                                        View All {link.name} <ChevronRight size={14} className="ml-1" />
+                                      </Link>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     ))}
                     {isAdmin && (
                       <Link

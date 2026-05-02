@@ -14,9 +14,8 @@ const Footer = () => {
               <li><Link to="/shop?category=Kids" className="hover:text-black hover:underline underline-offset-4">Kids</Link></li>
               <li><Link to="/shop?category=Men" className="hover:text-black hover:underline underline-offset-4">Men</Link></li>
               <li><Link to="/shop?category=Bookey" className="hover:text-black hover:underline underline-offset-4">Bookey</Link></li>
-
-              <li><Link to="/shop?category=Yarn" className="hover:text-black hover:underline underline-offset-4">Yarn</Link></li>
               <li><Link to="/shop?category=Laddu Gopal" className="hover:text-black hover:underline underline-offset-4">Laddu Gopal</Link></li>
+              <li><Link to="/shop?category=Yarn" className="hover:text-black hover:underline underline-offset-4">Yarn</Link></li>
             </ul>
           </div>
 
@@ -112,15 +111,6 @@ const Footer = () => {
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-300 text-center md:text-left">
            <div className="space-y-4 flex flex-col items-center md:items-start">
               <p>© 2026 KARIGIRI HANDCRAFTED PVT LTD. ALL RIGHTS RESERVED.</p>
-              <div className="flex flex-wrap gap-4 items-center justify-center md:justify-start">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Secure Payments:</span>
-                <div className="flex space-x-3 opacity-60 grayscale hover:grayscale-0 transition-all text-slate-400">
-                   <span className="text-[12px] font-black italic">UPI</span>
-                   <span className="text-[12px] font-black italic">GPay</span>
-                   <span className="text-[12px] font-black italic">PAYTM</span>
-                   <span className="text-[12px] font-black italic">PHONEPE</span>
-                </div>
-              </div>
            </div>
            <div className="flex flex-col items-center md:items-end space-y-2 mt-8 md:mt-0">
               <span className="text-slate-200">GSTIN: 07AAGCK7777A1Z5</span>

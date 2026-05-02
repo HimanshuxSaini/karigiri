@@ -32,6 +32,8 @@ const ProtectedRoute = ({ children, isAdmin = false }) => {
   return children;
 };
 
+import BottomNav from './components/BottomNav';
+
 function App() {
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -43,7 +45,6 @@ function App() {
       if (user) {
         // If the user has changed, clear all local data from previous sessions
         if (lastUid && lastUid !== user.uid) {
-          console.log('User changed detected. Clearing local data...');
           clearAllStores();
         }
         setUser(user);
@@ -60,7 +61,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="min-h-screen relative">
+      <div className="min-h-screen relative pb-16 md:pb-0">
         <ToastContainer />
         <WhatsAppButton />
         <AnnouncementBar />
@@ -81,6 +82,7 @@ function App() {
           </Routes>
         </AnimatePresence>
         <Footer />
+        <BottomNav />
       </div>
     </Router>
   );

@@ -9,8 +9,6 @@ const envPath = path.resolve(__dirname, '..', '.env');
 require('dotenv').config({ path: envPath });
 
 const otpRoutes = require('./routes/otpRoutes');
-const productRoutes = require('./routes/productRoutes');
-const orderRoutes = require('./routes/orderRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
@@ -33,8 +31,6 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/otp', otpRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Health Check
@@ -47,7 +43,7 @@ try {
   if (!admin.apps.length) {
     const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
     const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    
+
     let credential;
 
     if (serviceAccountVar) {
@@ -76,9 +72,9 @@ try {
         projectId: process.env.VITE_FIREBASE_PROJECT_ID,
         storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET
       });
-      console.log('Firebase Admin: ✅ Initialized');
+      console.log('Firebase Admin:  Initialized');
     } else {
-      console.warn('Firebase Admin: ⚠️ Not initialized (No credentials found)');
+      console.warn('Firebase Admin:  Not initialized (No credentials found)');
     }
   }
 } catch (error) {
@@ -105,10 +101,6 @@ server.on('error', (e) => {
 });
 
 // Prevent process from exiting
-setInterval(() => {
-  // Just a heartbeat
-}, 1000 * 60);
-
 process.on('uncaughtException', (err) => {
   console.error('CAUGHT EXCEPTION (Server remains alive):', err.message);
 });

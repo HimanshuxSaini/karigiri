@@ -15,7 +15,7 @@ const AnnouncementBar = () => {
   ];
 
   return (
-    <div className="bg-slate-900 text-white py-2 overflow-hidden fixed top-0 w-full z-[60] h-9 flex items-center">
+    <div className="hidden md:flex bg-slate-900 text-white py-2 overflow-hidden fixed top-0 w-full z-[60] h-9 items-center">
       <motion.div 
         animate={{ x: [0, -1000] }}
         transition={{ 

@@ -18,7 +18,7 @@
     @apply bg-[var(--background)] text-[var(--text-main)] antialiased font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif font-semibold text-[var(--primary)];
+    @apply font-sans font-bold text-[var(--primary)];
   }
 }
 
@@ -40,6 +40,7 @@
   .text-gradient {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
@@ -83,9 +84,45 @@
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  display: none !important;
 }
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+/* More robust version */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.mask-fade-right {
+  mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+}
+
+.mask-fade-left {
+  mask-image: linear-gradient(to left, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to left, black 80%, transparent 100%);
+}
+
+.app-tab-active {
+  @apply bg-[var(--primary)] text-white shadow-md transform scale-105;
+}
+
+.app-tab-inactive {
+  @apply bg-white text-gray-400 border border-gray-100;
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

@@ -18,7 +18,8 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   fetchSignInMethodsForEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  signInWithCustomToken
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { useAuthStore, useToastStore } from '../store/useStore';
@@ -114,15 +115,21 @@ const LoginModal = ({ isOpen, onClose }) => {
       const verification = await verifyOtp(identifier.trim().toLowerCase(), otp);
       if (!verification.success) throw new Error(verification.message || 'Invalid code');
 
-      const userEmail = identifier.trim().toLowerCase();
-      const mockUser = {
-        uid: 'otp-' + Date.now(),
-        email: userEmail,
-        displayName: userEmail.split('@')[0],
-        photoURL: null
+      // Use the custom token returned by the backend to sign in with Firebase
+      const userCredential = await signInWithCustomToken(auth, verification.token);
+      const user = userCredential.user;
+
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email.split('@')[0],
+        photoURL: user.photoURL,
+        phoneNumber: user.phoneNumber,
+        lastLogin: new Date().toISOString(),
+        provider: 'custom-otp'
       };
       
-      setUser(mockUser);
+      setUser(userData);
       onClose();
       navigate('/profile');
     } catch (err) {
