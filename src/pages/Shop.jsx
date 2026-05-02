@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { ChevronRight, Search, X } from 'lucide-react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchProducts } from '../services/api';
@@ -16,25 +16,64 @@ const ProductSkeleton = () => (
   </div>
 );
 
+const ShopSearchBar = ({ value, onChange, onSubmit, onClear }) => (
+  <form
+    onSubmit={onSubmit}
+    className="mb-6 md:mb-8 flex items-center gap-2 rounded-[1.75rem] border border-gray-100 bg-white p-2 shadow-sm"
+  >
+    <div className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.25rem] bg-gray-50 px-4 py-3">
+      <Search size={18} className="shrink-0 text-gray-400" />
+      <input
+        type="search"
+        value={value}
+        onChange={onChange}
+        placeholder="Search products, categories, or brands"
+        className="w-full min-w-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="shrink-0 rounded-full p-1 text-gray-400 transition-colors hover:bg-white hover:text-black"
+          aria-label="Clear search"
+        >
+          <X size={14} />
+        </button>
+      )}
+    </div>
+    <button
+      type="submit"
+      className="shrink-0 rounded-[1.25rem] bg-black px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-all hover:opacity-90 active:scale-95 md:px-6"
+    >
+      Search
+    </button>
+  </form>
+);
+
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   
   const categories = ['All', ...Object.keys(categoryStructure)];
   
   const urlCategory = searchParams.get('category') || 'All';
   const urlSubCategory = searchParams.get('sub');
-  const searchQuery = searchParams.get('search')?.toLowerCase() || '';
+  const rawSearchQuery = searchParams.get('search') || '';
+  const searchQuery = rawSearchQuery.trim().toLowerCase();
 
   const [categoryFilter, setCategoryFilter] = useState(urlCategory);
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState(rawSearchQuery);
 
   // Sync state with URL
   useEffect(() => {
     setCategoryFilter(urlCategory);
   }, [urlCategory]);
+
+  useEffect(() => {
+    setSearchInput(rawSearchQuery);
+  }, [rawSearchQuery]);
 
   useEffect(() => {
     const getProducts = async () => {
@@ -64,10 +103,34 @@ const Shop = () => {
     setCategoryFilter(cat);
   };
 
+  const applySearchQuery = (value) => {
+    const params = new URLSearchParams(searchParams);
+    const trimmedValue = value.trim();
+
+    if (trimmedValue) {
+      params.set('search', trimmedValue);
+    } else {
+      params.delete('search');
+    }
+
+    setSearchParams(params);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    applySearchQuery(searchInput);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    applySearchQuery('');
+  };
+
   const clearFilters = () => {
     setSearchParams({});
     setCategoryFilter('All');
     setPriceRange([0, 10000]);
+    setSearchInput('');
   };
 
   const filteredProducts = useMemo(() => {
@@ -186,6 +249,13 @@ const Shop = () => {
 
           {/* Main Content */}
           <main className="flex-grow pt-4 md:pt-12 lg:pl-12 pb-24">
+            <ShopSearchBar
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onSubmit={handleSearchSubmit}
+              onClear={handleClearSearch}
+            />
+
             <div className="flex justify-between items-center mb-6 md:mb-10 border-b border-gray-100 pb-4">
               <div className="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest font-bold">
                 <Link to="/" className="hover:text-black transition-colors">Home</Link>
@@ -195,7 +265,7 @@ const Shop = () => {
                   <>
                     <span className="mx-2">/</span>
                     <span className="text-gray-400 font-normal">Search: </span>
-                    <span className="text-black">"{searchQuery}"</span>
+                    <span className="text-black normal-case">"{rawSearchQuery}"</span>
                   </>
                 )}
               </div>
@@ -233,10 +303,12 @@ const Shop = () => {
                       <Search size={32} className="text-gray-200" />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 uppercase tracking-tight">
-                      Crafted Just For You
+                      {searchQuery ? 'No Products Found' : 'Crafted Just For You'}
                     </h2>
                     <p className="text-gray-500 max-w-md mx-auto mb-10 leading-relaxed font-medium">
-                      {categoryFilter === 'Yarn' ? (
+                      {searchQuery ? (
+                        <>We could not find anything for <span className="text-black font-bold">"{rawSearchQuery}"</span>. Try another keyword or clear the search to explore all products.</>
+                      ) : categoryFilter === 'Yarn' ? (
                         <>Our master artisans can handcraft custom <span className="text-black font-bold">Yarn</span> items and deliver them within <span className="text-black font-bold">2-3 days</span>.</>
                       ) : (
                         <>We don't have ready-made items in <span className="text-black font-bold">{urlSubCategory || categoryFilter}</span> right now, but our artisans can handcraft a custom piece for you within <span className="text-black font-bold">2-3 days</span>.</>
@@ -244,19 +316,21 @@ const Shop = () => {
                     </p>
                     
                     <div className="flex flex-col sm:flex-row items-center gap-4">
-                      <a 
-                        href={`https://wa.me/917027311213?text=Hi, I want to order a custom product in ${urlSubCategory || categoryFilter} category. I saw the 2-3 days completion promise on your website.`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-black text-white px-10 py-5 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-2xl shadow-black/10 flex items-center"
-                      >
-                        Contact Master Artisan
-                      </a>
+                      {!searchQuery && (
+                        <a 
+                          href={`https://wa.me/917027311213?text=Hi, I want to order a custom product in ${urlSubCategory || categoryFilter} category. I saw the 2-3 days completion promise on your website.`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-black text-white px-10 py-5 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-2xl shadow-black/10 flex items-center"
+                        >
+                          Contact Master Artisan
+                        </a>
+                      )}
                       <button 
                         onClick={clearFilters}
                         className="text-[10px] uppercase font-bold tracking-widest text-gray-400 hover:text-black transition-colors"
                       >
-                        Browse All Products
+                        {searchQuery ? 'Clear Search' : 'Browse All Products'}
                       </button>
                     </div>
                   </motion.div>
@@ -271,4 +345,3 @@ const Shop = () => {
 };
 
 export default Shop;
-
