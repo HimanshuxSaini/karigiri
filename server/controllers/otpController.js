@@ -5,8 +5,9 @@ const admin = require('firebase-admin');
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
-  secure: true, // Gmail works best with Port 465 and secure: true
-  pool: true,    // Keep pooling for performance
+  secure: true, 
+  pool: true,
+  family: 4, // Force IPv4 to avoid ENETUNREACH errors on some cloud providers
   maxConnections: 5,
   maxMessages: 100,
   auth: {
