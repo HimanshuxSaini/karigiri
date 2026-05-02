@@ -185,7 +185,7 @@ const Profile = () => {
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
       
-      <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
+      <div className="pt-28 pb-28 max-w-7xl mx-auto px-4 sm:px-6 md:pt-32 md:pb-24 relative z-10">
         <motion.div 
           initial="hidden"
           animate="visible"
@@ -199,7 +199,7 @@ const Profile = () => {
               <p className="text-gray-500 mt-2 font-medium">Welcome back, <span className="text-[var(--primary)] font-bold">{user.displayName || user.email?.split('@')[0] || user.phoneNumber || 'Artisan Client'}</span></p>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-3">
               {(user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com') && (
                 <Link
                   to="/admin"
@@ -274,12 +274,12 @@ const Profile = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Recent Activity / Orders Preview */}
                     <div className="lg:col-span-8 space-y-6">
-                      <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm">
-                        <div className="flex justify-between items-center mb-8">
-                          <h3 className="text-2xl font-serif font-bold">Recent Purchases</h3>
+                      <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="flex flex-col gap-3 mb-8 sm:flex-row sm:items-center sm:justify-between">
+                          <h3 className="text-xl sm:text-2xl font-serif font-bold">Recent Purchases</h3>
                           <button 
                             onClick={() => setActiveTab('orders')}
-                            className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center space-x-1"
+                            className="self-start text-xs font-bold text-[var(--primary)] hover:underline flex items-center space-x-1 sm:self-auto"
                           >
                             <span>View All</span>
                             <ChevronRight size={14} />
@@ -294,25 +294,25 @@ const Profile = () => {
                             </div>
                           ) : (
                             dbOrders.slice(0, 3).map((order, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-5 bg-gray-50 rounded-[2rem] border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
-                                <div className="flex items-center space-x-4">
-                                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[var(--primary)] shadow-sm">
+                              <div key={idx} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 bg-gray-50 rounded-[2rem] border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
+                                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                                  <div className="w-12 h-12 shrink-0 bg-white rounded-2xl flex items-center justify-center text-[var(--primary)] shadow-sm">
                                     <Package size={20} />
                                   </div>
-                                  <div>
-                                    <p className="font-bold text-sm">Order #{String(order.id).slice(-6).toUpperCase()}</p>
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-sm break-words">Order #{String(order.id).slice(-6).toUpperCase()}</p>
                                     <p className="text-xs text-gray-400">
                                       {new Date(order.createdAt?.seconds * 1000 || order.date).toLocaleDateString()}
                                     </p>
                                   </div>
                                 </div>
-                                <div className="flex items-center space-x-4">
-                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:flex-none sm:justify-end sm:gap-4">
+                                  <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                                     order.status === 'Processing' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
                                   }`}>
                                     {order.status || 'Delivered'}
                                   </span>
-                                  <p className="font-bold text-gray-900">₹{(order.totalPrice || order.total || 0).toLocaleString()}</p>
+                                  <p className="shrink-0 whitespace-nowrap font-bold text-gray-900">{`\u20B9${(order.totalPrice || order.total || 0).toLocaleString('en-IN')}`}</p>
                                 </div>
                               </div>
                             ))
@@ -356,13 +356,13 @@ const Profile = () => {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
-                  <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
-                    <div className="flex items-center justify-between mb-8">
+                  <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
+                    <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h3 className="text-2xl font-serif text-[var(--primary)]">Order History</h3>
                         <p className="text-sm text-[var(--text-muted)]">Track and manage your recent purchases</p>
                       </div>
-                      <div className="p-3 bg-[var(--secondary)] rounded-2xl text-[var(--primary)]">
+                      <div className="self-start p-3 bg-[var(--secondary)] rounded-2xl text-[var(--primary)] sm:self-auto">
                         <Package size={24} />
                       </div>
                     </div>
@@ -397,11 +397,11 @@ const Profile = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             onClick={() => setSelectedOrder(order)}
-                            className="p-6 rounded-2xl border border-white/40 hover:border-[var(--primary-light)] transition-all bg-white/30 group cursor-pointer"
+                            className="p-5 sm:p-6 rounded-2xl border border-white/40 hover:border-[var(--primary-light)] transition-all bg-white/30 group cursor-pointer"
                           >
                             <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
-                              <div>
-                                <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1">
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1 break-all">
                                   Order #{order.id || Math.random().toString(36).substr(2, 9).toUpperCase()}
                                 </p>
                                 <p className="text-sm font-bold text-[var(--text-main)]">
@@ -410,7 +410,7 @@ const Profile = () => {
                                     : new Date(order.date || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </p>
                               </div>
-                              <div className="flex flex-col items-end">
+                              <div className="flex flex-col items-start sm:items-end">
                                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${
                                   order.status === 'Processing' 
                                     ? 'bg-amber-100 text-amber-700' 
@@ -418,13 +418,13 @@ const Profile = () => {
                                 }`}>
                                   {order.status || 'Delivered'}
                                 </span>
-                                <p className="mt-2 text-lg font-serif text-[var(--primary)]">
-                                  ₹{(order.totalPrice || order.total || 0).toLocaleString('en-IN')}
+                                <p className="mt-2 text-lg font-serif text-[var(--primary)] whitespace-nowrap">
+                                  {`\u20B9${(order.totalPrice || order.total || 0).toLocaleString('en-IN')}`}
                                 </p>
                               </div>
                             </div>
                             
-                            <div className="flex items-center justify-between pt-4 border-t border-white/20">
+                            <div className="flex flex-col gap-4 pt-4 border-t border-white/20 sm:flex-row sm:items-center sm:justify-between">
                               <div className="flex -space-x-3 overflow-hidden">
                                 {((order.orderItems || order.items) || []).slice(0, 4).map((item, i) => (
                                   <div key={i} className="relative aspect-[3/4] w-12 bg-[var(--secondary)] rounded-xl overflow-hidden border-4 border-[var(--card-bg)] shadow-md group-hover:scale-110 transition-transform">
@@ -441,7 +441,7 @@ const Profile = () => {
                                   </div>
                                 )}
                               </div>
-                              <button className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-[var(--primary)] hover:translate-x-2 transition-transform">
+                              <button className="self-start flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-[var(--primary)] hover:translate-x-2 transition-transform sm:self-auto">
                                 <span>Details</span>
                                 <ChevronRight size={14} />
                               </button>
@@ -972,3 +972,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

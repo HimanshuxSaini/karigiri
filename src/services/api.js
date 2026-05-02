@@ -452,3 +452,120 @@ export const deleteReel = async (id) => {
     throw error;
   }
 };
+
+// Coupons
+export const fetchCoupons = async () => {
+  try {
+    const couponsCol = collection(db, 'coupons');
+    const snapshot = await getDocs(couponsCol);
+    return snapshot.docs.map(doc => ({
+      _id: doc.id,
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching coupons:", error);
+    return [];
+  }
+};
+
+export const createCoupon = async (couponData) => {
+  try {
+    const couponsCol = collection(db, 'coupons');
+    const docRef = await addDoc(couponsCol, {
+      ...couponData,
+      createdAt: serverTimestamp(),
+      usedCount: 0
+    });
+    return { _id: docRef.id, id: docRef.id, ...couponData, usedCount: 0 };
+  } catch (error) {
+    console.error("Error creating coupon:", error);
+    throw error;
+  }
+};
+
+export const updateCoupon = async (id, couponData) => {
+  try {
+    const couponDoc = doc(db, 'coupons', id);
+    const cleanData = { ...couponData };
+    delete cleanData._id;
+    delete cleanData.id;
+    await updateDoc(couponDoc, cleanData);
+    return { _id: id, id, ...couponData };
+  } catch (error) {
+    console.error("Error updating coupon:", error);
+    throw error;
+  }
+};
+
+export const deleteCoupon = async (id) => {
+  try {
+    const couponDoc = doc(db, 'coupons', id);
+    await deleteDoc(couponDoc);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting coupon:", error);
+    throw error;
+  }
+};
+
+export const validateCoupon = async (code, cartTotal, cartCategories = []) => {
+  try {
+    const couponsCol = collection(db, 'coupons');
+    const q = query(couponsCol, where('code', '==', code.toUpperCase().trim()));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+      return { valid: false, message: 'Invalid coupon code' };
+    }
+
+    const couponDoc = snapshot.docs[0];
+    const coupon = { _id: couponDoc.id, ...couponDoc.data() };
+
+    if (!coupon.isActive) {
+      return { valid: false, message: 'This coupon is no longer active' };
+    }
+
+    if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+      return { valid: false, message: 'Coupon usage limit reached' };
+    }
+
+    if (coupon.minOrderAmount && cartTotal < coupon.minOrderAmount) {
+      return { valid: false, message: `Minimum order of ₹${coupon.minOrderAmount} required` };
+    }
+
+    // Calculate discount
+    let discount = 0;
+    if (coupon.discountType === 'percentage') {
+      discount = (cartTotal * (coupon.discountPercent || 0)) / 100;
+      if (coupon.maxDiscount && discount > coupon.maxDiscount) {
+        discount = coupon.maxDiscount;
+      }
+    } else {
+      discount = coupon.discountAmount || 0;
+    }
+
+    return { 
+      valid: true, 
+      discount: Math.round(discount), 
+      coupon,
+      message: `Coupon applied! You save ₹${Math.round(discount)}` 
+    };
+  } catch (error) {
+    console.error("Error validating coupon:", error);
+    return { valid: false, message: 'Error validating coupon' };
+  }
+};
+
+export const incrementCouponUsage = async (couponId) => {
+  try {
+    const couponDoc = doc(db, 'coupons', couponId);
+    const snapshot = await getDoc(couponDoc);
+    if (snapshot.exists()) {
+      const current = snapshot.data().usedCount || 0;
+      await updateDoc(couponDoc, { usedCount: current + 1 });
+    }
+  } catch (error) {
+    console.error("Error incrementing coupon usage:", error);
+  }
+};
