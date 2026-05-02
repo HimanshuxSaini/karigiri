@@ -1,13 +1,22 @@
 import Navbar from '../components/Navbar';
 import { useCartStore, useOrderStore, useUserStore, useAuthStore, useToastStore } from '../store/useStore';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, MapPin, CreditCard, ChevronRight, ShoppingBag, Truck, ShieldCheck, Plus, X, Tag, Loader2 } from 'lucide-react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, X, Tag, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { createOrder, validateCoupon, incrementCouponUsage } from '../services/api';
+import { createOrder, validateCoupon, incrementCouponUsage, fetchCoupons, getCouponEligibility } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
-import { db } from '../firebase/config';
-import { collection, addDoc } from 'firebase/firestore';
+
+const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
+
+const getCouponDiscountLabel = (coupon) => {
+  if (coupon.discountType === 'percentage') {
+    const maxDiscountText = coupon.maxDiscount ? ` up to ${formatCurrency(coupon.maxDiscount)}` : '';
+    return `${coupon.discountPercent || 0}% off${maxDiscountText}`;
+  }
+
+  return `${formatCurrency(coupon.discountAmount || 0)} off`;
+};
 
 const Checkout = () => {
   const { user } = useAuthStore();
@@ -32,15 +41,41 @@ const Checkout = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponMessage, setCouponMessage] = useState({ text: '', type: '' });
+  const [coupons, setCoupons] = useState([]);
+  const [couponsLoading, setCouponsLoading] = useState(true);
+  const [couponListError, setCouponListError] = useState('');
 
-  const finalTotal = Math.max(0, getTotal() - couponDiscount);
+  const cartTotal = getTotal();
+  const finalTotal = Math.max(0, cartTotal - couponDiscount);
+  const appliedCouponId = appliedCoupon?._id || appliedCoupon?.id;
+  const couponCards = coupons
+    .map((coupon) => ({
+      ...coupon,
+      couponId: coupon._id || coupon.id,
+      eligibility: getCouponEligibility(coupon, cartTotal)
+    }))
+    .sort((firstCoupon, secondCoupon) => {
+      if (firstCoupon.eligibility.valid !== secondCoupon.eligibility.valid) {
+        return Number(secondCoupon.eligibility.valid) - Number(firstCoupon.eligibility.valid);
+      }
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+      if ((firstCoupon.isActive !== false) !== (secondCoupon.isActive !== false)) {
+        return Number(secondCoupon.isActive !== false) - Number(firstCoupon.isActive !== false);
+      }
+
+      return (firstCoupon.minOrderAmount || 0) - (secondCoupon.minOrderAmount || 0);
+    });
+
+  const handleApplyCoupon = async (codeToApply = couponCode) => {
+    const normalizedCode = codeToApply.trim().toUpperCase();
+    if (!normalizedCode) return;
+
+    setCouponCode(normalizedCode);
     setCouponLoading(true);
     setCouponMessage({ text: '', type: '' });
+
     try {
-      const result = await validateCoupon(couponCode, getTotal());
+      const result = await validateCoupon(normalizedCode, cartTotal);
       if (result.valid) {
         setAppliedCoupon(result.coupon);
         setCouponDiscount(result.discount);
@@ -65,8 +100,66 @@ const Checkout = () => {
   };
 
   useEffect(() => {
-    if (addresses.length > 0 && !selectedAddress) setSelectedAddress(addresses[0].id);
-  }, [addresses]);
+    if (addresses.length > 0 && !selectedAddress) {
+      setSelectedAddress(addresses[0].id);
+    }
+  }, [addresses, selectedAddress]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCoupons = async () => {
+      setCouponsLoading(true);
+      setCouponListError('');
+
+      try {
+        const fetchedCoupons = await fetchCoupons();
+        if (isMounted) {
+          setCoupons(fetchedCoupons);
+        }
+      } catch (error) {
+        console.error('Failed to load coupons:', error);
+        if (isMounted) {
+          setCoupons([]);
+          setCouponListError('We could not load coupon offers right now. You can still enter a code manually.');
+        }
+      } finally {
+        if (isMounted) {
+          setCouponsLoading(false);
+        }
+      }
+    };
+
+    loadCoupons();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!appliedCoupon) return;
+
+    const latestAppliedCoupon =
+      coupons.find((coupon) => (coupon._id || coupon.id) === appliedCouponId) || appliedCoupon;
+    const updatedCouponState = getCouponEligibility(latestAppliedCoupon, cartTotal);
+
+    if (!updatedCouponState.valid) {
+      setAppliedCoupon(null);
+      setCouponDiscount(0);
+      setCouponMessage({
+        text: `${latestAppliedCoupon.code} removed. ${updatedCouponState.message}`,
+        type: 'error'
+      });
+      return;
+    }
+
+    if (updatedCouponState.discount !== couponDiscount || latestAppliedCoupon !== appliedCoupon) {
+      setAppliedCoupon(latestAppliedCoupon);
+      setCouponDiscount(updatedCouponState.discount);
+      setCouponMessage({ text: updatedCouponState.message, type: 'success' });
+    }
+  }, [appliedCoupon, appliedCouponId, cartTotal, couponDiscount, coupons]);
 
   if (!user) return <Navigate to="/" />;
   if (items.length === 0 && !isOrdered) return <Navigate to="/shop" />;
@@ -82,7 +175,6 @@ const Checkout = () => {
     const addr = addresses.find(a => a.id === selectedAddress);
 
     const orderId = `KG-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-    const trackingId = `TRK-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
 
     const orderData = {
       orderItems: items.map(item => ({
@@ -100,7 +192,7 @@ const Checkout = () => {
         phone: addr.phone
       },
       paymentMethod: "WhatsApp / QR Code",
-      subtotal: getTotal(),
+      subtotal: cartTotal,
       couponCode: appliedCoupon?.code || null,
       couponDiscount: couponDiscount,
       totalPrice: finalTotal,
@@ -123,12 +215,12 @@ const Checkout = () => {
       message += `*Order ID:* ${createdOrder._id || orderId}\n\n`;
       message += `*Items Ordered:*\n`;
       items.forEach(item => {
-          message += `- ${item.name} x${item.quantity} (₹${item.price.toLocaleString('en-IN')})\n\n`;
+          message += `- ${item.name} x${item.quantity} (${formatCurrency(item.price)})\n\n`;
       });
       if (couponDiscount > 0) {
-        message += `*Coupon:* ${appliedCoupon?.code} (-₹${couponDiscount.toLocaleString('en-IN')})\n`;
+        message += `*Coupon:* ${appliedCoupon?.code} (-${formatCurrency(couponDiscount)})\n`;
       }
-      message += `*Total Amount:* ₹${finalTotal.toLocaleString('en-IN')}\n\n`;
+      message += `*Total Amount:* ${formatCurrency(finalTotal)}\n\n`;
       message += `*(Note: The admin will verify these details against the securely saved Order ID in the system before providing the QR code.)*`;
       
       window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
@@ -155,20 +247,20 @@ const Checkout = () => {
   if (isOrdered) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
-        <motion.div 
+        <Motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="max-w-md w-full glass-card p-12 text-center premium-shadow"
         >
           <div className="flex justify-center mb-8">
-            <motion.div 
+            <Motion.div 
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', damping: 12 }}
               className="bg-emerald-100 p-6 rounded-3xl"
             >
               <CheckCircle size={64} className="text-emerald-600" />
-            </motion.div>
+            </Motion.div>
           </div>
           <h2 className="text-4xl font-serif text-[var(--primary)] mb-4">Crafting Your Order</h2>
           <p className="text-[var(--text-muted)] mb-10 leading-relaxed">
@@ -178,7 +270,7 @@ const Checkout = () => {
             <Link to="/profile" className="btn-primary block w-full text-center py-4">View My Orders</Link>
             <Link to="/" className="block w-full text-center text-sm font-bold text-[var(--primary)] uppercase tracking-widest hover:opacity-70 transition-opacity">Return to Gallery</Link>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     );
   }
@@ -264,47 +356,151 @@ const Checkout = () => {
                 <h2 className="text-lg md:text-xl font-serif text-[var(--text-main)]">Apply Coupon</h2>
               </div>
 
-              {appliedCoupon ? (
-                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 flex items-center justify-between">
+              {appliedCoupon && (
+                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="bg-emerald-100 p-2 rounded-xl">
                       <Tag size={16} className="text-emerald-600" />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-emerald-800">{appliedCoupon.code}</p>
-                      <p className="text-xs text-emerald-600">You save ₹{couponDiscount.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-emerald-600">You save {formatCurrency(couponDiscount)}</p>
                     </div>
                   </div>
                   <button onClick={handleRemoveCoupon} className="text-red-400 hover:text-red-600 transition-colors p-1">
                     <X size={18} />
                   </button>
                 </div>
-              ) : (
-                <div>
-                  <div className="flex space-x-3">
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
-                      placeholder="Enter coupon code"
-                      className="flex-grow px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 text-sm font-bold uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal placeholder:font-normal"
-                    />
-                    <button
-                      onClick={handleApplyCoupon}
-                      disabled={couponLoading || !couponCode.trim()}
-                      className="px-6 py-3 bg-[var(--primary)] text-white rounded-xl font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center space-x-2"
-                    >
-                      {couponLoading ? <Loader2 size={16} className="animate-spin" /> : <span>Apply</span>}
-                    </button>
-                  </div>
-                  {couponMessage.text && (
-                    <p className={`mt-3 text-xs font-bold ${couponMessage.type === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {couponMessage.text}
-                    </p>
-                  )}
-                </div>
               )}
+
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                    placeholder="Enter coupon code"
+                    className="flex-grow px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 text-sm font-bold uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal placeholder:font-normal"
+                  />
+                  <button
+                    onClick={() => handleApplyCoupon()}
+                    disabled={couponLoading || !couponCode.trim()}
+                    className="px-6 py-3 bg-[var(--primary)] text-white rounded-xl font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center space-x-2 min-w-[120px]"
+                  >
+                    {couponLoading ? <Loader2 size={16} className="animate-spin" /> : <span>Apply</span>}
+                  </button>
+                </div>
+
+                {couponMessage.text && (
+                  <p className={`text-xs font-bold ${couponMessage.type === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
+                    {couponMessage.text}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-6">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-purple-600">Available Coupons</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                    Bag total {formatCurrency(cartTotal)}
+                  </p>
+                </div>
+
+                {couponsLoading ? (
+                  <div className="rounded-2xl border border-purple-100 bg-white/70 px-4 py-5 flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
+                    <Loader2 size={16} className="animate-spin text-purple-500" />
+                    <span>Loading coupon offers...</span>
+                  </div>
+                ) : couponListError ? (
+                  <p className="text-xs font-semibold text-red-500">{couponListError}</p>
+                ) : couponCards.length === 0 ? (
+                  <p className="text-xs font-semibold text-[var(--text-muted)]">No coupons are available right now.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {couponCards.map((coupon) => {
+                      const isApplied = appliedCouponId === coupon.couponId;
+                      const isCouponApplying = couponLoading && couponCode === coupon.code;
+                      const remainingUses = coupon.usageLimit
+                        ? Math.max(coupon.usageLimit - (coupon.usedCount || 0), 0)
+                        : null;
+
+                      return (
+                        <div
+                          key={coupon.couponId}
+                          className={`rounded-2xl border p-4 transition-all ${
+                            isApplied
+                              ? 'border-emerald-300 bg-emerald-50/90'
+                              : coupon.eligibility.valid
+                                ? 'border-emerald-100 bg-white/80'
+                                : 'border-red-100 bg-red-50/60'
+                          }`}
+                        >
+                          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="bg-[var(--primary)] text-white px-3 py-1 rounded-lg text-[11px] font-black tracking-wider">
+                                  {coupon.code}
+                                </span>
+                                <span
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                    isApplied || coupon.eligibility.valid
+                                      ? 'bg-emerald-100 text-emerald-700'
+                                      : 'bg-red-100 text-red-600'
+                                  }`}
+                                >
+                                  {isApplied ? 'Applied' : coupon.eligibility.valid ? 'Eligible' : 'Criteria'}
+                                </span>
+                              </div>
+
+                              <p className="mt-3 text-sm font-bold text-[var(--text-main)]">
+                                {coupon.description || getCouponDiscountLabel(coupon)}
+                              </p>
+
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] shadow-sm">
+                                  {getCouponDiscountLabel(coupon)}
+                                </span>
+                                <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] shadow-sm">
+                                  {coupon.minOrderAmount ? `Min. order ${formatCurrency(coupon.minOrderAmount)}` : 'No minimum order'}
+                                </span>
+                                <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] shadow-sm">
+                                  {remainingUses === null ? 'Unlimited use' : `${remainingUses} uses left`}
+                                </span>
+                              </div>
+
+                              <p className={`mt-3 text-xs font-semibold ${coupon.eligibility.valid ? 'text-emerald-600' : 'text-red-500'}`}>
+                                {coupon.eligibility.valid
+                                  ? coupon.eligibility.discount > 0
+                                    ? `Use this now and save ${formatCurrency(coupon.eligibility.discount)} on your current bag.`
+                                    : 'This coupon is ready to use on your current bag.'
+                                  : coupon.eligibility.message}
+                              </p>
+                            </div>
+
+                            <button
+                              onClick={() => handleApplyCoupon(coupon.code)}
+                              disabled={couponLoading || isApplied || !coupon.eligibility.valid}
+                              className="px-4 py-2.5 rounded-xl bg-[var(--primary)] text-white text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[132px] flex items-center justify-center gap-2"
+                            >
+                              {isApplied ? (
+                                <span>Applied</span>
+                              ) : isCouponApplying ? (
+                                <>
+                                  <Loader2 size={16} className="animate-spin" />
+                                  <span>Applying</span>
+                                </>
+                              ) : (
+                                <span>{coupon.eligibility.valid ? 'Use Coupon' : 'Unavailable'}</span>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </section>
 
             {/* Step 3: How it Works */}
@@ -348,7 +544,7 @@ const Checkout = () => {
                       <p className="text-xs text-[var(--text-muted)]">{item.category}</p>
                     </div>
                     <div className="flex items-center">
-                      <p className="text-sm font-bold text-[var(--text-main)]">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                      <p className="text-sm font-bold text-[var(--text-main)]">{formatCurrency(item.price * item.quantity)}</p>
                     </div>
                   </div>
                 ))}
@@ -357,7 +553,7 @@ const Checkout = () => {
               <div className="space-y-4 pt-6 border-t border-white/20">
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--text-muted)]">Subtotal</span>
-                  <span className="font-bold text-[var(--text-main)]">₹{getTotal().toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-[var(--text-main)]">{formatCurrency(cartTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--text-muted)]">Shipping</span>
@@ -366,12 +562,12 @@ const Checkout = () => {
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-emerald-600 flex items-center space-x-1"><Tag size={12} /><span>Coupon ({appliedCoupon?.code})</span></span>
-                    <span className="font-bold text-emerald-600">-₹{couponDiscount.toLocaleString('en-IN')}</span>
+                    <span className="font-bold text-emerald-600">-{formatCurrency(couponDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-xl pt-4 border-t border-white/20">
                   <span className="font-serif text-[var(--primary)]">Total</span>
-                  <span className="font-bold text-[var(--primary)]">₹{finalTotal.toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-[var(--primary)]">{formatCurrency(finalTotal)}</span>
                 </div>
               </div>
 
@@ -405,7 +601,7 @@ const Checkout = () => {
            <div className="flex items-center justify-between mb-4">
                <div>
                   <p className="text-[10px] text-gray-400 font-bold uppercase">Total Order</p>
-                  <p className="text-xl font-black text-[var(--primary)]">₹{finalTotal.toLocaleString('en-IN')}</p>
+                  <p className="text-xl font-black text-[var(--primary)]">{formatCurrency(finalTotal)}</p>
                </div>
               <button 
                 onClick={handleOrder}
@@ -429,12 +625,12 @@ const Checkout = () => {
       <AnimatePresence>
         {showAddressModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowAddressModal(false)}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl relative z-10"
             >
@@ -473,7 +669,7 @@ const Checkout = () => {
                 </div>
                 <button type="submit" className="btn-primary w-full mt-4">Save & Use This Address</button>
               </form>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
 

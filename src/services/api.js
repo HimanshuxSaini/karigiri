@@ -8,7 +8,6 @@ import {
   doc, 
   query, 
   where, 
-  orderBy, 
   serverTimestamp 
 } from 'firebase/firestore';
 import { 
@@ -20,6 +19,7 @@ import {
 import { db, auth } from '../firebase/config';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
 
 // Products
 export const fetchProducts = async () => {
@@ -146,7 +146,9 @@ export const bulkUploadProducts = async (products) => {
   const results = { success: 0, failed: 0 };
   for (const product of products) {
     try {
-      const { id, _id, ...data } = product; 
+      const data = { ...product };
+      delete data.id;
+      delete data._id;
       await createProduct(data);
       results.success++;
     } catch (err) {
@@ -155,15 +157,6 @@ export const bulkUploadProducts = async (products) => {
     }
   }
   return results;
-};
-
-// Helper to get auth header
-const getAuthHeader = async () => {
-  if (auth.currentUser) {
-    const token = await auth.currentUser.getIdToken();
-    return { 'Authorization': `Bearer ${token}` };
-  }
-  return {};
 };
 
 export const uploadProductImage = async (file) => {
@@ -250,37 +243,21 @@ export const updateOrderStatus = async (id, status) => {
 
 // Auth
 export const loginUser = async (email, password) => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
-  } catch (error) {
-    throw error;
-  }
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  return userCredential.user;
 };
 
 export const registerUser = async (email, password) => {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
-  } catch (error) {
-    throw error;
-  }
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  return userCredential.user;
 };
 
 export const logoutUser = async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    throw error;
-  }
+  await signOut(auth);
 };
 export const resetPassword = async (email) => {
-  try {
-    await sendPasswordResetEmail(auth, email);
-    return { success: true };
-  } catch (error) {
-    throw error;
-  }
+  await sendPasswordResetEmail(auth, email);
+  return { success: true };
 };
 
 // User Profile
@@ -307,7 +284,7 @@ export const saveUserProfile = async (uid, profileData) => {
     }).catch(async (err) => {
       // If document doesn't exist, create it
       if (err.code === 'not-found') {
-        const { collection, addDoc, setDoc } = await import('firebase/firestore');
+        const { setDoc } = await import('firebase/firestore');
         await setDoc(userDoc, {
           ...profileData,
           uid,
@@ -509,6 +486,55 @@ export const deleteCoupon = async (id) => {
   }
 };
 
+const calculateCouponDiscount = (coupon, cartTotal) => {
+  let discount = 0;
+
+  if (coupon.discountType === 'percentage') {
+    discount = (cartTotal * (coupon.discountPercent || 0)) / 100;
+    if (coupon.maxDiscount && discount > coupon.maxDiscount) {
+      discount = coupon.maxDiscount;
+    }
+  } else {
+    discount = coupon.discountAmount || 0;
+  }
+
+  return Math.round(Math.min(discount, cartTotal));
+};
+
+export const getCouponEligibility = (coupon, cartTotal, cartCategories = []) => {
+  void cartCategories;
+
+  if (!coupon) {
+    return { valid: false, discount: 0, message: 'Coupon not found' };
+  }
+
+  if (!coupon.isActive) {
+    return { valid: false, discount: 0, message: 'This coupon is not active right now' };
+  }
+
+  if (coupon.usageLimit && (coupon.usedCount || 0) >= coupon.usageLimit) {
+    return { valid: false, discount: 0, message: 'Coupon usage limit has been reached' };
+  }
+
+  if (coupon.minOrderAmount && cartTotal < coupon.minOrderAmount) {
+    const amountLeft = coupon.minOrderAmount - cartTotal;
+    return {
+      valid: false,
+      discount: 0,
+      message: `Add ${formatCurrency(amountLeft)} more to use this coupon. Minimum order is ${formatCurrency(coupon.minOrderAmount)}.`
+    };
+  }
+
+  const discount = calculateCouponDiscount(coupon, cartTotal);
+
+  return {
+    valid: true,
+    discount,
+    coupon,
+    message: discount > 0 ? `Coupon applied! You save ${formatCurrency(discount)}` : 'Coupon applied'
+  };
+};
+
 export const validateCoupon = async (code, cartTotal, cartCategories = []) => {
   try {
     const couponsCol = collection(db, 'coupons');
@@ -520,37 +546,14 @@ export const validateCoupon = async (code, cartTotal, cartCategories = []) => {
     }
 
     const couponDoc = snapshot.docs[0];
-    const coupon = { _id: couponDoc.id, ...couponDoc.data() };
+    const coupon = { _id: couponDoc.id, id: couponDoc.id, ...couponDoc.data() };
+    const result = getCouponEligibility(coupon, cartTotal, cartCategories);
 
-    if (!coupon.isActive) {
-      return { valid: false, message: 'This coupon is no longer active' };
+    if (!result.valid) {
+      return result;
     }
 
-    if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-      return { valid: false, message: 'Coupon usage limit reached' };
-    }
-
-    if (coupon.minOrderAmount && cartTotal < coupon.minOrderAmount) {
-      return { valid: false, message: `Minimum order of ₹${coupon.minOrderAmount} required` };
-    }
-
-    // Calculate discount
-    let discount = 0;
-    if (coupon.discountType === 'percentage') {
-      discount = (cartTotal * (coupon.discountPercent || 0)) / 100;
-      if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-        discount = coupon.maxDiscount;
-      }
-    } else {
-      discount = coupon.discountAmount || 0;
-    }
-
-    return { 
-      valid: true, 
-      discount: Math.round(discount), 
-      coupon,
-      message: `Coupon applied! You save ₹${Math.round(discount)}` 
-    };
+    return { ...result, coupon };
   } catch (error) {
     console.error("Error validating coupon:", error);
     return { valid: false, message: 'Error validating coupon' };
