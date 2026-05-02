@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import { 
   Plus, 
@@ -57,7 +57,7 @@ const formatDate = (dateObj) => {
     }
     const date = new Date(dateObj);
     return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-IN');
-  } catch (e) {
+  } catch {
     return 'N/A';
   }
 };
@@ -201,8 +201,6 @@ const Admin = () => {
     const reelsArray = Array.isArray(reels) ? reels : [];
 
     const totalRevenue = ordersArray.reduce((acc, o) => acc + (Number(o?.totalPrice) || 0), 0);
-    const pendingOrders = ordersArray.filter(o => o?.status === 'Processing').length;
-
     return [
       { label: 'TOTAL REVENUE', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: <ShoppingBag className="text-emerald-500" />, color: "bg-emerald-50" },
       { label: 'TOTAL ORDERS', value: ordersArray.length, icon: <Package className="text-blue-500" />, color: "bg-blue-50" },
@@ -221,7 +219,7 @@ const Admin = () => {
         await deleteProduct(id);
         setProducts(products.filter(p => p._id !== id));
         showNotification('Product deleted');
-      } catch (err) {
+      } catch {
         showNotification(getFriendlyErrorMessage('FAILED TO DELETE PRODUCT'), 'error');
       }
     }
@@ -329,7 +327,7 @@ const Admin = () => {
       setFormData({
         name: '', price: '', category: 'Women', subCategory: '', description: '', image: '', images: [], brand: 'KARIGIRI', inStock: true
       });
-    } catch (err) {
+    } catch {
       showNotification(getFriendlyErrorMessage('FAILED TO SAVE PRODUCT'), 'error');
     }
   };
@@ -339,7 +337,7 @@ const Admin = () => {
       await updateOrderStatus(id, status);
       setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, status } : o));
       showNotification(`Order status updated to ${status}`);
-    } catch (err) {
+    } catch {
       showNotification('Failed to update status', 'error');
     }
   };
@@ -350,7 +348,7 @@ const Admin = () => {
         await deleteReel(id);
         setReels(reels.filter(r => r._id !== id));
         showNotification('Reel deleted');
-      } catch (err) {
+      } catch {
         showNotification('Failed to delete reel', 'error');
       }
     }
@@ -386,7 +384,7 @@ const Admin = () => {
       setShowReelModal(false);
       setEditingReel(null);
       setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: 0 });
-    } catch (err) {
+    } catch {
       showNotification('Failed to save reel', 'error');
     }
   };
@@ -416,10 +414,10 @@ const Admin = () => {
   const handleDeleteCoupon = async (id) => {
     try {
       await deleteCoupon(id);
-      setCoupons(coupons.filter(c => (c._id || c.id) !== id));
+      setCoupons((currentCoupons) => currentCoupons.filter(c => (c._id || c.id) !== id));
       showNotification('Coupon deleted');
-    } catch {
-      showNotification('Failed to delete coupon', 'error');
+    } catch (error) {
+      showNotification(error.message || 'Failed to delete coupon', 'error');
     }
   };
 
@@ -441,18 +439,22 @@ const Admin = () => {
     try {
       if (editingCoupon) {
         const updated = await updateCoupon(editingCoupon._id || editingCoupon.id, data);
-        setCoupons(coupons.map(c => (c._id || c.id) === (editingCoupon._id || editingCoupon.id) ? updated : c));
+        setCoupons((currentCoupons) =>
+          currentCoupons.map((coupon) =>
+            (coupon._id || coupon.id) === (editingCoupon._id || editingCoupon.id) ? updated : coupon
+          )
+        );
         showNotification('Coupon updated');
       } else {
         const created = await createCoupon(data);
-        setCoupons([...coupons, created]);
+        setCoupons((currentCoupons) => [created, ...currentCoupons]);
         showNotification('Coupon created');
       }
       setShowCouponModal(false);
       setEditingCoupon(null);
       setCouponFormData({ code: '', description: '', discountType: 'percentage', discountPercent: 10, discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true });
-    } catch {
-      showNotification('Failed to save coupon', 'error');
+    } catch (error) {
+      showNotification(error.message || 'Failed to save coupon', 'error');
     }
   };
 
@@ -598,7 +600,7 @@ const Admin = () => {
   const Stats = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
       {statsData.map((stat, i) => (
-        <motion.div 
+        <Motion.div 
           key={i}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -612,7 +614,7 @@ const Admin = () => {
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
             <h3 className="text-3xl font-serif font-bold text-gray-900">{stat.value}</h3>
           </div>
-        </motion.div>
+        </Motion.div>
       ))}
     </div>
   );
@@ -622,7 +624,7 @@ const Admin = () => {
       <Navbar />
       
       <div className="pt-24 md:pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
-        <motion.div 
+        <Motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6 md:space-y-8"
@@ -677,7 +679,7 @@ const Admin = () => {
              <button onClick={loadData} className="text-[var(--primary)] font-bold hover:underline">Try Again</button>
           </div>
         ) : (
-          <motion.div
+          <Motion.div
             key={activeTab}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -1063,7 +1065,7 @@ const Admin = () => {
                         </div>
                       ) : (
                         filteredOrders.map((order, idx) => (
-                          <motion.div 
+                          <Motion.div 
                             key={order?._id || order?.id || `order-${idx}`}
                             layout
                             className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4 hover:shadow-md transition-shadow"
@@ -1129,7 +1131,7 @@ const Admin = () => {
                                 Details
                               </button>
                             </div>
-                          </motion.div>
+                          </Motion.div>
                         ))
                       )}
                 </div>
@@ -1429,24 +1431,24 @@ const Admin = () => {
               </div>
             )}
 
-          </motion.div>
+          </Motion.div>
         )}
-        </motion.div>
+        </Motion.div>
       </div>
 
       {/* Product Modal */}
       <AnimatePresence>
         {showProductModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowProductModal(false)}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            ></motion.div>
+            ></Motion.div>
             
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -1780,7 +1782,7 @@ const Admin = () => {
                   </div>
                 </form>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
       </AnimatePresence>
@@ -1799,14 +1801,14 @@ const Admin = () => {
       <AnimatePresence>
         {showReelModal && (
           <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
               onClick={() => setShowReelModal(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 40 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
@@ -1901,15 +1903,15 @@ const Admin = () => {
                   </div>
                 </form>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
 
         {/* Coupon Modal */}
         {showCouponModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCouponModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-xl relative z-10">
+            <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCouponModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+            <Motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-xl relative z-10">
               <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden">
                 <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 flex items-center justify-between">
                   <h3 className="text-white font-serif text-2xl">{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h3>
@@ -1974,7 +1976,7 @@ const Admin = () => {
                   </div>
                 </form>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
       </AnimatePresence>
@@ -1992,14 +1994,14 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onPrintBill }) => {
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <motion.div 
+      <Motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }}
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-md"
       />
-      <motion.div 
+      <Motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 40 }} 
         animate={{ opacity: 1, scale: 1, y: 0 }} 
         exit={{ opacity: 0, scale: 0.9, y: 40 }}
@@ -2115,7 +2117,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onPrintBill }) => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };

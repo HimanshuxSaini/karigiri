@@ -10,6 +10,7 @@ require('dotenv').config({ path: envPath });
 
 const otpRoutes = require('./routes/otpRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const couponRoutes = require('./routes/couponRoutes');
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/otp', otpRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/coupons', couponRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

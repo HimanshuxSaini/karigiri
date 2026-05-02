@@ -21,6 +21,41 @@ import { db, auth } from '../firebase/config';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
 
+const getAdminToken = async () => {
+  await auth.authStateReady();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Please log in again to continue');
+  }
+
+  return user.getIdToken();
+};
+
+const fetchAdminCouponApi = async (path, options = {}) => {
+  const token = await getAdminToken();
+  const response = await fetch(`${API_URL}/coupons${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...(options.headers || {})
+    }
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(payload?.message || 'Coupon request failed');
+  }
+
+  return payload;
+};
+
 // Products
 export const fetchProducts = async () => {
   try {
@@ -448,13 +483,10 @@ export const fetchCoupons = async () => {
 
 export const createCoupon = async (couponData) => {
   try {
-    const couponsCol = collection(db, 'coupons');
-    const docRef = await addDoc(couponsCol, {
-      ...couponData,
-      createdAt: serverTimestamp(),
-      usedCount: 0
+    return await fetchAdminCouponApi('', {
+      method: 'POST',
+      body: JSON.stringify(couponData)
     });
-    return { _id: docRef.id, id: docRef.id, ...couponData, usedCount: 0 };
   } catch (error) {
     console.error("Error creating coupon:", error);
     throw error;
@@ -463,12 +495,10 @@ export const createCoupon = async (couponData) => {
 
 export const updateCoupon = async (id, couponData) => {
   try {
-    const couponDoc = doc(db, 'coupons', id);
-    const cleanData = { ...couponData };
-    delete cleanData._id;
-    delete cleanData.id;
-    await updateDoc(couponDoc, cleanData);
-    return { _id: id, id, ...couponData };
+    return await fetchAdminCouponApi(`/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(couponData)
+    });
   } catch (error) {
     console.error("Error updating coupon:", error);
     throw error;
@@ -477,9 +507,7 @@ export const updateCoupon = async (id, couponData) => {
 
 export const deleteCoupon = async (id) => {
   try {
-    const couponDoc = doc(db, 'coupons', id);
-    await deleteDoc(couponDoc);
-    return { success: true };
+    return await fetchAdminCouponApi(`/${id}`, { method: 'DELETE' });
   } catch (error) {
     console.error("Error deleting coupon:", error);
     throw error;
