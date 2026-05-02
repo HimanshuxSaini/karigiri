@@ -125,8 +125,78 @@ const deleteCoupon = async (req, res) => {
   }
 };
 
+const getAllCoupons = async (req, res) => {
+  try {
+    const snapshot = await couponsCollection().get();
+    const coupons = snapshot.docs.map((doc) => ({
+      _id: doc.id,
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return res.json(coupons);
+  } catch (error) {
+    console.error('Get all coupons error:', error);
+    return res.status(500).json({ message: 'Failed to fetch coupons', error: error.message });
+  }
+};
+
+const validateCoupon = async (req, res) => {
+  try {
+    const { code, orderAmount } = req.body;
+    const snapshot = await couponsCollection()
+      .where('code', '==', code.toUpperCase().trim())
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ message: 'Invalid coupon code' });
+    }
+
+    const coupon = snapshot.docs[0].data();
+    coupon.id = snapshot.docs[0].id;
+
+    if (!coupon.isActive) {
+      return res.status(400).json({ message: 'This coupon is no longer active' });
+    }
+
+    if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
+      return res.status(400).json({ message: 'Coupon usage limit reached' });
+    }
+
+    if (orderAmount < coupon.minOrderAmount) {
+      return res.status(400).json({ message: `Minimum order amount for this coupon is ₹${coupon.minOrderAmount}` });
+    }
+
+    let discount = 0;
+    if (coupon.discountType === 'percentage') {
+      discount = (orderAmount * coupon.discountPercent) / 100;
+      if (coupon.maxDiscount > 0 && discount > coupon.maxDiscount) {
+        discount = coupon.maxDiscount;
+      }
+    } else {
+      discount = coupon.discountAmount;
+    }
+
+    return res.json({
+      success: true,
+      coupon: {
+        code: coupon.code,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountType === 'percentage' ? coupon.discountPercent : coupon.discountAmount,
+        discountAmount: discount,
+      },
+    });
+  } catch (error) {
+    console.error('Validate coupon error:', error);
+    return res.status(500).json({ message: 'Failed to validate coupon', error: error.message });
+  }
+};
+
+
 module.exports = {
   createCoupon,
   updateCoupon,
   deleteCoupon,
+  getAllCoupons,
+  validateCoupon,
 };
