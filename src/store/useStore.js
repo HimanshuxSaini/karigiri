@@ -74,15 +74,16 @@ export const useWishlistStore = create(
     (set, get) => ({
       wishlist: [],
       toggleWishlist: (product) => {
-        const isExist = get().wishlist.find((item) => item.id === product.id);
+        const productId = product.id || product._id;
+        const isExist = get().wishlist.find((item) => (item.id || item._id) === productId);
         if (isExist) {
-          set({ wishlist: get().wishlist.filter((item) => item.id !== product.id) });
+          set({ wishlist: get().wishlist.filter((item) => (item.id || item._id) !== productId) });
         } else {
-          set({ wishlist: [...get().wishlist, product] });
+          set({ wishlist: [...get().wishlist, { ...product, id: productId }] });
         }
       },
       isInWishlist: (productId) => {
-        return !!get().wishlist.find((item) => item.id === productId);
+        return !!get().wishlist.find((item) => (item.id || item._id) === productId);
       },
       clearWishlist: () => set({ wishlist: [] }),
     }),

@@ -5,7 +5,6 @@ import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore'
 import { auth as firebaseAuth } from '../firebase/config';
 import { useState } from 'react';
 import LoginModal from './LoginModal';
-import { trackActivity } from '../services/trackingService';
 
 import { categoryStructure, navLinks } from '../data/categories';
 
@@ -19,21 +18,13 @@ const Navbar = () => {
   const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  
+
   const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
 
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
       if (searchQuery.trim()) {
-        trackActivity({
-          type: 'search',
-          userId: user?.uid,
-          userEmail: user?.email,
-          details: {
-            query: searchQuery.trim()
-          }
-        });
         navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
         setIsMobileMenuOpen(false);
       }
@@ -45,7 +36,7 @@ const Navbar = () => {
       <nav className="fixed top-0 md:top-9 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-2 md:py-4 transition-all">
         <div className="max-w-[1440px] mx-auto flex justify-between items-center h-14 md:h-16">
           <div className="flex items-center space-x-4 md:space-x-12">
-            <button 
+            <button
               className="lg:hidden text-gray-800 p-2 hover:bg-gray-100 rounded-full transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
@@ -57,14 +48,14 @@ const Navbar = () => {
 
             <div className="hidden lg:flex space-x-10 text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
               {navLinks.map((link) => (
-                <div 
-                  key={link.name} 
+                <div
+                  key={link.name}
                   className="relative group"
                   onMouseEnter={() => setHoveredCategory(link.name)}
                   onMouseLeave={() => setHoveredCategory(null)}
                 >
-                  <Link 
-                    to={link.path} 
+                  <Link
+                    to={link.path}
                     className="hover:text-[var(--primary)] border-b-4 border-transparent hover:border-b-[var(--primary)] pb-6 transition-all block"
                   >
                     {link.name}
@@ -82,7 +73,7 @@ const Navbar = () => {
                         onMouseLeave={() => setHoveredCategory(null)}
                       >
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent opacity-20"></div>
-                        
+
                         {categoryStructure[link.name].sections.map((section, idx) => (
                           <div key={idx} className="space-y-6">
                             <h4 className="text-[10px] font-black text-[var(--primary)] uppercase tracking-[0.3em] mb-4 border-b border-gray-50 pb-3 flex items-center">
@@ -91,8 +82,8 @@ const Navbar = () => {
                             </h4>
                             <div className="space-y-4 flex flex-col">
                               {section.items.map(item => (
-                                <Link 
-                                  key={item} 
+                                <Link
+                                  key={item}
                                   to={`/shop?category=${link.name}&sub=${item}`}
                                   className="text-gray-500 hover:text-black font-semibold transition-all duration-300 hover:translate-x-2 flex items-center group/item text-[13px]"
                                   onClick={() => setHoveredCategory(null)}
@@ -117,9 +108,9 @@ const Navbar = () => {
 
           <div className="flex-grow max-w-lg mx-6 lg:mx-12 hidden md:block">
             <div className="relative">
-              <Search 
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-[var(--primary)]" 
-                size={16} 
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-[var(--primary)]"
+                size={16}
                 onClick={handleSearch}
               />
               <input
@@ -134,7 +125,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4 md:space-x-10">
-            <div 
+            <div
               className="flex flex-col items-center cursor-pointer group p-2"
               onClick={() => user ? navigate('/profile') : setIsLoginModalOpen(true)}
             >
@@ -214,19 +205,19 @@ const Navbar = () => {
                   <div className="space-y-1">
                     {navLinks.map((link) => (
                       <div key={link.name} className="border-b border-gray-100 last:border-none">
-                        <div 
+                        <div
                           className="flex items-center justify-between group py-4 cursor-pointer"
                           onClick={() => setExpandedMobileCategory(expandedMobileCategory === link.name ? null : link.name)}
                         >
                           <span className="text-xl font-bold text-gray-800 group-hover:text-[var(--primary)] transition-colors">{link.name}</span>
-                          <motion.div 
+                          <motion.div
                             animate={{ rotate: expandedMobileCategory === link.name ? 90 : 0 }}
                             className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-300 group-hover:text-[var(--primary)] transition-all"
                           >
-                             <ChevronRight size={16} />
+                            <ChevronRight size={16} />
                           </motion.div>
                         </div>
-                        
+
                         <AnimatePresence>
                           {expandedMobileCategory === link.name && categoryStructure[link.name] && categoryStructure[link.name].sections && (
                             <motion.div
@@ -243,8 +234,8 @@ const Navbar = () => {
                                     </h4>
                                     <div className="grid grid-cols-1 gap-2">
                                       {section.items.map(item => (
-                                        <Link 
-                                          key={item} 
+                                        <Link
+                                          key={item}
                                           to={`/shop?category=${link.name}&sub=${item}`}
                                           onClick={() => setIsMobileMenuOpen(false)}
                                           className="text-sm font-medium text-gray-600 hover:text-black py-1"
@@ -252,7 +243,7 @@ const Navbar = () => {
                                           {item}
                                         </Link>
                                       ))}
-                                      <Link 
+                                      <Link
                                         to={link.path}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className="text-sm font-bold text-[var(--primary)] py-1 mt-2 flex items-center"
@@ -276,7 +267,7 @@ const Navbar = () => {
                       >
                         <span className="text-xl font-bold group-hover:text-red-500 transition-colors">Admin Panel</span>
                         <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-300 group-hover:text-red-500 transition-all">
-                           <ChevronRight size={16} />
+                          <ChevronRight size={16} />
                         </div>
                       </Link>
                     )}
@@ -284,40 +275,40 @@ const Navbar = () => {
                 </div>
 
                 <div className="mt-12 px-2 pt-8 border-t border-gray-100">
-                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--primary)] opacity-40 mb-6">Account & Support</p>
-                   <div className="grid grid-cols-1 gap-4">
-                      <button 
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          user ? navigate('/profile') : setIsLoginModalOpen(true);
-                        }}
-                        className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-[var(--secondary)] flex items-center justify-center text-[var(--primary)]">
-                           <User size={20} />
-                        </div>
-                        <span className="font-bold text-gray-800">{user ? 'My Profile' : 'Login / Sign Up'}</span>
-                      </button>
-                      
-                      <button 
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          navigate('/wishlist');
-                        }}
-                        className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-400">
-                           <Heart size={20} />
-                        </div>
-                        <span className="font-bold text-gray-800">My Wishlist</span>
-                      </button>
-                   </div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--primary)] opacity-40 mb-6">Account & Support</p>
+                  <div className="grid grid-cols-1 gap-4">
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        user ? navigate('/profile') : setIsLoginModalOpen(true);
+                      }}
+                      className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-[var(--secondary)] flex items-center justify-center text-[var(--primary)]">
+                        <User size={20} />
+                      </div>
+                      <span className="font-bold text-gray-800">{user ? 'My Profile' : 'Login / Sign Up'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        navigate('/wishlist');
+                      }}
+                      className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-400">
+                        <Heart size={20} />
+                      </div>
+                      <span className="font-bold text-gray-800">My Wishlist</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <div className="p-6 bg-gray-50 mt-auto">
                 {user ? (
-                  <button 
+                  <button
                     onClick={() => { firebaseAuth.signOut(); setIsMobileMenuOpen(false); }}
                     className="w-full py-4 bg-white border border-gray-200 rounded-xl text-red-500 font-bold flex items-center justify-center space-x-2"
                   >
@@ -325,7 +316,7 @@ const Navbar = () => {
                     <span>Logout</span>
                   </button>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => { setIsLoginModalOpen(true); setIsMobileMenuOpen(false); }}
                     className="w-full py-4 bg-[var(--primary)] text-white rounded-xl font-bold"
                   >
@@ -338,9 +329,9 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
     </>
   );
