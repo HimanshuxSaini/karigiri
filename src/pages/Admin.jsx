@@ -45,6 +45,7 @@ import {
   createCoupon,
   updateCoupon,
   deleteCoupon} from '../services/api';
+import { getActivities as fetchUserActivities } from '../services/trackingService';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
@@ -95,6 +96,7 @@ const Admin = () => {
     code: '', description: '', discountType: 'percentage', discountPercent: 10,
     discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true
   });
+  const [activities, setActivities] = useState([]);
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -103,6 +105,7 @@ const Admin = () => {
     { id: 'billing', label: 'Billing', icon: Printer },
     { id: 'reels', label: 'Reels', icon: Eye },
     { id: 'coupons', label: 'Coupons', icon: Tag },
+    { id: 'activities', label: 'User Activity', icon: Users },
   ];
 
   // Form State
@@ -165,6 +168,10 @@ const Admin = () => {
       setOrders(orderRes || []);
       setReels(reelRes || []);
       setCoupons(couponRes || []);
+      
+      const token = await user.getIdToken();
+      const activityRes = await fetchUserActivities(token);
+      setActivities(activityRes || []);
     } catch (err) {
       console.error('Failed to load admin data:', err);
       setError(getFriendlyErrorMessage('FAILED TO CONNECT TO FIRESTORE'));
@@ -1450,6 +1457,88 @@ const Admin = () => {
                                 <div className="flex items-center space-x-2">
                                   <button onClick={() => handleEditCoupon(coupon)} className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"><Edit3 size={14} /></button>
                                   <button onClick={() => handleDeleteCoupon(coupon._id || coupon.id)} className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"><Trash2 size={14} /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'activities' && (
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-2xl font-serif font-bold text-gray-900">User Activity Log</h3>
+                  <p className="text-sm text-gray-500">Live monitoring of user interactions, product views, and searches</p>
+                </div>
+
+                {activities.length === 0 ? (
+                  <div className="py-20 text-center bg-white rounded-[32px] border border-gray-100">
+                    <Users size={48} className="mx-auto text-gray-200 mb-4" />
+                    <p className="text-gray-400 font-medium">No activity recorded yet.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                          <tr>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Time</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Action</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Details</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Device / IP</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {activities.map((activity) => (
+                            <tr key={activity.id} className="hover:bg-gray-50/50 transition-colors text-sm">
+                              <td className="px-6 py-4 font-medium text-gray-500 whitespace-nowrap">
+                                {formatDate(activity.timestamp)}
+                                <div className="text-[10px] text-gray-400">
+                                  {activity.timestamp?.toDate ? activity.timestamp.toDate().toLocaleTimeString('en-IN') : ''}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="font-bold text-gray-900">{activity.userEmail || 'Guest'}</div>
+                                <div className="text-[10px] text-gray-400 font-mono truncate max-w-[100px]">{activity.userId}</div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                                  activity.type === 'view_product' ? 'bg-blue-100 text-blue-700' : 
+                                  activity.type === 'search' ? 'bg-amber-100 text-amber-700' : 
+                                  activity.type === 'add_to_cart' ? 'bg-emerald-100 text-emerald-700' :
+                                  activity.type === 'add_to_wishlist' ? 'bg-pink-100 text-pink-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {activity.type?.replace(/_/g, ' ')}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                {(activity.type === 'view_product' || activity.type === 'add_to_cart' || activity.type === 'add_to_wishlist') && (
+                                  <div>
+                                    <span className="font-bold text-gray-800">{activity.details?.productName}</span>
+                                    <div className="text-[10px] text-gray-400">
+                                      {activity.details?.category} {activity.details?.price ? `• ₹${activity.details.price}` : ''}
+                                    </div>
+                                  </div>
+                                )}
+                                {activity.type === 'search' && (
+                                  <div className="flex items-center space-x-2">
+                                    <Search size={12} className="text-gray-400" />
+                                    <span className="italic text-gray-600 font-serif">"{activity.details?.query}"</span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-xs font-mono text-gray-500">{activity.ip?.replace('::ffff:', '')}</div>
+                                <div className="text-[9px] text-gray-400 truncate max-w-[150px]" title={activity.userAgent}>
+                                  {activity.userAgent?.includes('Mobi') ? <Smartphone size={10} className="inline mr-1" /> : null}
+                                  {activity.userAgent?.split(')')[0].split('(')[1] || activity.userAgent}
                                 </div>
                               </td>
                             </tr>

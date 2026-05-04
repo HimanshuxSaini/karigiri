@@ -5,6 +5,7 @@ import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore'
 import { auth as firebaseAuth } from '../firebase/config';
 import { useState } from 'react';
 import LoginModal from './LoginModal';
+import { trackActivity } from '../services/trackingService';
 
 import { categoryStructure, navLinks } from '../data/categories';
 
@@ -25,6 +26,14 @@ const Navbar = () => {
   const handleSearch = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
       if (searchQuery.trim()) {
+        trackActivity({
+          type: 'search',
+          userId: user?.uid,
+          userEmail: user?.email,
+          details: {
+            query: searchQuery.trim()
+          }
+        });
         navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
         setIsMobileMenuOpen(false);
       }

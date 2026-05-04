@@ -12,6 +12,7 @@ const otpRoutes = require('./routes/otpRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const productRoutes = require('./routes/productRoutes');
+const activityRoutes = require('./routes/activityRoutes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/otp', otpRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/activity', activityRoutes);
 
 
 

@@ -5,6 +5,7 @@ import { useCartStore, useWishlistStore, useAuthStore } from '../store/useStore'
 import { ShoppingBag, Heart, Star, ShieldCheck, Truck, RotateCcw, Edit3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fetchProductById } from '../services/api';
+import { trackActivity } from '../services/trackingService';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -37,6 +38,21 @@ const ProductDetails = () => {
     };
     getProduct();
   }, [id]);
+
+  useEffect(() => {
+    if (product) {
+      trackActivity({
+        type: 'view_product',
+        userId: user?.uid,
+        userEmail: user?.email,
+        details: {
+          productId: product._id || product.id,
+          productName: product.name,
+          category: product.category
+        }
+      });
+    }
+  }, [product, user]);
 
   if (loading) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
@@ -135,22 +151,39 @@ const ProductDetails = () => {
             </div>
 
             <div className="hidden md:flex space-x-4 mb-12">
-               <button 
-                 onClick={() => addItem(product)}
-                 className="flex-grow bg-[var(--primary)] text-white py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 hover:opacity-90 shadow-xl"
-               >
-                 <ShoppingBag size={20} />
-                 <span>Add to Bag</span>
-               </button>
-               <button 
-                 onClick={() => toggleWishlist(product)}
-                 className={`px-8 py-5 border-2 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-all ${
-                   isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-slate-200 text-slate-900 hover:border-slate-900'
-                 }`}
-               >
-                 <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
-                 <span>Wishlist</span>
-               </button>
+                <button 
+                  onClick={() => {
+                    addItem(product);
+                    trackActivity('add_to_cart', {
+                      productId: product._id || product.id,
+                      productName: product.name,
+                      category: product.category,
+                      price: product.price
+                    }, user);
+                  }}
+                  className="flex-grow bg-[var(--primary)] text-white py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 hover:opacity-90 shadow-xl"
+                >
+                  <ShoppingBag size={20} />
+                  <span>Add to Bag</span>
+                </button>
+                <button 
+                  onClick={() => {
+                    toggleWishlist(product);
+                    if (!isWishlisted) {
+                      trackActivity('add_to_wishlist', {
+                        productId: product._id || product.id,
+                        productName: product.name,
+                        category: product.category
+                      }, user);
+                    }
+                  }}
+                  className={`px-8 py-5 border-2 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-all ${
+                    isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-slate-200 text-slate-900 hover:border-slate-900'
+                  }`}
+                >
+                  <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
+                  <span>Wishlist</span>
+                </button>
             </div>
 
             <div className="space-y-6 mb-12">
@@ -213,21 +246,38 @@ const ProductDetails = () => {
 
       {/* Mobile Sticky Actions */}
       <div className="md:hidden fixed bottom-24 left-0 right-0 bg-white border-t border-gray-100 p-4 z-50 flex items-center space-x-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-         <button 
-           onClick={() => toggleWishlist(product)}
-           className={`h-14 w-14 shrink-0 border rounded-xl flex items-center justify-center transition-all ${
-             isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400'
-           }`}
-         >
-           <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
-         </button>
-         <button 
-           onClick={() => addItem(product)}
-           className="min-h-14 flex-grow bg-[var(--primary)] px-4 text-white rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg"
-         >
-           <ShoppingBag size={20} />
-           <span className="whitespace-nowrap">Add to Bag</span>
-         </button>
+          <button 
+            onClick={() => {
+              toggleWishlist(product);
+              if (!isWishlisted) {
+                trackActivity('add_to_wishlist', {
+                  productId: product._id || product.id,
+                  productName: product.name,
+                  category: product.category
+                }, user);
+              }
+            }}
+            className={`h-14 w-14 shrink-0 border rounded-xl flex items-center justify-center transition-all ${
+              isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400'
+            }`}
+          >
+            <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
+          </button>
+          <button 
+            onClick={() => {
+              addItem(product);
+              trackActivity('add_to_cart', {
+                productId: product._id || product.id,
+                productName: product.name,
+                category: product.category,
+                price: product.price
+              }, user);
+            }}
+            className="min-h-14 flex-grow bg-[var(--primary)] px-4 text-white rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg"
+          >
+            <ShoppingBag size={20} />
+            <span className="whitespace-nowrap">Add to Bag</span>
+          </button>
       </div>
     </div>
   );
