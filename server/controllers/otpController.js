@@ -62,7 +62,7 @@ transporter.verify(function (error, success) {
 
     // Send Email
     const mailOptions = {
-      from: `"Karigiri" <${process.env.SMTP_USER}>`,
+      from: `"Karigiri" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
       to: email,
       subject: 'Login OTP for Karigiri',
       html: `
@@ -161,7 +161,7 @@ exports.forgotPassword = async (req, res) => {
 
     // Send via SMTP
     const mailOptions = {
-      from: `"Karigiri Support" <${process.env.SMTP_USER}>`,
+      from: `"Karigiri Support" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
       to: email,
       subject: 'Reset Your Karigiri Password',
       html: `
