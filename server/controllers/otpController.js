@@ -4,32 +4,36 @@ const admin = require('firebase-admin');
 // Configure SMTP Transporter with Port 465 (SSL) and Connection Pooling
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // Use STARTTLS
+  port: parseInt(process.env.SMTP_PORT) || 465,
+  secure: (process.env.SMTP_PORT === '465' || !process.env.SMTP_PORT), // True for 465, false for 587
   pool: true,
-  family: 4, 
-  maxConnections: 5,
-  maxMessages: 100,
-  connectionTimeout: 15000, 
-  greetingTimeout: 15000,
-  socketTimeout: 20000,
+  family: 4, // Force IPv4 to avoid IPv6 resolution timeouts on Render
+  maxConnections: 3,
+  maxMessages: 50,
+  connectionTimeout: 20000, 
+  greetingTimeout: 20000,
+  socketTimeout: 30000,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
   tls: {
-    // Do not fail on invalid certs
     rejectUnauthorized: false,
-    ciphers: 'SSLv3'
+    minVersion: 'TLSv1.2'
   }
 });
 
-// Verify connection configuration
+// Verify connection configuration with better logging
 transporter.verify(function (error, success) {
   if (error) {
-    console.error('SMTP Connection Error:', error.message);
+    console.error('❌ SMTP Connection Error Details:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      port: process.env.SMTP_PORT || 465
+    });
   } else {
-    console.log('SMTP Server: ✅ Ready');
+    console.log('✅ SMTP Server Ready (Port:', process.env.SMTP_PORT || 465, ')');
   }
 });exports.sendOtp = async (req, res) => {
   const { email } = req.body;
