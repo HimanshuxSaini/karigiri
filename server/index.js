@@ -3,6 +3,12 @@ const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
+const dns = require('dns');
+
+// Force IPv4 globally to prevent ENETUNREACH errors on cloud providers like Render
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 // Load environment variables only locally
 const envPath = path.resolve(__dirname, '..', '.env');
