@@ -7,9 +7,12 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true, 
   pool: true,
-  family: 4, // Force IPv4 to avoid ENETUNREACH errors on some cloud providers
+  family: 4, 
   maxConnections: 5,
   maxMessages: 100,
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -37,11 +40,19 @@ exports.sendOtp = async (req, res) => {
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save to Firestore (otps collection)
-    await db.collection('otps').doc(email).set({
+    // Save to Firestore with a 5-second timeout
+    console.log(`Step 1: Saving OTP to Firestore for ${email}`);
+    const savePromise = db.collection('otps').doc(email).set({
       otp,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Firestore timeout')), 8000)
+    );
+
+    await Promise.race([savePromise, timeoutPromise]);
+    console.log(`Step 2: Firestore Save Successful`);
 
     // Send Email
     const mailOptions = {
