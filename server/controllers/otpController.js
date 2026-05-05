@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 
 // Configure SMTP Transporter with Port 465 (SSL) and Connection Pooling
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT) || 465,
   secure: (process.env.SMTP_PORT === '465' || !process.env.SMTP_PORT), // True for 465, false for 587
   pool: true,
