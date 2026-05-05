@@ -4,9 +4,11 @@ const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 
-// Use absolute path for .env to ensure it's always found
+// Load environment variables only locally
 const envPath = path.resolve(__dirname, '..', '.env');
-require('dotenv').config({ path: envPath });
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+}
 
 const otpRoutes = require('./routes/otpRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
@@ -15,11 +17,36 @@ const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
-// Explicit CORS configuration
+// Security & Performance Middlewares
+const helmet = require('helmet');
+const compression = require('compression');
+
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP if it interferes with external assets like Cloudinary
+  crossOriginEmbedderPolicy: false
+}));
+app.use(compression());
+
+// Explicit CORS configuration - More restrictive for production
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: '*', // Allow all for debugging
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
 app.use(express.json());
@@ -98,25 +125,28 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5001;
+// Export for Vercel / Serverless
+module.exports = app;
 
+// Start Server locally
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5001;
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n=========================================`);
+    console.log(`🚀 SERVER RUNNING ON PORT: ${PORT}`);
+    console.log(`🔗 API URL: http://localhost:${PORT}/api`);
+    console.log(`=========================================\n`);
+  });
 
-// Start Server with detailed error handling
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n=========================================`);
-  console.log(`🚀 SERVER RUNNING ON PORT: ${PORT}`);
-  console.log(`🔗 API URL: http://localhost:${PORT}/api`);
-  console.log(`=========================================\n`);
-});
-
-server.on('error', (e) => {
-  if (e.code === 'EADDRINUSE') {
-    console.error(`❌ PORT ${PORT} IS ALREADY IN USE!`);
-    console.error(`Please close any other terminals or use a different port in .env`);
-  } else {
-    console.error('Server error:', e);
-  }
-});
+  server.on('error', (e) => {
+    if (e.code === 'EADDRINUSE') {
+      console.error(`❌ PORT ${PORT} IS ALREADY IN USE!`);
+      console.error(`Please close any other terminals or use a different port in .env`);
+    } else {
+      console.error('Server error:', e);
+    }
+  });
+}
 
 // Prevent process from exiting
 process.on('uncaughtException', (err) => {

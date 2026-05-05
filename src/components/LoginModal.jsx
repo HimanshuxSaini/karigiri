@@ -81,14 +81,6 @@ const LoginModal = ({ isOpen, onClose }) => {
     }, 5000);
 
     try {
-      const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
-      if (methods.length === 0) {
-        showToast(getFriendlyErrorMessage('ACCOUNT NOT FOUND'), 'error');
-        setLoading(false);
-        clearTimeout(slowTimer);
-        return;
-      }
-
       await sendOtp(normalizedEmail);
       setStep('verify');
       setResendTimer(60);
