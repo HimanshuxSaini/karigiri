@@ -29,18 +29,18 @@ transporter.verify(function (error, success) {
   } else {
     console.log('SMTP Server: ✅ Ready');
   }
-});
-
-exports.sendOtp = async (req, res) => {
+});exports.sendOtp = async (req, res) => {
+  const { email } = req.body;
   try {
-    const db = admin.firestore();
-    const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required' });
 
+    console.log(`Starting OTP process for: ${email}`);
+    const db = admin.firestore();
+    
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save to Firestore with a 5-second timeout
+    // Save to Firestore with a timeout
     console.log(`Step 1: Saving OTP to Firestore for ${email}`);
     const savePromise = db.collection('otps').doc(email).set({
       otp,
@@ -48,7 +48,7 @@ exports.sendOtp = async (req, res) => {
     });
 
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Firestore timeout')), 8000)
+      setTimeout(() => reject(new Error('Firestore operation timed out. Check your Firebase credentials/connection.')), 10000)
     );
 
     await Promise.race([savePromise, timeoutPromise]);
@@ -78,19 +78,20 @@ exports.sendOtp = async (req, res) => {
       `,
     };
 
-    console.log(`Attempting to send OTP to: ${email}`);
+    console.log(`Step 3: Attempting to send SMTP email to: ${email}`);
     const info = await transporter.sendMail(mailOptions);
-    console.log('OTP Email Sent Successfully:', info.messageId);
+    console.log('Step 4: OTP Email Sent Successfully:', info.messageId);
     res.status(200).json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
-    console.error('SMTP/OTP Error for', email, ':', error);
+    console.error('OTP Controller Failure:', error);
     res.status(500).json({ 
       message: 'Failed to send OTP', 
       error: error.message,
-      code: error.code // Include error code for easier debugging
+      code: error.code
     });
   }
 };
+;
 
 exports.verifyOtp = async (req, res) => {
   try {
