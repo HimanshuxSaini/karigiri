@@ -1,6 +1,43 @@
 const nodemailer = require('nodemailer');
 const admin = require('firebase-admin');
 
+// Helper to send email via Brevo REST API or fallback to SMTP
+const sendEmail = async (mailOptions) => {
+  const isBrevo = process.env.SMTP_HOST && process.env.SMTP_HOST.includes('brevo');
+  
+  if (isBrevo) {
+    console.log('Using Brevo REST API over Port 443 to bypass Render SMTP blocks');
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': process.env.SMTP_PASS, // Brevo SMTP pass is the API key
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'Karigiri',
+          email: process.env.SMTP_FROM_EMAIL || 'hello@karigiri.com'
+        },
+        to: [{ email: mailOptions.to }],
+        subject: mailOptions.subject,
+        htmlContent: mailOptions.html
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Brevo API Error:', errorText);
+      throw new Error(`Brevo HTTP API failed: ${errorText}`);
+    }
+    const data = await response.json();
+    return { messageId: data.messageId };
+  } else {
+    console.log('Using fallback Nodemailer SMTP');
+    return await transporter.sendMail(mailOptions);
+  }
+};
+
 // Configure SMTP Transporter with Port 465 (SSL) and Connection Pooling
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -85,7 +122,7 @@ transporter.verify(function (error, success) {
     };
 
     console.log(`Step 3: Attempting to send SMTP email to: ${email}`);
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail(mailOptions);
     console.log('Step 4: OTP Email Sent Successfully:', info.messageId);
     res.status(200).json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
@@ -183,7 +220,7 @@ exports.forgotPassword = async (req, res) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    await sendEmail(mailOptions);
     res.status(200).json({ success: true, message: 'Reset link sent to your email' });
   } catch (error) {
     console.error('Error sending reset link:', error);
