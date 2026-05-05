@@ -3,15 +3,15 @@ const admin = require('firebase-admin');
 
 // Helper to send email via Brevo REST API or fallback to SMTP
 const sendEmail = async (mailOptions) => {
-  const isBrevo = process.env.SMTP_HOST && process.env.SMTP_HOST.includes('brevo');
+  const isBrevoApi = process.env.SMTP_HOST && process.env.SMTP_HOST.includes('brevo') && process.env.SMTP_PASS && process.env.SMTP_PASS.startsWith('xkeysib-');
   
-  if (isBrevo) {
+  if (isBrevoApi) {
     console.log('Using Brevo REST API over Port 443 to bypass Render SMTP blocks');
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'accept': 'application/json',
-        'api-key': process.env.SMTP_PASS, // Brevo SMTP pass is the API key
+        'api-key': process.env.SMTP_PASS, // Brevo REST API key
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -33,16 +33,16 @@ const sendEmail = async (mailOptions) => {
     const data = await response.json();
     return { messageId: data.messageId };
   } else {
-    console.log('Using fallback Nodemailer SMTP');
+    console.log(`Using fallback Nodemailer SMTP. Port: ${process.env.SMTP_PORT || 2525}`);
     return await transporter.sendMail(mailOptions);
   }
 };
 
-// Configure SMTP Transporter with Port 465 (SSL) and Connection Pooling
+// Configure SMTP Transporter
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 465,
-  secure: (process.env.SMTP_PORT === '465' || !process.env.SMTP_PORT), // True for 465, false for 587
+  host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+  port: parseInt(process.env.SMTP_PORT) || 2525,
+  secure: false, // True for 465, false for 587 and 2525
   pool: true,
   family: 4, // Force IPv4 to avoid IPv6 resolution timeouts on Render
   maxConnections: 3,
