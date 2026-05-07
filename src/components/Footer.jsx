@@ -88,7 +88,8 @@ const Footer = () => {
               <h5 className="text-slate-900 mb-4">Registered Office Address</h5>
               <p className="leading-loose">
                  Karigiri Artisanal Studio <br />
-                 Model Town, Phase 2 <br />
+                 573, behind Holy Child School <br />
+                 Rajiv Nagar, Sector 1A <br />
                  Sonipat, Haryana - 131001 <br />
                  India
               </p>
