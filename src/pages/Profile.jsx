@@ -521,19 +521,30 @@ const Profile = () => {
                               </button>
                             </div>
                             <button 
-                              onClick={() => handleAddToBag(product)}
+                              disabled={product.inStock === false}
+                              onClick={() => product.inStock !== false && handleAddToBag(product)}
                               className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center space-x-2 ${
-                                addedToCart === product.id 
-                                  ? 'bg-emerald-500 text-white' 
-                                  : 'bg-[var(--primary)] text-white hover:shadow-xl hover:-translate-y-0.5'
+                                product.inStock === false
+                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  : addedToCart === product.id 
+                                    ? 'bg-emerald-500 text-white' 
+                                    : 'bg-[var(--primary)] text-white hover:shadow-xl hover:-translate-y-0.5'
                               }`}
                             >
-                              {addedToCart === product.id ? (
+                              {product.inStock === false ? (
+                                <X size={14} />
+                              ) : addedToCart === product.id ? (
                                 <CheckCircle2 size={14} />
                               ) : (
                                 <ShoppingBag size={14} />
                               )}
-                              <span>{addedToCart === product.id ? 'Added to Bag' : 'Add to Bag'}</span>
+                              <span>
+                                {product.inStock === false 
+                                  ? 'Out of Stock' 
+                                  : addedToCart === product.id 
+                                    ? 'Added to Bag' 
+                                    : 'Add to Bag'}
+                              </span>
                             </button>
                           </motion.div>
                         ))}

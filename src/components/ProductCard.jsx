@@ -20,10 +20,12 @@ const ProductCard = ({ product }) => {
     return url;
   };
 
+  const isOutOfStock = product.inStock === false;
+
   return (
     <motion.div 
       whileHover={{ y: -5 }}
-      className="bg-white overflow-hidden group h-full flex flex-col relative rounded-sm border border-transparent hover:border-gray-100 transition-all"
+      className={`bg-white overflow-hidden group h-full flex flex-col relative rounded-sm border border-transparent hover:border-gray-100 transition-all ${isOutOfStock ? 'opacity-80' : ''}`}
     >
       <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
         <img 
@@ -35,6 +37,12 @@ const ProductCard = ({ product }) => {
             e.target.src = "/placeholder.png";
           }}
         />
+
+        {isOutOfStock && (
+          <div className="absolute top-2 left-2 z-10 bg-red-600/95 backdrop-blur-sm text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
+            Out of Stock
+          </div>
+        )}
         
         {/* Rating badge */}
         <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur px-1.5 py-0.5 rounded flex items-center space-x-1 text-[8px] md:text-[10px] font-bold">
@@ -54,20 +62,27 @@ const ProductCard = ({ product }) => {
         {/* Add to Cart - Visible on hover (Desktop) and always available (Mobile via a small icon or similar) */}
         <div className="absolute bottom-0 left-0 right-0 p-2 md:p-4 translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 bg-white/90 backdrop-blur lg:block hidden">
            <button 
-              onClick={(e) => { e.preventDefault(); addItem(product); }}
-              className="w-full py-2 bg-[var(--primary)] text-white text-[10px] md:text-sm font-bold rounded uppercase tracking-wider"
+              disabled={isOutOfStock}
+              onClick={(e) => { e.preventDefault(); if (!isOutOfStock) addItem(product); }}
+              className={`w-full py-2 text-[10px] md:text-sm font-bold rounded uppercase tracking-wider transition-colors ${
+                isOutOfStock 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-[var(--primary)] text-white hover:opacity-90'
+              }`}
            >
-             Add to Bag
+             {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
            </button>
         </div>
         
         {/* Mobile Quick Add */}
-        <button 
-          onClick={(e) => { e.preventDefault(); addItem(product); }}
-          className="lg:hidden absolute bottom-2 right-2 p-2 bg-[var(--primary)] text-white rounded-full shadow-lg"
-        >
-          <ShoppingCart size={16} />
-        </button>
+        {!isOutOfStock && (
+          <button 
+            onClick={(e) => { e.preventDefault(); addItem(product); }}
+            className="lg:hidden absolute bottom-2 right-2 p-2 bg-[var(--primary)] text-white rounded-full shadow-lg"
+          >
+            <ShoppingCart size={16} />
+          </button>
+        )}
       </Link>
       
       <div className="py-2 md:py-4 px-1">

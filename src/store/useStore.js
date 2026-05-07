@@ -32,6 +32,10 @@ export const useCartStore = create(
     (set, get) => ({
       items: [],
       addItem: (product) => {
+        if (product.inStock === false) {
+          useToastStore.getState().showToast(`${product.name || 'Item'} is currently out of stock`, 'error');
+          return;
+        }
         const currentItems = get().items;
         const productId = product.id || product._id;
         const size = product.size || 'One Size';

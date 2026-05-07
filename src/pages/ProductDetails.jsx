@@ -66,6 +66,7 @@ const ProductDetails = () => {
   );
 
   const isWishlisted = isInWishlist(product._id || product.id);
+  const isOutOfStock = product.inStock === false;
 
   const optimizeImage = (url) => {
     if (!url || typeof url !== 'string') return url;
@@ -91,13 +92,20 @@ const ProductDetails = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
                 src={optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[activeImageIndex] : '')}
-                className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-105"
+                className={`max-w-full max-h-full object-contain transition-all duration-700 hover:scale-105 ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
                 alt={product.name}
                 loading="eager"
                 onError={(e) => {
                   e.target.src = "/placeholder.png";
                 }}
               />
+              {isOutOfStock && (
+                <div className="absolute inset-0 bg-black/10 flex items-center justify-center backdrop-blur-[2px]">
+                  <div className="bg-red-600/95 backdrop-blur-md px-8 py-3 rounded-2xl text-white font-black uppercase tracking-[0.2em] text-sm md:text-base shadow-2xl">
+                    Out of Stock
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sub Images / Thumbnails */}
@@ -190,11 +198,16 @@ const ProductDetails = () => {
 
             <div className="hidden md:flex space-x-4 mb-12">
               <button
-                onClick={() => addItem({ ...product, size: selectedSize })}
-                className="flex-grow bg-[var(--primary)] text-white py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 hover:opacity-90 shadow-xl"
+                disabled={isOutOfStock}
+                onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
+                className={`flex-grow py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-colors shadow-xl ${
+                  isOutOfStock 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-[var(--primary)] text-white hover:opacity-90'
+                }`}
               >
                 <ShoppingBag size={20} />
-                <span>Add to Bag</span>
+                <span>{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
               </button>
               <button
                 onClick={() => toggleWishlist(product)}
@@ -278,11 +291,16 @@ const ProductDetails = () => {
           <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
         </button>
         <button
-          onClick={() => addItem({ ...product, size: selectedSize })}
-          className="min-h-14 flex-grow bg-[var(--primary)] px-4 text-white rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg"
+          disabled={isOutOfStock}
+          onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
+          className={`min-h-14 flex-grow px-4 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg transition-colors ${
+            isOutOfStock 
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+              : 'bg-[var(--primary)] text-white'
+          }`}
         >
           <ShoppingBag size={20} />
-          <span className="whitespace-nowrap">Add to Bag</span>
+          <span className="whitespace-nowrap">{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
         </button>
       </div>
     </div>
