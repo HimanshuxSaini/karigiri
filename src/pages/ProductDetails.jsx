@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { useCartStore, useWishlistStore, useAuthStore } from '../store/useStore';
-import { ShoppingBag, Heart, Star, Truck, RotateCcw, Edit3 } from 'lucide-react';
+import { ShoppingBag, Heart, Star, Truck, RotateCcw, Edit3, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fetchProductById } from '../services/api';
 
@@ -67,6 +67,16 @@ const ProductDetails = () => {
 
   const isWishlisted = isInWishlist(product._id || product.id);
   const isOutOfStock = product.inStock === false;
+
+  const handleWhatsAppEnquiry = () => {
+    const number = "917027311213";
+    const productUrl = window.location.href;
+    const priceText = product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'N/A';
+    const message = `Hello Karigiri! 🎨\n\nI am interested in this beautiful piece:\n• Product: *${product.name}*\n• Price: *${priceText}*\n• Selected Size: *${selectedSize || 'Standard'}*\n• Link: ${productUrl}\n\nCould you please help me with more details?`;
+    
+    const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+  };
 
   const optimizeImage = (url) => {
     if (!url || typeof url !== 'string') return url;
@@ -200,7 +210,7 @@ const ProductDetails = () => {
               <button
                 disabled={isOutOfStock}
                 onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
-                className={`flex-grow py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-colors shadow-xl ${
+                className={`flex-grow py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-all shadow-xl ${
                   isOutOfStock 
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                     : 'bg-[var(--primary)] text-white hover:opacity-90'
@@ -209,6 +219,15 @@ const ProductDetails = () => {
                 <ShoppingBag size={20} />
                 <span>{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
               </button>
+              
+              <button
+                onClick={handleWhatsAppEnquiry}
+                className="px-8 py-5 bg-[#25D366] text-white rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 hover:bg-[#20ba5a] transition-all shadow-xl"
+              >
+                <MessageCircle size={20} fill="currentColor" />
+                <span>Enquire</span>
+              </button>
+
               <button
                 onClick={() => toggleWishlist(product)}
                 className={`px-8 py-5 border-2 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-all ${isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-slate-200 text-slate-900 hover:border-slate-900'
@@ -289,6 +308,12 @@ const ProductDetails = () => {
             }`}
         >
           <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
+        </button>
+        <button
+          onClick={handleWhatsAppEnquiry}
+          className="h-14 w-14 shrink-0 bg-[#25D366] text-white rounded-xl flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95"
+        >
+          <MessageCircle size={24} fill="currentColor" />
         </button>
         <button
           disabled={isOutOfStock}
