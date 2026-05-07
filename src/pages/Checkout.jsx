@@ -4,7 +4,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, X, Tag, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { createOrder, validateCoupon, incrementCouponUsage, fetchCoupons, getCouponEligibility } from '../services/api';
+import { createOrder, validateCoupon, incrementCouponUsage, fetchCoupons, getCouponEligibility, fetchOrders } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 
 const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
@@ -45,16 +45,69 @@ const Checkout = () => {
   const [couponsLoading, setCouponsLoading] = useState(true);
   const [couponListError, setCouponListError] = useState('');
 
+  // User orders state for first delivery coupon validation
+  const [userOrders, setUserOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+
+  useEffect(() => {
+    const loadUserOrders = async () => {
+      if (!user) return;
+      setLoadingOrders(true);
+      try {
+        const allOrders = await fetchOrders();
+        const filtered = (allOrders || []).filter(o => 
+          o && (o.user === user.uid || (o.email && user.email && o.email.toLowerCase() === user.email.toLowerCase()))
+        );
+        setUserOrders(filtered);
+      } catch (err) {
+        console.error("Failed to load user orders for coupon validation:", err);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+    loadUserOrders();
+  }, [user]);
+
   const cartTotal = getTotal();
   const deliveryCharges = getDeliveryCharges();
-  const finalTotal = Math.max(0, cartTotal - couponDiscount + deliveryCharges);
+  const isFirstOrder = userOrders.length === 0;
+  const isFirstDeliveryCouponApplied = appliedCoupon?.code?.toUpperCase() === 'FIRSTDELIVERY';
+  const actualDeliveryCharges = (isFirstDeliveryCouponApplied && isFirstOrder) ? 0 : deliveryCharges;
+  const finalTotal = Math.max(0, cartTotal - couponDiscount + actualDeliveryCharges);
+  
   const appliedCouponId = appliedCoupon?._id || appliedCoupon?.id;
-  const couponCards = coupons
-    .map((coupon) => ({
-      ...coupon,
-      couponId: coupon._id || coupon.id,
-      eligibility: getCouponEligibility(coupon, cartTotal)
-    }))
+  
+  const displayedCoupons = isFirstOrder 
+    ? [
+        {
+          _id: 'firstdelivery-id',
+          id: 'firstdelivery-id',
+          code: 'FIRSTDELIVERY',
+          discountType: 'delivery',
+          discountAmount: deliveryCharges,
+          description: 'Free delivery on your first order. Use code FIRSTDELIVERY.',
+          minOrderAmount: 0,
+          isActive: true
+        },
+        ...coupons
+      ]
+    : coupons;
+
+  const couponCards = displayedCoupons
+    .map((coupon) => {
+      if (coupon.code === 'FIRSTDELIVERY') {
+        return {
+          ...coupon,
+          couponId: 'firstdelivery-id',
+          eligibility: { valid: true, discount: deliveryCharges, message: 'Free delivery applied' }
+        };
+      }
+      return {
+        ...coupon,
+        couponId: coupon._id || coupon.id,
+        eligibility: getCouponEligibility(coupon, cartTotal)
+      };
+    })
     .sort((firstCoupon, secondCoupon) => {
       if (firstCoupon.eligibility.valid !== secondCoupon.eligibility.valid) {
         return Number(secondCoupon.eligibility.valid) - Number(firstCoupon.eligibility.valid);
@@ -74,6 +127,28 @@ const Checkout = () => {
     setCouponCode(normalizedCode);
     setCouponLoading(true);
     setCouponMessage({ text: '', type: '' });
+
+    if (normalizedCode === 'FIRSTDELIVERY') {
+      if (!isFirstOrder) {
+        setCouponMessage({ text: 'The FIRSTDELIVERY coupon is only valid for your first order.', type: 'error' });
+        setAppliedCoupon(null);
+        setCouponDiscount(0);
+        setCouponLoading(false);
+        return;
+      }
+      setAppliedCoupon({
+        _id: 'firstdelivery-id',
+        id: 'firstdelivery-id',
+        code: 'FIRSTDELIVERY',
+        discountType: 'delivery',
+        discountAmount: deliveryCharges,
+        description: 'Free delivery on your first order'
+      });
+      setCouponDiscount(0);
+      setCouponMessage({ text: 'Coupon applied! Your delivery charge is now ₹0.', type: 'success' });
+      setCouponLoading(false);
+      return;
+    }
 
     try {
       const result = await validateCoupon(normalizedCode, cartTotal);
@@ -141,6 +216,18 @@ const Checkout = () => {
   useEffect(() => {
     if (!appliedCoupon) return;
 
+    if (appliedCoupon.code === 'FIRSTDELIVERY') {
+      if (!isFirstOrder) {
+        setAppliedCoupon(null);
+        setCouponDiscount(0);
+        setCouponMessage({
+          text: 'FIRSTDELIVERY removed. Only valid for your first order.',
+          type: 'error'
+        });
+      }
+      return;
+    }
+
     const latestAppliedCoupon =
       coupons.find((coupon) => (coupon._id || coupon.id) === appliedCouponId) || appliedCoupon;
     const updatedCouponState = getCouponEligibility(latestAppliedCoupon, cartTotal);
@@ -160,7 +247,7 @@ const Checkout = () => {
       setCouponDiscount(updatedCouponState.discount);
       setCouponMessage({ text: updatedCouponState.message, type: 'success' });
     }
-  }, [appliedCoupon, appliedCouponId, cartTotal, couponDiscount, coupons]);
+  }, [appliedCoupon, appliedCouponId, cartTotal, couponDiscount, coupons, isFirstOrder]);
 
   if (!user) return <Navigate to="/" />;
   if (items.length === 0 && !isOrdered) return <Navigate to="/shop" />;
@@ -197,7 +284,7 @@ const Checkout = () => {
       subtotal: cartTotal,
       couponCode: appliedCoupon?.code || null,
       couponDiscount: couponDiscount,
-      deliveryCharges: deliveryCharges,
+      deliveryCharges: actualDeliveryCharges,
       totalPrice: finalTotal,
       user: user.uid,
       email: user.email.toLowerCase()
@@ -223,8 +310,10 @@ const Checkout = () => {
       if (couponDiscount > 0) {
         message += `*Coupon:* ${appliedCoupon?.code} (-${formatCurrency(couponDiscount)})\n`;
       }
-      if (deliveryCharges > 0) {
-        message += `*Delivery Charges:* ${formatCurrency(deliveryCharges)}\n`;
+      if (actualDeliveryCharges > 0) {
+        message += `*Delivery Charges:* ${formatCurrency(actualDeliveryCharges)}\n`;
+      } else if (isFirstDeliveryCouponApplied) {
+        message += `*Delivery Charges:* Free (First Order Coupon)\n`;
       }
       message += `*Total Amount:* ${formatCurrency(finalTotal)}\n\n`;
       message += `*(Note: The admin will verify these details against the securely saved Order ID in the system before providing the QR code.)*`;
@@ -565,10 +654,12 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--text-muted)]">Delivery Charges</span>
-                  {deliveryCharges > 0 ? (
-                    <span className="font-bold text-[var(--text-main)]">{formatCurrency(deliveryCharges)}</span>
+                  {actualDeliveryCharges > 0 ? (
+                    <span className="font-bold text-[var(--text-main)]">{formatCurrency(actualDeliveryCharges)}</span>
                   ) : (
-                    <span className="font-bold text-emerald-600 uppercase tracking-widest text-[10px]">Free</span>
+                    <span className="font-bold text-emerald-600 uppercase tracking-widest text-[10px]">
+                      {isFirstDeliveryCouponApplied ? 'Free (First Order)' : 'Free'}
+                    </span>
                   )}
                 </div>
                 {couponDiscount > 0 && (
