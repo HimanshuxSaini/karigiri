@@ -22,7 +22,7 @@ const BottomNav = () => {
 
   return (
     <>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md border-t border-gray-100 px-2 pt-3 pb-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md border-t border-gray-100 px-2 pt-2 pb-3 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -32,19 +32,19 @@ const BottomNav = () => {
                 whileTap={{ scale: 0.9 }}
                 className="flex flex-col items-center"
               >
-                <div className={`relative p-2 rounded-2xl transition-all duration-300 ${
-                  isActive ? 'bg-[var(--primary)] text-white shadow-lg' : 'text-gray-400'
+                <div className={`relative p-1.5 rounded-xl transition-all duration-300 ${
+                  isActive ? 'bg-[var(--primary)] text-white shadow-md' : 'text-gray-400'
                 }`}>
-                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge > 0 && (
-                    <span className={`absolute -top-1 -right-1 text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-black shadow-sm transition-colors ${
+                    <span className={`absolute -top-1 -right-1 text-[8px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black shadow-sm transition-colors ${
                       isActive ? 'bg-white text-[var(--primary)]' : 'bg-[var(--primary)] text-white'
                     }`}>
                       {item.badge}
                     </span>
                   )}
                 </div>
-                <span className={`text-[9px] font-black mt-1 uppercase tracking-tighter transition-all ${
+                <span className={`text-[8px] font-black mt-0.5 uppercase tracking-tighter transition-all ${
                   isActive ? 'text-[var(--primary)] opacity-100' : 'text-gray-400 opacity-60'
                 }`}>
                   {item.name}
