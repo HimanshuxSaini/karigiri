@@ -270,7 +270,7 @@ const Shop = () => {
                 )}
               </div>
               <div className="text-[10px] md:text-sm font-black text-gray-900 uppercase tracking-tight">
-                {loading ? 'Fetching...' : `${filteredProducts.length} items`}
+                {loading ? '' : `${filteredProducts.length} items`}
               </div>
             </div>
 

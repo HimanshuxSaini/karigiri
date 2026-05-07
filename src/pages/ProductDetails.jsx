@@ -52,6 +52,14 @@ const ProductDetails = () => {
 
   const isWishlisted = isInWishlist(product._id || product.id);
 
+  const optimizeImage = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    if (url.includes('cloudinary.com')) {
+      return url.replace('/upload/', '/upload/w_800,q_auto:eco,f_auto/');
+    }
+    return url;
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -65,7 +73,8 @@ const ProductDetails = () => {
                 <div key={i} className="min-w-[85vw] md:min-w-0 aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden snap-center">
                   <motion.img
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }}
-                    src={product.image} className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-110" alt={`Product ${i}`}
+                    src={optimizeImage(product.image)} className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-110" alt={`Product ${i}`}
+                    loading={i === 1 ? "eager" : "lazy"}
                     onError={(e) => {
                       e.target.src = "/placeholder.png";
                     }}

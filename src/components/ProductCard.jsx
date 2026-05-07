@@ -12,6 +12,14 @@ const ProductCard = ({ product }) => {
   const productId = product._id || product.id;
   const isWishlisted = isInWishlist(productId);
 
+  const optimizeImage = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    if (url.includes('cloudinary.com')) {
+      return url.replace('/upload/', '/upload/w_400,q_auto:eco,f_auto/');
+    }
+    return url;
+  };
+
   return (
     <motion.div 
       whileHover={{ y: -5 }}
@@ -19,8 +27,9 @@ const ProductCard = ({ product }) => {
     >
       <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
         <img 
-          src={product.image} 
+          src={optimizeImage(product.image)} 
           alt={product.name}
+          loading="lazy"
           className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg"
           onError={(e) => {
             e.target.src = "/placeholder.png";

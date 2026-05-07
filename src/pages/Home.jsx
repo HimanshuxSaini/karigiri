@@ -194,7 +194,7 @@ const Home = () => {
             ]).map((reel, i) => (
               <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">
                 <div className="absolute inset-0 aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
-                  <img src={reel.image || reel.img} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} />
+                  <img src={(reel.image || reel.img)?.includes('cloudinary.com') ? (reel.image || reel.img).replace('/upload/', '/upload/w_300,q_auto:eco,f_auto/') : (reel.image || reel.img)} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} loading="lazy" />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
                 <div className="absolute bottom-4 left-4 text-white">

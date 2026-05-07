@@ -534,7 +534,7 @@ const Checkout = () => {
                 {items.map((item) => (
                   <div key={item.id} className="flex space-x-4">
                     <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm">
-                      <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                      <img src={item.image?.includes('cloudinary.com') ? item.image.replace('/upload/', '/upload/w_100,q_auto:eco,f_auto/') : item.image} className="w-full h-full object-contain" alt={item.name} loading="lazy" />
                       <span className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--primary)] text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
                         {item.quantity}
                       </span>

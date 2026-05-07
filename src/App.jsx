@@ -15,7 +15,8 @@ import WhatsAppButton from './components/WhatsAppButton';
 import ScrollToTop from './components/ScrollToTop';
 import ToastContainer from './components/Toast';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import IntroVideo from './components/IntroVideo';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/config';
 import { useAuthStore } from './store/useStore';
@@ -35,6 +36,15 @@ const ProtectedRoute = ({ children, isAdmin = false }) => {
 import BottomNav from './components/BottomNav';
 
 function App() {
+  const [showIntro, setShowIntro] = useState(() => {
+    return !sessionStorage.getItem('hasSeenIntro');
+  });
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem('hasSeenIntro', 'true');
+    setShowIntro(false);
+  };
+
   const setUser = useAuthStore((state) => state.setUser);
 
   useEffect(() => {
@@ -61,6 +71,11 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <AnimatePresence>
+        {showIntro && (
+          <IntroVideo onComplete={handleIntroComplete} />
+        )}
+      </AnimatePresence>
       <div className="min-h-screen relative pb-16 md:pb-0">
         <ToastContainer />
         <WhatsAppButton />

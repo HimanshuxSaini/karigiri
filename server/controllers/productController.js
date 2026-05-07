@@ -1,10 +1,24 @@
 const admin = require('firebase-admin');
 
+// Simple in-memory cache for products
+let productsCache = null;
+let productsCacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+const invalidateProductsCache = () => {
+  productsCache = null;
+  productsCacheTime = 0;
+};
+
 // @desc    Fetch all products from Firestore
 // @route   GET /api/products
 // @access  Public
 const getProducts = async (req, res) => {
   try {
+    if (productsCache && (Date.now() - productsCacheTime < CACHE_DURATION)) {
+      return res.json(productsCache);
+    }
+
     const db = admin.firestore();
     const snapshot = await db.collection('products').orderBy('createdAt', 'desc').get();
     const products = snapshot.docs.map(doc => ({
@@ -12,6 +26,10 @@ const getProducts = async (req, res) => {
       id: doc.id,
       ...doc.data()
     }));
+
+    productsCache = products;
+    productsCacheTime = Date.now();
+    
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -46,6 +64,7 @@ const deleteProduct = async (req, res) => {
     
     if (doc.exists) {
       await productRef.delete();
+      invalidateProductsCache();
       res.json({ message: 'Product removed from Firestore' });
     } else {
       res.status(404).json({ message: 'Product not found' });
@@ -79,6 +98,8 @@ const createProduct = async (req, res) => {
 
     const docRef = await db.collection('products').add(productData);
     const savedProduct = await docRef.get();
+    
+    invalidateProductsCache();
     
     res.status(201).json({
       _id: docRef.id,
@@ -117,6 +138,8 @@ const updateProduct = async (req, res) => {
 
       await productRef.update(updateData);
       const updatedDoc = await productRef.get();
+      
+      invalidateProductsCache();
       
       res.json({
         _id: updatedDoc.id,

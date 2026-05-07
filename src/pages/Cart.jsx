@@ -97,7 +97,12 @@ const Cart = () => {
                 className="glass-card p-4 md:p-6 flex flex-row items-center space-x-4 md:space-x-6"
               >
                 <div className="w-20 md:w-24 aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-xl overflow-hidden shrink-0">
-                  <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain" />
+                  <img 
+                    src={item.image?.includes('cloudinary.com') ? item.image.replace('/upload/', '/upload/w_200,q_auto:eco,f_auto/') : item.image} 
+                    alt={item.name} 
+                    loading="lazy"
+                    className="max-w-full max-h-full object-contain" 
+                  />
                 </div>
                 <div className="flex-grow min-w-0">
                   <h3 className="text-sm md:text-lg font-serif text-[var(--primary)] truncate">{item.name}</h3>
