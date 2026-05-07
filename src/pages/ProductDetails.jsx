@@ -72,7 +72,7 @@ const ProductDetails = () => {
     const number = "917027311213";
     const productUrl = window.location.href;
     const priceText = product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'N/A';
-    const message = `Hello Karigiri! 🎨\n\nI am interested in this beautiful piece:\n• Product: *${product.name}*\n• Price: *${priceText}*\n• Selected Size: *${selectedSize || 'Standard'}*\n• Link: ${productUrl}\n\nCould you please help me with more details?`;
+    const message = `Hello Karigiri!\n\nI am interested in this beautiful piece:\n- Product: *${product.name}*\n- Price: *${priceText}*\n- Selected Size: *${selectedSize || 'Standard'}*\n- Link: ${productUrl}\n\nCould you please help me with more details?`;
     
     const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
