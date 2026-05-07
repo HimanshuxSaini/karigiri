@@ -824,6 +824,73 @@ const Profile = () => {
                   </div>
                 </div>
 
+                {/* Visual Order Progress Stepper */}
+                <div className="mb-10 p-6 sm:p-8 rounded-[2rem] bg-white border border-gray-100 shadow-sm">
+                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6 flex items-center space-x-2">
+                    <Truck size={14} className="animate-bounce" />
+                    <span>Shipping Status & Progress</span>
+                  </h4>
+
+                  <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0">
+                    {/* Connecting Line (Desktop) */}
+                    <div className="hidden md:block absolute top-[18px] left-[5%] right-[5%] h-1 bg-gray-100 z-0">
+                      <div 
+                        className="h-full bg-emerald-500 transition-all duration-500" 
+                        style={{ 
+                          width: (selectedOrder.status || 'Processing').toLowerCase() === 'delivered' ? '100%' : 
+                                 (selectedOrder.status || 'Processing').toLowerCase() === 'shipped' ? '75%' : '25%' 
+                        }}
+                      />
+                    </div>
+
+                    {[
+                      { label: 'Order Placed', desc: 'Received & verified' },
+                      { label: 'Artisan Crafting', desc: 'Handcrafted with care' },
+                      { label: 'Quality Check', desc: 'Inspecting details' },
+                      { label: 'Shipped Out', desc: 'On its way to you' },
+                      { label: 'Delivered', desc: 'Arrived safely' }
+                    ].map((step, idx) => {
+                      const orderStatus = (selectedOrder.status || 'Processing').toLowerCase();
+                      let stepState = 'pending'; // 'pending' | 'active' | 'completed'
+
+                      if (orderStatus === 'delivered') {
+                        stepState = 'completed';
+                      } else if (orderStatus === 'shipped') {
+                        if (idx <= 3) stepState = 'completed';
+                        else if (idx === 4) stepState = 'pending';
+                      } else {
+                        // Processing/Default
+                        if (idx === 0) stepState = 'completed';
+                        else if (idx === 1) stepState = 'active';
+                        else stepState = 'pending';
+                      }
+
+                      return (
+                        <div key={idx} className="relative z-10 flex flex-row md:flex-col items-center gap-4 md:gap-2 md:w-[18%]">
+                          {/* Dot / Indicator */}
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow-sm transition-all duration-300 ${
+                            stepState === 'completed' ? 'bg-emerald-500 text-white shadow-emerald-100' :
+                            stepState === 'active' ? 'bg-amber-500 text-white animate-pulse shadow-amber-100' :
+                            'bg-gray-100 text-gray-400'
+                          }`}>
+                            {stepState === 'completed' ? '✓' : idx + 1}
+                          </div>
+
+                          {/* Content */}
+                          <div className="text-left md:text-center">
+                            <p className={`font-bold text-xs uppercase tracking-wide ${
+                              stepState === 'completed' ? 'text-emerald-600' :
+                              stepState === 'active' ? 'text-amber-600 font-black' :
+                              'text-gray-400'
+                            }`}>{step.label}</p>
+                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{step.desc}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="mb-10 p-6 rounded-3xl bg-gray-50 border border-gray-100">
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)] mb-4 flex items-center space-x-2">
                     <MapPin size={14} />
@@ -869,10 +936,15 @@ const Profile = () => {
               </div>
 
               <div className="p-8 bg-gray-50 flex justify-end space-x-4">
-                 <button className="px-6 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors flex items-center space-x-2">
-                   <Bell size={16} />
-                   <span>Track Package</span>
-                 </button>
+                  <a 
+                    href={`https://www.delhivery.com/track/share?waybill=${selectedOrder.trackingId || 'TRK' + String(selectedOrder.id || '102349').slice(-6).toUpperCase()}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors flex items-center space-x-2"
+                  >
+                    <Truck size={16} className="text-[var(--primary)]" />
+                    <span>Track Package</span>
+                  </a>
                  <button className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white text-sm font-bold hover:shadow-lg transition-all flex items-center space-x-2">
                    <ExternalLink size={16} />
                    <span>Need Help?</span>
