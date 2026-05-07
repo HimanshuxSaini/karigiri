@@ -249,12 +249,14 @@ const Shop = () => {
 
           {/* Main Content */}
           <main className="flex-grow pt-4 md:pt-12 lg:pl-12 pb-24">
-            <ShopSearchBar
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onSubmit={handleSearchSubmit}
-              onClear={handleClearSearch}
-            />
+            <div className="md:hidden">
+              <ShopSearchBar
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onSubmit={handleSearchSubmit}
+                onClear={handleClearSearch}
+              />
+            </div>
 
             <div className="flex justify-between items-center mb-6 md:mb-10 border-b border-gray-100 pb-4">
               <div className="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest font-bold">
