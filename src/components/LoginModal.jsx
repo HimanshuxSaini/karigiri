@@ -8,7 +8,9 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowLeft,
-  KeyRound
+  KeyRound,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -39,6 +41,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [success, setSuccess] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [slowConnection, setSlowConnection] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
@@ -51,6 +54,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       setIdentifier('');
       setLoading(false);
       setSlowConnection(false);
+      setShowPassword(false);
     }
   }, [isOpen]);
 
@@ -364,11 +368,20 @@ const LoginModal = ({ isOpen, onClose }) => {
                           </button>
                         )}
                       </div>
-                      <input
-                        type="password" required placeholder="••••••••"
-                        value={password} onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"} required placeholder="••••••••"
+                          value={password} onChange={(e) => setPassword(e.target.value)}
+                          className="w-full pl-5 pr-12 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
                     <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-3.5 rounded-xl font-bold text-md shadow-lg shadow-[var(--primary)]/20 disabled:opacity-50 mt-1">
                       {loading ? 'Processing...' : (view === 'login' ? 'Sign In' : 'Create Account')}
