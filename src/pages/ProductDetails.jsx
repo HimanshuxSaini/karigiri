@@ -14,6 +14,11 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [id]);
 
   const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
 
@@ -78,20 +83,49 @@ const ProductDetails = () => {
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Image Gallery */}
           <div className="lg:w-3/5">
-            <div className="flex lg:grid lg:grid-cols-2 gap-4 overflow-x-auto snap-x no-scrollbar mask-fade-right -mx-4 px-4 md:mx-0 md:px-0">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="min-w-[85vw] md:min-w-0 aspect-[3/4] bg-gray-50 flex items-center justify-center rounded overflow-hidden snap-center">
-                  <motion.img
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }}
-                    src={optimizeImage(product.image)} className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-110" alt={`Product ${i}`}
-                    loading={i === 1 ? "eager" : "lazy"}
-                    onError={(e) => {
-                      e.target.src = "/placeholder.png";
-                    }}
-                  />
-                </div>
-              ))}
+            {/* Featured Image */}
+            <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group">
+              <motion.img
+                key={activeImageIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                src={optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[activeImageIndex] : '')}
+                className="max-w-full max-h-full object-contain transition-all duration-700 hover:scale-105"
+                alt={product.name}
+                loading="eager"
+                onError={(e) => {
+                  e.target.src = "/placeholder.png";
+                }}
+              />
             </div>
+
+            {/* Sub Images / Thumbnails */}
+            {product.images && product.images.length > 0 && (
+              <div className="flex gap-4 mt-4 overflow-x-auto no-scrollbar py-2 justify-center lg:justify-start">
+                {[product.image, ...(product.images || [])].filter(Boolean).map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    onMouseEnter={() => setActiveImageIndex(idx)}
+                    className={`relative w-20 h-24 bg-gray-50 rounded-xl overflow-hidden border-2 transition-all flex items-center justify-center ${
+                      activeImageIndex === idx
+                        ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/10 scale-105 shadow-md'
+                        : 'border-slate-200 hover:border-slate-400'
+                    }`}
+                  >
+                    <img
+                      src={optimizeImage(img)}
+                      className="max-w-full max-h-full object-contain p-1"
+                      alt={`Thumbnail ${idx + 1}`}
+                      onError={(e) => {
+                        e.target.src = "/placeholder.png";
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
