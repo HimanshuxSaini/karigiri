@@ -148,7 +148,7 @@ const Admin = () => {
         brand: product.brand,
         inStock: product.inStock,
         sizeType: product.sizeType || 'none',
-        sizes: product.sizes || [],
+        sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
         deliveryCharge: product.deliveryCharge || 0
       });
       setShowProductModal(true);
@@ -246,7 +246,7 @@ const Admin = () => {
       brand: product.brand,
       inStock: product.inStock,
       sizeType: product.sizeType || 'none',
-      sizes: product.sizes || [],
+      sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
       deliveryCharge: product.deliveryCharge || 0
     });
     setShowProductModal(true);
@@ -1813,10 +1813,11 @@ const Admin = () => {
                           value={formData.sizeType}
                           onChange={(e) => {
                             const val = e.target.value;
+                            const currentSizes = Array.isArray(formData.sizes) ? formData.sizes : (typeof formData.sizes === 'string' ? formData.sizes.split(',').map(s => s.trim()).filter(Boolean) : []);
                             setFormData({
                               ...formData,
                               sizeType: val,
-                              sizes: val === 'none' ? [] : formData.sizes
+                              sizes: val === 'none' ? [] : currentSizes
                             });
                           }}
                         >
@@ -1834,7 +1835,7 @@ const Admin = () => {
                             type="text"
                             placeholder="e.g. 28, 30, 32, 34"
                             className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                            value={(formData.sizes || []).join(', ')}
+                            value={(Array.isArray(formData.sizes) ? formData.sizes : []).join(', ')}
                             onChange={(e) => {
                               const val = e.target.value;
                               const splitSizes = val.split(',').map(s => s.trim()).filter(Boolean);
@@ -1848,22 +1849,23 @@ const Admin = () => {
                     {(formData.sizeType === 'standard' || formData.sizeType === 'kids') && (
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
-                          Select Available Sizes ({(formData.sizes || []).length} selected)
+                          Select Available Sizes ({(Array.isArray(formData.sizes) ? formData.sizes : []).length} selected)
                         </label>
                         <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100">
                           {(formData.sizeType === 'standard'
                             ? ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
                             : ['0-3M', '3-6M', '6-12M', '1-2Y', '2-3Y', '3-4Y', '4-5Y', '5-6Y', '7-8Y', '9-10Y', '10-12Y']
                           ).map(sz => {
-                            const isSelected = (formData.sizes || []).includes(sz);
+                            const currentSizes = Array.isArray(formData.sizes) ? formData.sizes : [];
+                            const isSelected = currentSizes.includes(sz);
                             return (
                               <button
                                 key={sz}
                                 type="button"
                                 onClick={() => {
                                   const newSizes = isSelected
-                                    ? (formData.sizes || []).filter(s => s !== sz)
-                                    : [...(formData.sizes || []), sz];
+                                    ? currentSizes.filter(s => s !== sz)
+                                    : [...currentSizes, sz];
                                   setFormData({ ...formData, sizes: newSizes });
                                 }}
                                 className={`px-4 py-2 rounded-xl text-xs font-black transition-all transform active:scale-95 border ${
