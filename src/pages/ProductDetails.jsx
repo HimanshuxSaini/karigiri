@@ -9,13 +9,23 @@ import { fetchProductById } from '../services/api';
 const ProductDetails = () => {
   const { id } = useParams();
   const { user } = useAuthStore();
-  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedSize, setSelectedSize] = useState('');
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
 
   const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
+
+  useEffect(() => {
+    if (product) {
+      if (product.sizes && product.sizes.length > 0) {
+        setSelectedSize(product.sizes[0]);
+      } else {
+        setSelectedSize('One Size');
+      }
+    }
+  }, [product]);
 
   useEffect(() => {
     const getProduct = async () => {
@@ -121,26 +131,28 @@ const ProductDetails = () => {
 
             <p className="text-[var(--accent)] font-black text-sm mb-8 uppercase tracking-wider">inclusive of all taxes</p>
 
-            <div className="mb-10">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="font-black text-sm uppercase tracking-widest">Select Size</h4>
-                <button className="text-[var(--primary)] font-black text-xs uppercase hover:underline">Size Chart ›</button>
+            {product.sizeType !== 'none' && product.sizes && product.sizes.length > 0 && (
+              <div className="mb-10">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-black text-sm uppercase tracking-widest">Select Size</h4>
+                  <button className="text-[var(--primary)] font-black text-xs uppercase hover:underline">Size Chart ›</button>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {product.sizes.map(size => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`min-w-12 h-12 px-4 rounded-full border-2 font-bold text-sm transition-all flex items-center justify-center ${selectedSize === size
+                          ? 'border-[var(--primary)] text-[var(--primary)] bg-[var(--secondary)]/20'
+                          : 'border-slate-200 text-slate-900 hover:border-slate-900'
+                        }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex space-x-4">
-                {['S', 'M', 'L', 'XL'].map(size => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 rounded-full border-2 font-bold text-sm transition-all flex items-center justify-center ${selectedSize === size
-                        ? 'border-[var(--primary)] text-[var(--primary)] bg-[var(--secondary)]/20'
-                        : 'border-slate-200 text-slate-900 hover:border-slate-900'
-                      }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
             <div className="hidden md:flex space-x-4 mb-12">
               <button
@@ -164,8 +176,12 @@ const ProductDetails = () => {
               <div className="flex items-start space-x-4">
                 <Truck className="text-slate-400" size={24} />
                 <div>
-                  <h5 className="font-bold text-sm">Free Delivery Pan-India</h5>
-                  <p className="text-xs text-slate-400">On all prepaid orders over ₹1,000</p>
+                  <h5 className="font-bold text-sm">
+                    {product.deliveryCharge > 0 ? `Delivery Charge: ₹${product.deliveryCharge}` : 'Free Delivery Pan-India'}
+                  </h5>
+                  <p className="text-xs text-slate-400">
+                    {product.deliveryCharge > 0 ? 'Individual delivery charge applicable for this handcrafted product' : 'On all prepaid orders over ₹1,000'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">

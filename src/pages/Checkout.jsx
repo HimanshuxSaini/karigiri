@@ -20,7 +20,7 @@ const getCouponDiscountLabel = (coupon) => {
 
 const Checkout = () => {
   const { user } = useAuthStore();
-  const { items, getTotal, clearCart } = useCartStore();
+  const { items, getTotal, clearCart, getDeliveryCharges } = useCartStore();
   const { addOrder } = useOrderStore();
   const { addresses, addAddress } = useUserStore();
   const { showToast } = useToastStore();
@@ -46,7 +46,8 @@ const Checkout = () => {
   const [couponListError, setCouponListError] = useState('');
 
   const cartTotal = getTotal();
-  const finalTotal = Math.max(0, cartTotal - couponDiscount);
+  const deliveryCharges = getDeliveryCharges();
+  const finalTotal = Math.max(0, cartTotal - couponDiscount + deliveryCharges);
   const appliedCouponId = appliedCoupon?._id || appliedCoupon?.id;
   const couponCards = coupons
     .map((coupon) => ({
@@ -182,6 +183,7 @@ const Checkout = () => {
         quantity: item.quantity,
         image: item.image,
         price: item.price,
+        size: item.size || 'One Size',
         product: item._id || item.id // Ensure we pass the database ID if available
       })),
       shippingAddress: {
@@ -195,6 +197,7 @@ const Checkout = () => {
       subtotal: cartTotal,
       couponCode: appliedCoupon?.code || null,
       couponDiscount: couponDiscount,
+      deliveryCharges: deliveryCharges,
       totalPrice: finalTotal,
       user: user.uid,
       email: user.email.toLowerCase()
@@ -215,10 +218,13 @@ const Checkout = () => {
       message += `*Order ID:* ${createdOrder._id || orderId}\n\n`;
       message += `*Items Ordered:*\n`;
       items.forEach(item => {
-          message += `- ${item.name} x${item.quantity} (${formatCurrency(item.price)})\n\n`;
+          message += `- ${item.name} x${item.quantity} (${formatCurrency(item.price)})${item.size && item.size !== 'One Size' ? ` [Size: ${item.size}]` : ''}\n\n`;
       });
       if (couponDiscount > 0) {
         message += `*Coupon:* ${appliedCoupon?.code} (-${formatCurrency(couponDiscount)})\n`;
+      }
+      if (deliveryCharges > 0) {
+        message += `*Delivery Charges:* ${formatCurrency(deliveryCharges)}\n`;
       }
       message += `*Total Amount:* ${formatCurrency(finalTotal)}\n\n`;
       message += `*(Note: The admin will verify these details against the securely saved Order ID in the system before providing the QR code.)*`;
@@ -532,7 +538,7 @@ const Checkout = () => {
               
               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
                 {items.map((item) => (
-                  <div key={item.id} className="flex space-x-4">
+                  <div key={item.cartItemId || item.id} className="flex space-x-4">
                     <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm">
                       <img src={item.image?.includes('cloudinary.com') ? item.image.replace('/upload/', '/upload/w_100,q_auto:eco,f_auto/') : item.image} className="w-full h-full object-contain" alt={item.name} loading="lazy" />
                       <span className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--primary)] text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
@@ -541,7 +547,9 @@ const Checkout = () => {
                     </div>
                     <div className="flex-grow flex flex-col justify-center">
                       <p className="text-sm font-bold text-[var(--text-main)] leading-tight">{item.name}</p>
-                      <p className="text-xs text-[var(--text-muted)]">{item.category}</p>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                        {item.category} {item.size && item.size !== 'One Size' && `• Size: ${item.size}`}
+                      </p>
                     </div>
                     <div className="flex items-center">
                       <p className="text-sm font-bold text-[var(--text-main)]">{formatCurrency(item.price * item.quantity)}</p>
@@ -556,8 +564,12 @@ const Checkout = () => {
                   <span className="font-bold text-[var(--text-main)]">{formatCurrency(cartTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--text-muted)]">Shipping</span>
-                  <span className="font-bold text-emerald-600 uppercase tracking-widest text-[10px]">Free</span>
+                  <span className="text-[var(--text-muted)]">Delivery Charges</span>
+                  {deliveryCharges > 0 ? (
+                    <span className="font-bold text-[var(--text-main)]">{formatCurrency(deliveryCharges)}</span>
+                  ) : (
+                    <span className="font-bold text-emerald-600 uppercase tracking-widest text-[10px]">Free</span>
+                  )}
                 </div>
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-sm">

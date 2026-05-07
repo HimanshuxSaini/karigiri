@@ -17,7 +17,7 @@ const getCouponDiscountLabel = (coupon) => {
 };
 
 const Cart = () => {
-  const { items, removeItem, updateQuantity, getTotal } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotal, getDeliveryCharges } = useCartStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
@@ -27,7 +27,8 @@ const Cart = () => {
   const [discount, setDiscount] = useState(0);
 
   const cartTotal = getTotal();
-  const finalTotal = Math.max(0, cartTotal - discount);
+  const deliveryCharges = getDeliveryCharges();
+  const finalTotal = Math.max(0, cartTotal - discount + deliveryCharges);
 
   useEffect(() => {
     const loadCoupons = async () => {
@@ -93,7 +94,7 @@ const Cart = () => {
             {items.map((item) => (
               <motion.div 
                 layout
-                key={item.id} 
+                key={item.cartItemId || item.id} 
                 className="glass-card p-4 md:p-6 flex flex-row items-center space-x-4 md:space-x-6"
               >
                 <div className="w-20 md:w-24 aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-xl overflow-hidden shrink-0">
@@ -106,14 +107,22 @@ const Cart = () => {
                 </div>
                 <div className="flex-grow min-w-0">
                   <h3 className="text-sm md:text-lg font-serif text-[var(--primary)] truncate">{item.name}</h3>
-                  <p className="text-[10px] md:text-sm text-[var(--text-muted)]">{item.category}</p>
+                  <div className="flex flex-wrap items-center gap-x-2 text-[10px] md:text-sm text-[var(--text-muted)]">
+                    <span>{item.category}</span>
+                    {item.size && item.size !== 'One Size' && (
+                      <>
+                        <span className="text-gray-300">•</span>
+                        <span className="font-semibold text-[var(--primary)] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">Size: {item.size}</span>
+                      </>
+                    )}
+                  </div>
                   
                   {/* Mobile Quantity & Price */}
                   <div className="flex items-center justify-between mt-2 md:hidden">
                     <div className="flex items-center border border-gray-100 rounded-lg bg-white">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1.5"><Minus size={12}/></button>
+                      <button onClick={() => updateQuantity(item.cartItemId || item.id, item.quantity - 1)} className="p-1.5"><Minus size={12}/></button>
                       <span className="px-3 text-xs font-bold">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1.5"><Plus size={12}/></button>
+                      <button onClick={() => updateQuantity(item.cartItemId || item.id, item.quantity + 1)} className="p-1.5"><Plus size={12}/></button>
                     </div>
                     <span className="font-black text-sm text-[var(--primary)]">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                   </div>
@@ -122,14 +131,14 @@ const Cart = () => {
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center space-x-4">
                   <div className="flex items-center border border-gray-200 rounded-lg">
-                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-2 hover:bg-gray-50"><Minus size={14}/></button>
+                    <button onClick={() => updateQuantity(item.cartItemId || item.id, item.quantity - 1)} className="p-2 hover:bg-gray-50"><Minus size={14}/></button>
                     <span className="px-4 font-bold">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-2 hover:bg-gray-50"><Plus size={14}/></button>
+                    <button onClick={() => updateQuantity(item.cartItemId || item.id, item.quantity + 1)} className="p-2 hover:bg-gray-50"><Plus size={14}/></button>
                   </div>
                   <span className="font-bold w-24 text-right">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                 </div>
 
-                <button onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-500 transition-colors p-2">
+                <button onClick={() => removeItem(item.cartItemId || item.id)} className="text-red-400 hover:text-red-500 transition-colors p-2">
                   <Trash2 size={18} />
                 </button>
               </motion.div>
@@ -152,8 +161,12 @@ const Cart = () => {
                   </div>
                 )}
                 <div className="flex justify-between text-sm md:text-base text-[var(--text-muted)]">
-                  <span>Shipping</span>
-                  <span className="text-green-600 font-bold uppercase text-[10px]">Free</span>
+                  <span>Delivery Charges</span>
+                  {deliveryCharges > 0 ? (
+                    <span className="font-bold text-gray-800">₹{deliveryCharges.toLocaleString('en-IN')}</span>
+                  ) : (
+                    <span className="text-green-600 font-bold uppercase text-[10px]">Free</span>
+                  )}
                 </div>
                 <div className="pt-4 border-t border-gray-100 flex justify-between font-black text-lg md:text-xl text-[var(--primary)]">
                   <span>Total</span>

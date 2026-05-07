@@ -15,6 +15,7 @@ const orderSchema = new mongoose.Schema({
       quantity: { type: Number, required: true },
       image: { type: String, required: true },
       price: { type: Number, required: true },
+      size: { type: String, default: 'One Size' },
       product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
@@ -26,13 +27,32 @@ const orderSchema = new mongoose.Schema({
     address: { type: String, required: true },
     city: { type: String, required: true },
     postalCode: { type: String, required: true },
-    country: { type: String, required: true },
+    state: { type: String, required: false },
+    country: { type: String, required: false },
     phone: { type: String, required: true }
   },
   paymentMethod: {
     type: String,
     required: true,
     default: 'COD'
+  },
+  subtotal: {
+    type: Number,
+    required: false
+  },
+  couponCode: {
+    type: String,
+    required: false
+  },
+  couponDiscount: {
+    type: Number,
+    required: false,
+    default: 0
+  },
+  deliveryCharges: {
+    type: Number,
+    required: false,
+    default: 0
   },
   totalPrice: {
     type: Number,

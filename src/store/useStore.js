@@ -34,35 +34,40 @@ export const useCartStore = create(
       addItem: (product) => {
         const currentItems = get().items;
         const productId = product.id || product._id;
-        const existingItem = currentItems.find((item) => (item.id || item._id) === productId);
+        const size = product.size || 'One Size';
+        const cartItemId = `${productId}-${size}`;
+        const existingItem = currentItems.find((item) => item.cartItemId === cartItemId);
         const productName = product?.name || product?.brand || 'Your item';
         
         if (existingItem) {
           set({
             items: currentItems.map((item) =>
-              (item.id || item._id) === productId ? { ...item, quantity: item.quantity + 1 } : item
+              item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
             ),
           });
         } else {
-          set({ items: [...currentItems, { ...product, id: productId, quantity: 1 }] });
+          set({ items: [...currentItems, { ...product, id: productId, cartItemId, size, quantity: 1 }] });
         }
 
         useToastStore.getState().showToast(`${productName} added to your bag`);
       },
-      removeItem: (productId) => {
-        set({ items: get().items.filter((item) => item.id !== productId) });
+      removeItem: (cartItemId) => {
+        set({ items: get().items.filter((item) => item.cartItemId !== cartItemId && item.id !== cartItemId) });
       },
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (cartItemId, quantity) => {
         if (quantity < 1) return;
         set({
           items: get().items.map((item) =>
-            item.id === productId ? { ...item, quantity } : item
+            (item.cartItemId === cartItemId || item.id === cartItemId) ? { ...item, quantity } : item
           ),
         });
       },
       clearCart: () => set({ items: [] }),
       getTotal: () => {
         return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+      },
+      getDeliveryCharges: () => {
+        return get().items.reduce((total, item) => total + (item.deliveryCharge || 0) * item.quantity, 0);
       },
     }),
     { name: 'cart-storage' }
