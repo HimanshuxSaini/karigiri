@@ -15,6 +15,19 @@ const ProductDetails = () => {
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [showSizeChart, setShowSizeChart] = useState(false);
+  const [zoomStyle, setZoomStyle] = useState({ transformOrigin: 'center' });
+
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setZoomStyle({ transformOrigin: `${x}% ${y}%` });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({ transformOrigin: 'center' });
+  };
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -54,8 +67,29 @@ const ProductDetails = () => {
   }, [id]);
 
   if (loading) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
+    <div className="min-h-screen bg-[var(--background)]">
+      <Navbar />
+      <div className="pt-32 pb-24 max-w-[1440px] mx-auto px-4 md:px-12">
+        <div className="flex flex-col lg:flex-row gap-16">
+          {/* Image Gallery Skeleton */}
+          <div className="lg:w-3/5 space-y-4">
+            <div className="w-full aspect-[3/4] shimmer-bg rounded-2xl"></div>
+            <div className="flex gap-4 justify-center lg:justify-start">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="w-20 h-24 shimmer-bg rounded-xl"></div>
+              ))}
+            </div>
+          </div>
+          {/* Info Skeleton */}
+          <div className="lg:w-2/5 space-y-6 pt-8 lg:pt-0">
+            <div className="h-10 shimmer-bg rounded-lg w-1/3 animate-pulse"></div>
+            <div className="h-6 shimmer-bg rounded-lg w-2/3 animate-pulse"></div>
+            <div className="h-12 shimmer-bg rounded-lg w-1/2 animate-pulse"></div>
+            <div className="h-48 shimmer-bg rounded-2xl w-full animate-pulse"></div>
+            <div className="h-14 shimmer-bg rounded-xl w-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -95,14 +129,19 @@ const ProductDetails = () => {
           {/* Image Gallery */}
           <div className="lg:w-3/5">
             {/* Featured Image */}
-            <div className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group">
+            <div 
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group"
+            >
               <motion.img
                 key={activeImageIndex}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
+                style={{ ...zoomStyle }}
                 src={optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[activeImageIndex] : '')}
-                className={`max-w-full max-h-full object-contain transition-all duration-700 hover:scale-105 ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
+                className={`max-w-full max-h-full object-contain transition-transform duration-200 hover:scale-[1.5] cursor-zoom-in ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
                 alt={product.name}
                 loading="eager"
                 onError={(e) => {
@@ -187,7 +226,7 @@ const ProductDetails = () => {
               <div className="mb-10">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="font-black text-sm uppercase tracking-widest">Select Size</h4>
-                  <button className="text-[var(--primary)] font-black text-xs uppercase hover:underline">Size Chart ›</button>
+                  <button onClick={() => setShowSizeChart(true)} className="text-[var(--primary)] font-black text-xs uppercase hover:underline">Size Chart ›</button>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {product.sizes.map(size => (
@@ -253,8 +292,8 @@ const ProductDetails = () => {
               <div className="flex items-start space-x-4">
                 <RotateCcw className="text-slate-400" size={24} />
                 <div>
-                  <h5 className="font-bold text-sm">30 Days Return</h5>
-                  <p className="text-xs text-slate-400">Easy returns and exchanges</p>
+                  <h5 className="font-bold text-sm">Easy 7-Day Returns & Exchange</h5>
+                  <p className="text-xs text-slate-400">Hassle-free return policy</p>
                 </div>
               </div>
             </div>
@@ -301,33 +340,120 @@ const ProductDetails = () => {
       </div>
 
       {/* Mobile Sticky Actions */}
-      <div className="md:hidden fixed bottom-24 left-0 right-0 bg-white border-t border-gray-100 p-4 z-50 flex items-center space-x-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden fixed bottom-[72px] left-0 right-0 bg-white border-t border-gray-100 p-3 pb-[calc(env(safe-area-inset-bottom,8px)+8px)] z-50 flex items-center space-x-3 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
         <button
           onClick={() => toggleWishlist(product)}
-          className={`h-14 w-14 shrink-0 border rounded-xl flex items-center justify-center transition-all ${isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400'
+          className={`h-12 w-12 shrink-0 border rounded-xl flex items-center justify-center transition-all ${isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400'
             }`}
         >
-          <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
+          <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
         </button>
         <button
           onClick={handleWhatsAppEnquiry}
-          className="h-14 w-14 shrink-0 bg-[#25D366] text-white rounded-xl flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95"
+          className="h-12 w-12 shrink-0 bg-[#25D366] text-white rounded-xl flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95"
         >
-          <MessageCircle size={24} fill="currentColor" />
+          <MessageCircle size={20} fill="currentColor" />
         </button>
         <button
           disabled={isOutOfStock}
           onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
-          className={`min-h-14 flex-grow px-4 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center space-x-2 shadow-lg transition-colors ${
+          className={`min-h-12 flex-grow px-4 rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center space-x-2 shadow-lg transition-colors ${
             isOutOfStock 
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
               : 'bg-[var(--primary)] text-white'
           }`}
         >
-          <ShoppingBag size={20} />
+          <ShoppingBag size={18} />
           <span className="whitespace-nowrap">{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
         </button>
       </div>
+
+      {/* Size Chart Modal */}
+      {showSizeChart && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
+          >
+            <button 
+              onClick={() => setShowSizeChart(false)}
+              className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-400 hover:text-gray-900 transition-colors w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <h3 className="text-xl md:text-2xl font-black text-[var(--primary)] uppercase tracking-tight mb-2">Size Chart</h3>
+            <p className="text-xs md:text-sm text-slate-500 mb-6">Standard size measurements for our exquisite hand-knitted & woolen apparel.</p>
+            
+            <div className="overflow-x-auto border border-slate-100 rounded-2xl mb-8">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[var(--secondary)]/20 border-b border-slate-100">
+                    <th className="p-4 font-black text-xs uppercase tracking-widest text-[var(--primary)]">Size</th>
+                    <th className="p-4 font-black text-xs uppercase tracking-widest text-[var(--primary)]">Bust (inches)</th>
+                    <th className="p-4 font-black text-xs uppercase tracking-widest text-[var(--primary)]">Waist (inches)</th>
+                    <th className="p-4 font-black text-xs uppercase tracking-widest text-[var(--primary)]">Length (inches)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  <tr>
+                    <td className="p-4 font-bold">S</td>
+                    <td className="p-4 text-slate-600">34 - 36</td>
+                    <td className="p-4 text-slate-600">28 - 30</td>
+                    <td className="p-4 text-slate-600">26</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-bold">M</td>
+                    <td className="p-4 text-slate-600">38 - 40</td>
+                    <td className="p-4 text-slate-600">32 - 34</td>
+                    <td className="p-4 text-slate-600">27</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-bold">L</td>
+                    <td className="p-4 text-slate-600">42 - 44</td>
+                    <td className="p-4 text-slate-600">36 - 38</td>
+                    <td className="p-4 text-slate-600">28</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-bold">XL</td>
+                    <td className="p-4 text-slate-600">46 - 48</td>
+                    <td className="p-4 text-slate-600">40 - 42</td>
+                    <td className="p-4 text-slate-600">29</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-bold">XXL</td>
+                    <td className="p-4 text-slate-600">50 - 52</td>
+                    <td className="p-4 text-slate-600">44 - 46</td>
+                    <td className="p-4 text-slate-600">30</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="bg-[var(--secondary)]/10 p-5 rounded-2xl border border-[var(--secondary)]/30">
+              <h4 className="font-black text-xs uppercase tracking-widest text-[var(--primary)] mb-3">How to Measure</h4>
+              <div className="space-y-3 text-xs text-slate-600">
+                <p><strong className="text-[var(--primary)] font-bold">1. Bust:</strong> Measure around the fullest part of your chest, keeping the tape horizontal.</p>
+                <p><strong className="text-[var(--primary)] font-bold">2. Waist:</strong> Measure around the narrowest part of your waistline, keeping the tape comfortable.</p>
+                <p><strong className="text-[var(--primary)] font-bold">3. Length:</strong> Measure from the highest point of the shoulder down to the hem.</p>
+              </div>
+            </div>
+            
+            <div className="mt-8 flex justify-end">
+              <button 
+                onClick={() => setShowSizeChart(false)}
+                className="bg-[var(--primary)] text-white px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg"
+              >
+                Close Chart
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

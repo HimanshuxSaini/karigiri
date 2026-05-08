@@ -113,7 +113,7 @@ const Home = () => {
             </div>
             <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b border-[var(--primary)] pb-0.5 md:pb-1 text-[var(--primary)]">Shop The Collection</Link>
           </div>
-          <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x mask-fade-right">
+          <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth mask-fade-right">
             {[
               { name: "Handmade Woolen Shawl", price: 899, img: "/shawl.png" },
               { name: "Artisanal Crochet Bag", price: 749, img: "/bag.png" },
@@ -148,11 +148,19 @@ const Home = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <div className="aspect-[3/4] shimmer-bg rounded-3xl w-full"></div>
+                <div className="space-y-2 px-1">
+                  <div className="h-4 shimmer-bg rounded-md w-3/4"></div>
+                  <div className="h-3 shimmer-bg rounded-md w-1/2"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x mask-fade-right">
+          <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth mask-fade-right">
             {products.map((product, index) => (
               <motion.div
                 key={product._id || product.id}
@@ -184,7 +192,7 @@ const Home = () => {
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Karigiri in Motion</h2>
           </div>
-          <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right no-scrollbar snap-x">
+          <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right no-scrollbar snap-x snap-mandatory scroll-smooth">
             {(reels.length > 0 ? reels : [
               { image: "/shawl.png", tag: "Handmade Shawls", handle: "@karigiri_official" },
               { image: "/item4.png", tag: "Kids Collection", handle: "@karigiri_official" },

@@ -33,8 +33,8 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 md:top-9 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-2 md:py-4 transition-all">
-        <div className="max-w-[1440px] mx-auto flex justify-between items-center h-14 md:h-16">
+      <nav className="fixed top-0 md:top-9 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-1.5 md:py-2.5 transition-all">
+        <div className="max-w-[1440px] mx-auto flex justify-between items-center h-12 md:h-14">
           <div className="flex items-center space-x-4 md:space-x-12">
             <button
               className="lg:hidden text-gray-800 p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -56,7 +56,7 @@ const Navbar = () => {
                 >
                   <Link
                     to={link.path}
-                    className="hover:text-[var(--primary)] border-b-4 border-transparent hover:border-b-[var(--primary)] pb-6 transition-all block"
+                    className="hover:text-[var(--primary)] border-b-4 border-transparent hover:border-b-[var(--primary)] pb-4 transition-all block"
                   >
                     {link.name}
                   </Link>
@@ -101,7 +101,7 @@ const Navbar = () => {
                 </div>
               ))}
               {isAdmin && (
-                <Link to="/admin" className="hover:text-red-500 border-b-4 border-transparent hover:border-b-red-500 pb-6 transition-all text-red-600 font-black">Admin</Link>
+                <Link to="/admin" className="hover:text-red-500 border-b-4 border-transparent hover:border-b-red-500 pb-4 transition-all text-red-600 font-black">Admin</Link>
               )}
             </div>
           </div>

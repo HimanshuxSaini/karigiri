@@ -9,9 +9,9 @@ const AnnouncementBar = () => {
 
   const announcements = [
     weatherMessage,
-    "FREE SHIPPING ACROSS INDIA ON ALL ORDERS",
-    "CASH ON DELIVERY (COD) AVAILABLE PAN INDIA",
+    "SHOP YOUR FIRST ORDER WITH FREE DELIVERY",
     "USE CODE: FESTIVE30 FOR 30% OFF ON WINTER ETHNIC WEAR",
+    "EASY 7-DAY RETURNS & EXCHANGE",
   ];
 
   return (

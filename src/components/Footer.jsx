@@ -72,10 +72,10 @@ const Footer = () => {
                   <RotateCcw size={40} strokeWidth={1} className="text-slate-400" />
                 </div>
                 <div className="text-center sm:text-left">
-                   <p className="text-sm font-bold text-slate-900 italic">
-                     <span className="font-black">Return within 14 days</span> of
-                   </p>
-                   <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">receiving your order</p>
+                    <p className="text-sm font-bold text-slate-900 italic">
+                      <span className="font-black">Easy 7-Day Returns</span> &
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">Exchange Policy</p>
                 </div>
              </div>
           </div>

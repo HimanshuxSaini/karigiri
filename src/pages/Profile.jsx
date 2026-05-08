@@ -645,7 +645,7 @@ const Profile = () => {
                           </div>
                           <div className="space-y-2 md:col-span-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Gender</label>
-                            <div className="flex space-x-4">
+                            <div className="flex flex-wrap gap-3">
                               {['Male', 'Female', 'Other', 'Prefer not to say'].map((g) => (
                                 <button
                                   key={g}
