@@ -75,6 +75,11 @@ const Shop = () => {
     setSearchInput(rawSearchQuery);
   }, [rawSearchQuery]);
 
+  // Reset scroll when filters change to show the first product first
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [categoryFilter, urlSubCategory, priceRange, searchQuery]);
+
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
