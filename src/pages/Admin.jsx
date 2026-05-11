@@ -259,7 +259,6 @@ const Admin = () => {
 
     setUploadingImage(true);
     try {
-      console.log("Starting main image upload:", file.name);
       const uploadPromise = uploadProductImage(file);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Upload timed out (30s)')), 30000)
@@ -286,7 +285,6 @@ const Admin = () => {
     try {
       const uploadedUrls = [];
       for (const file of files) {
-        console.log("Uploading sub-image:", file.name);
         const uploadPromise = uploadProductImage(file);
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error(`Timeout uploading ${file.name}`)), 30000)
@@ -416,11 +414,9 @@ const Admin = () => {
     const file = input.files[0];
     if (!file) return;
 
-    console.log("Admin: Starting reel preview upload...", file.name);
     setUploadingImage(true);
     try {
       const url = await uploadProductImage(file);
-      console.log("Admin: Reel preview uploaded successfully:", url);
       setReelFormData(prev => ({ ...prev, image: url }));
       showNotification('Preview image uploaded');
     } catch (err) {
