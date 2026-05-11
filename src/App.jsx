@@ -81,21 +81,19 @@ function App() {
         <WhatsAppButton />
         <AnnouncementBar />
         <AmbientBackground />
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
 
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute isAdmin={true}><Admin /></ProtectedRoute>} />
-            {/* Fallback to Home */}
-            <Route path="*" element={<Home />} />
-          </Routes>
-        </AnimatePresence>
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute isAdmin={true}><Admin /></ProtectedRoute>} />
+          {/* Fallback to Home */}
+          <Route path="*" element={<Home />} />
+        </Routes>
         <Footer />
         <BottomNav />
       </div>
