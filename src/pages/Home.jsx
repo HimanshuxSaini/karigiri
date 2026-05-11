@@ -32,7 +32,7 @@ const Home = () => {
           const featured = [
             ...data.filter(p => p?.category === 'Women').slice(0, 1),
             ...data.filter(p => p?.category === 'Kids').slice(0, 1),
-            ...data.filter(p => p?.category === 'Bookey').slice(0, 1),
+            ...data.filter(p => p?.category === 'Bouquet').slice(0, 1),
             ...data.filter(p => p?.category === 'Laddu Gopal').slice(0, 1),
             ...data.filter(p => p?.category === 'Yarn').slice(0, 1),
           ];
@@ -192,7 +192,7 @@ const Home = () => {
               { image: "/shawl.png", tag: "Handmade Shawls", handle: "@karigiri_official" },
               { image: "/item4.png", tag: "Kids Collection", handle: "@karigiri_official" },
               { image: "/bag.png", tag: "Crochet Bags", handle: "@karigiri_official" },
-              { image: "/bookey.png", tag: "Floral Bookey", handle: "@karigiri_official" },
+              { image: "/bookey.png", tag: "Floral Bouquet", handle: "@karigiri_official" },
               { image: "/blanket.png", tag: "Premium Blankets", handle: "@karigiri_official" }
             ]).map((reel, i) => (
               <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">

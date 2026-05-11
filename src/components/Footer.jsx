@@ -13,7 +13,7 @@ const Footer = () => {
               <li><Link to="/shop?category=Women" className="hover:text-black hover:underline underline-offset-4">Women</Link></li>
               <li><Link to="/shop?category=Kids" className="hover:text-black hover:underline underline-offset-4">Kids</Link></li>
               <li><Link to="/shop?category=Men" className="hover:text-black hover:underline underline-offset-4">Men</Link></li>
-              <li><Link to="/shop?category=Bookey" className="hover:text-black hover:underline underline-offset-4">Bookey</Link></li>
+              <li><Link to="/shop?category=Bouquet" className="hover:text-black hover:underline underline-offset-4">Bouquet</Link></li>
               <li><Link to="/shop?category=Laddu Gopal" className="hover:text-black hover:underline underline-offset-4">Laddu Gopal</Link></li>
               <li><Link to="/shop?category=Yarn" className="hover:text-black hover:underline underline-offset-4">Yarn</Link></li>
             </ul>

@@ -50,6 +50,8 @@ export const getFriendlyErrorMessage = (error) => {
   // Check exact mapping
   if (ERROR_MESSAGES[cleanCode]) return ERROR_MESSAGES[cleanCode];
   
+  const upperCode = cleanCode.toUpperCase();
+  
   // Add dynamic checking for common JS/Network Errors
   const techIndicators = ['FETCH', 'NETWORK', 'REFUSED', 'TIMEOUT', 'SOCKET', 'TYPEERROR', 'UNDEFINED', 'NOT A FUNCTION', 'CANNOT READ'];
   if (techIndicators.some(indicator => upperCode.includes(indicator))) {

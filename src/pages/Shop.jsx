@@ -190,7 +190,7 @@ const Shop = () => {
 
         <div className="flex px-4 md:px-12">
           {/* Sidebar Filters */}
-          <aside className="hidden lg:block w-64 pt-12 pr-8 border-r border-gray-100 flex-shrink-0 sticky top-22 self-start max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar">
+          <aside className="hidden lg:block w-64 pt-12 pr-8 border-r border-gray-100 flex-shrink-0 sticky top-28 self-start">
             <div className="flex items-center justify-between mb-8">
               <h2 className="font-bold text-sm uppercase tracking-wider">Filters</h2>
               {(categoryFilter !== 'All' || searchQuery) && (

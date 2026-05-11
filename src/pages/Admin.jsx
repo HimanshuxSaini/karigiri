@@ -786,7 +786,7 @@ const Admin = () => {
                             }, {});
 
                             // Define the exact order and categories to show
-                            const displayCats = ['Women', 'Kids', 'Men', 'Bookey', 'Laddu Gopal', 'Yarn'];
+                            const displayCats = ['Women', 'Kids', 'Men', 'Bouquet', 'Laddu Gopal', 'Yarn'];
 
                             return displayCats.map(cat => {
                               const count = catCounts[cat] || 0;
@@ -944,7 +944,7 @@ const Admin = () => {
                                 <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
                                     p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
                                       p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
-                                        p?.category === 'Bookey' ? 'bg-pink-50 text-pink-600' :
+                                        p?.category === 'Bouquet' ? 'bg-pink-50 text-pink-600' :
                                           p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
                                             p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
                                               'bg-gray-100 text-gray-600'
@@ -1027,7 +1027,7 @@ const Admin = () => {
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
                                         p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
                                           p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
-                                            p?.category === 'Bookey' ? 'bg-pink-50 text-pink-600' :
+                                            p?.category === 'Bouquet' ? 'bg-pink-50 text-pink-600' :
                                               p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
                                                 p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
                                                   'bg-gray-100 text-gray-600'
@@ -1539,7 +1539,7 @@ const Admin = () => {
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     >
                       <option value="">Select Category</option>
-                      {['Women', 'Kids', 'Men', 'Bookey', 'Laddu Gopal', 'Yarn'].map(cat => (
+                      {['Women', 'Kids', 'Men', 'Bouquet', 'Laddu Gopal', 'Yarn'].map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
@@ -1649,9 +1649,9 @@ const Admin = () => {
                     </div>
                   )}
 
-                  {formData.category === 'Bookey' && (
+                  {formData.category === 'Bouquet' && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Bookey Sub-Category</label>
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Bouquet Sub-Category</label>
                       <select
                         className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                         value={formData.subCategory}

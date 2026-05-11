@@ -33,7 +33,7 @@ export const categoryStructure = {
       { title: 'Gifting', items: ['Gift Sets', 'Winter Combos'] }
     ]
   },
-  'Bookey': {
+  'Bouquet': {
     width: 'w-[500px]',
     gridCols: 'grid-cols-2',
     image: '/bookey.png',
@@ -64,7 +64,7 @@ export const navLinks = [
   { name: 'Women', path: '/shop?category=Women' },
   { name: 'Kids', path: '/shop?category=Kids' },
   { name: 'Men', path: '/shop?category=Men' },
-  { name: 'Bookey', path: '/shop?category=Bookey' },
+  { name: 'Bouquet', path: '/shop?category=Bouquet' },
   { name: 'Laddu Gopal', path: '/shop?category=Laddu Gopal' },
   { name: 'Yarn', path: '/shop?category=Yarn' },
 ];

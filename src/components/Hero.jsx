@@ -11,7 +11,7 @@ const Hero = () => {
   const slides = [
     { 
       title: "Floral Collection", 
-      head: "Artisanal\nCrochet Bookey.", 
+      head: "Artisanal\nCrochet Bouquet.", 
       img: "/bookey.png", 
       pos: "object-center",
       fit: "contain"
