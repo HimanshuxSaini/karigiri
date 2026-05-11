@@ -1,5 +1,5 @@
 import Navbar from '../components/Navbar';
-import { useAuthStore, useOrderStore, useWishlistStore, useUserStore, useCartStore } from '../store/useStore';
+import { useAuthStore, useOrderStore, useWishlistStore, useUserStore, useCartStore, useToastStore } from '../store/useStore';
 import { fetchOrders, fetchUserProfile, saveUserProfile } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -34,6 +34,7 @@ const Profile = () => {
   const { wishlist, toggleWishlist } = useWishlistStore();
   const { addItem } = useCartStore();
   const { addresses, addAddress, removeAddress } = useUserStore();
+  const { showToast } = useToastStore();
   
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -131,6 +132,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
+      showToast(error, 'error');
     } finally {
       setIsSaving(false);
     }

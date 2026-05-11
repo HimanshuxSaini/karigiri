@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getFriendlyErrorMessage } from '../utils/errorMessages';
 
 export const useAuthStore = create(
   persist(
@@ -127,8 +128,10 @@ export const useToastStore = create((set) => ({
   toasts: [],
   showToast: (message, type = 'success') => {
     const id = Date.now();
+    const sanitizedMessage = type === 'error' ? getFriendlyErrorMessage(message) : message;
+    
     set((state) => ({
-      toasts: [...state.toasts, { id, message, type }]
+      toasts: [...state.toasts, { id, message: sanitizedMessage, type }]
     }));
     setTimeout(() => {
       set((state) => ({

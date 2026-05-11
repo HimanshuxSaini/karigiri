@@ -50,14 +50,30 @@ export const getFriendlyErrorMessage = (error) => {
   // Check exact mapping
   if (ERROR_MESSAGES[cleanCode]) return ERROR_MESSAGES[cleanCode];
   
+  // Add dynamic checking for common JS/Network Errors
+  const techIndicators = ['FETCH', 'NETWORK', 'REFUSED', 'TIMEOUT', 'SOCKET', 'TYPEERROR', 'UNDEFINED', 'NOT A FUNCTION', 'CANNOT READ'];
+  if (techIndicators.some(indicator => upperCode.includes(indicator))) {
+    return ERROR_MESSAGES['SERVER UNREACHABLE'] || ERROR_MESSAGES.DEFAULT;
+  }
+
   // Check case-insensitive mapping for technical strings
-  const upperCode = cleanCode.toUpperCase();
   for (const [key, value] of Object.entries(ERROR_MESSAGES)) {
-    if (key.toUpperCase() === upperCode || upperCode.includes(key.toUpperCase())) {
+    if (key.toUpperCase() === upperCode || (key.length > 5 && upperCode.includes(key.toUpperCase()))) {
       return value;
     }
   }
   
-  // Fallback to a formatted version of the code if no mapping found
-  return cleanCode.split('/').pop().replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '.';
+  // Only format firebase-style paths (e.g. auth/invalid-password).
+  // If it is arbitrary JavaScript error noise, use DEFAULT to avoid leaking implementation details.
+  if (cleanCode.includes('/')) {
+    return cleanCode.split('/').pop().replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '.';
+  }
+
+  // If it's already a fairly normal sentence (>3 words, has spaces, no weird symbols), pass it through.
+  if (cleanCode.includes(' ') && !/[{}[\]()<>:;]/.test(cleanCode)) {
+    return cleanCode;
+  }
+
+  // Total Safety Fallback
+  return ERROR_MESSAGES.DEFAULT;
 };
