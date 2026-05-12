@@ -100,13 +100,6 @@
   scrollbar-width: none !important;
 }
 
-.mask-fade-right {
-  /* Disabled fade effect */
-}
-
-.mask-fade-left {
-  /* Disabled fade effect */
-}
 
 .app-tab-active {
   @apply bg-[var(--primary)] text-white shadow-md transform scale-105;
