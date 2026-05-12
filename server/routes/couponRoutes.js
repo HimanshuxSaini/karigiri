@@ -6,12 +6,14 @@ const {
   deleteCoupon,
   getAllCoupons,
   validateCoupon,
+  incrementCouponUsage,
 } = require('../controllers/couponController');
 
 const router = express.Router();
 
 router.get('/', getAllCoupons);
 router.post('/validate', validateCoupon);
+router.post('/:id/increment', incrementCouponUsage); // Anyone can increment upon checkout success
 router.post('/', protectAdmin, createCoupon);
 router.put('/:id', protectAdmin, updateCoupon);
 router.delete('/:id', protectAdmin, deleteCoupon);

@@ -197,6 +197,27 @@ const validateCoupon = async (req, res) => {
   }
 };
 
+const incrementCouponUsage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const couponRef = couponsCollection().doc(id);
+    const snapshot = await couponRef.get();
+
+    if (!snapshot.exists) {
+      return res.status(404).json({ message: 'Coupon not found' });
+    }
+
+    await couponRef.update({
+      usedCount: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Increment coupon usage error:', error);
+    return res.status(500).json({ message: 'Failed to increment usage', error: error.message });
+  }
+};
 
 module.exports = {
   createCoupon,
@@ -204,4 +225,5 @@ module.exports = {
   deleteCoupon,
   getAllCoupons,
   validateCoupon,
+  incrementCouponUsage,
 };

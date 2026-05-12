@@ -17,7 +17,25 @@ service cloud.firestore {
     // Orders collection: Anyone can create (checkout), only admin can manage
     match /orders/{orderId} {
       allow create: if true;
+      // Allow read/update/delete for admin
       allow read, update, delete: if isAdmin();
+    }
+
+    // Reels & Config: Public read, Admin write
+    match /reels/{reelId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Users: Read/Write their own data, Admin manages all
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isAdmin();
     }
 
     // Default: Deny all other collections unless specified

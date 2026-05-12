@@ -632,14 +632,14 @@ export const validateCoupon = async (code, orderAmount) => {
 
 export const incrementCouponUsage = async (couponId) => {
   try {
-    const couponDoc = doc(db, 'coupons', couponId);
-    const snapshot = await getDoc(couponDoc);
-    if (snapshot.exists()) {
-      const current = snapshot.data().usedCount || 0;
-      await updateDoc(couponDoc, { usedCount: current + 1 });
+    const response = await fetch(`${API_URL}/coupons/${couponId}/increment`, {
+      method: 'POST'
+    });
+    if (!response.ok) {
+      console.warn("Failed to increment coupon on backend");
     }
   } catch (error) {
-    console.error("Error incrementing coupon usage:", error);
+    console.error("Error connecting to increment coupon endpoint:", error);
   }
 };
 
