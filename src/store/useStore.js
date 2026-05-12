@@ -32,6 +32,8 @@ export const useCartStore = create(
   persist(
     (set, get) => ({
       items: [],
+      appliedCoupon: null,
+      setAppliedCoupon: (coupon) => set({ appliedCoupon: coupon }),
       addItem: (product) => {
         if (product.inStock === false) {
           useToastStore.getState().showToast(`${product.name || 'Item'} is currently out of stock`, 'error');
@@ -67,7 +69,7 @@ export const useCartStore = create(
           ),
         });
       },
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], appliedCoupon: null }),
       getTotal: () => {
         return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
       },
@@ -143,3 +145,34 @@ export const useToastStore = create((set) => ({
     toasts: state.toasts.filter((t) => t.id !== id)
   })),
 }));
+
+export const useActivityStore = create(
+  persist(
+    (set, get) => ({
+      visitedIds: [], // Array of strings
+      searchTerms: [], // Array of strings
+      
+      trackProductVisit: (productId) => {
+        if (!productId) return;
+        const current = get().visitedIds;
+        // Filter out existing to push to front
+        const filtered = current.filter(id => id !== productId);
+        // Limit to 20 items
+        set({ visitedIds: [productId, ...filtered].slice(0, 20) });
+      },
+      
+      trackSearch: (term) => {
+        const trimmed = term?.trim().toLowerCase();
+        if (!trimmed || trimmed.length < 2) return;
+        
+        const current = get().searchTerms;
+        const filtered = current.filter(t => t !== trimmed);
+        // Limit to 10 items
+        set({ searchTerms: [trimmed, ...filtered].slice(0, 10) });
+      },
+      
+      clearActivity: () => set({ visitedIds: [], searchTerms: [] }),
+    }),
+    { name: 'activity-storage' }
+  )
+);

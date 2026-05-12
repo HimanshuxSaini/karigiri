@@ -17,7 +17,7 @@ const BottomNav = () => {
     { name: 'Shop', icon: Search, path: '/shop' },
     { name: 'Bag', icon: ShoppingBag, path: '/cart', badge: items.length },
     { name: 'Wishlist', icon: Heart, path: '/wishlist', badge: wishlist.length },
-    { name: 'Profile', icon: User, path: '/profile' },
+    { name: user ? 'Profile' : 'Login', icon: User, path: '/profile' },
   ];
 
   return (

@@ -1,10 +1,11 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { useCartStore, useWishlistStore, useAuthStore } from '../store/useStore';
+import { useCartStore, useWishlistStore, useAuthStore, useActivityStore } from '../store/useStore';
 import { ShoppingBag, Heart, Star, Truck, RotateCcw, Edit3, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fetchProductById } from '../services/api';
+import RecommendedProducts from '../components/RecommendedProducts';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -14,6 +15,7 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { trackProductVisit } = useActivityStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({ transformOrigin: 'center' });
@@ -64,7 +66,10 @@ const ProductDetails = () => {
       }
     };
     getProduct();
-  }, [id]);
+    if (id) {
+      trackProductVisit(id);
+    }
+  }, [id, trackProductVisit]);
 
   if (loading) return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -337,6 +342,15 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Recommended Products Section */}
+      <div className="max-w-[1440px] mx-auto px-4 md:px-12 pb-24 md:pb-32 border-t border-slate-100 pt-20">
+        <RecommendedProducts 
+          title="Recommended For You"
+          excludeProductIds={[product._id || product.id]}
+          limit={4}
+        />
       </div>
 
       {/* Mobile Sticky Actions */}

@@ -44,7 +44,9 @@ import {
   fetchCoupons,
   createCoupon,
   updateCoupon,
-  deleteCoupon
+  deleteCoupon,
+  fetchFlashSale,
+  updateFlashSale
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
@@ -94,8 +96,16 @@ const Admin = () => {
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [couponFormData, setCouponFormData] = useState({
     code: '', description: '', discountType: 'percentage', discountPercent: 10,
-    discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true
+    discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true,
+    expiryDate: null
   });
+  const [saleConfig, setSaleConfig] = useState({
+    isActive: false,
+    endTime: '',
+    text: 'Flash Sale is live!',
+    discountText: 'Up to 50% OFF'
+  });
+  const [isUpdatingSale, setIsUpdatingSale] = useState(false);
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -104,6 +114,7 @@ const Admin = () => {
     { id: 'billing', label: 'Billing', icon: Printer },
     { id: 'reels', label: 'Reels', icon: Eye },
     { id: 'coupons', label: 'Coupons', icon: Tag },
+    { id: 'sale', label: 'Flash Sale', icon: Clock },
   ];
 
   // Form State
@@ -162,21 +173,38 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
-        fetchCoupons()
+        fetchCoupons(),
+        fetchFlashSale()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
       setReels(reelRes || []);
       setCoupons(couponRes || []);
+      if (saleRes) {
+        setSaleConfig(saleRes);
+      }
     } catch (err) {
       console.error('Failed to load admin data:', err);
       setError(getFriendlyErrorMessage('FAILED TO CONNECT TO FIRESTORE'));
     } finally {
       setLoading(false);
+    }
+  };
+  const handleUpdateSaleConfig = async (e) => {
+    e.preventDefault();
+    setIsUpdatingSale(true);
+    try {
+      await updateFlashSale(saleConfig);
+      showNotification('Flash Sale configuration updated successfully!');
+    } catch (err) {
+      console.error('Failed to update sale config:', err);
+      showNotification('Failed to update configuration', 'error');
+    } finally {
+      setIsUpdatingSale(false);
     }
   };
 
@@ -451,7 +479,8 @@ const Admin = () => {
       maxDiscount: Number(coupon.maxDiscount) || 500,
       minOrderAmount: Number(coupon.minOrderAmount) || 499,
       usageLimit: Number(coupon.usageLimit) || 100,
-      isActive: coupon.isActive !== false
+      isActive: coupon.isActive !== false,
+      expiryDate: coupon.expiryDate || null
     });
     setShowCouponModal(true);
   };
@@ -1473,6 +1502,82 @@ const Admin = () => {
                 </div>
               )}
 
+              {activeTab === 'sale' && (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-2xl font-serif font-bold text-gray-900">Flash Sale Manager</h3>
+                      <p className="text-sm text-gray-500">Configure the countdown banner and promotional text</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm max-w-2xl">
+                    <form onSubmit={handleUpdateSaleConfig} className="space-y-6">
+                      <div className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div>
+                          <h4 className="font-bold text-gray-900">Activate Flash Sale</h4>
+                          <p className="text-xs text-gray-500">Toggle this to show or hide the banner sitewide.</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={saleConfig.isActive}
+                            onChange={(e) => setSaleConfig(prev => ({ ...prev, isActive: e.target.checked }))}
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                        </label>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Banner Main Text</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Flash Sale is live!"
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={saleConfig.text}
+                          onChange={(e) => setSaleConfig(prev => ({ ...prev, text: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Highlight Text / Discount</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Up to 50% OFF"
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={saleConfig.discountText}
+                          onChange={(e) => setSaleConfig(prev => ({ ...prev, discountText: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Sale End Time</label>
+                        <input
+                          type="datetime-local"
+                          required
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={saleConfig.endTime ? new Date(new Date(saleConfig.endTime).getTime() - new Date(saleConfig.endTime).getTimezoneOffset()*60000).toISOString().slice(0,16) : ''}
+                          onChange={(e) => setSaleConfig(prev => ({ ...prev, endTime: e.target.value ? new Date(e.target.value).toISOString() : '' }))}
+                        />
+                        <p className="text-[10px] text-gray-400">Note: Ensure the end time is in the future to start the timer.</p>
+                      </div>
+
+                      <div className="pt-4">
+                        <button
+                          type="submit"
+                          disabled={isUpdatingSale}
+                          className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center"
+                        >
+                          {isUpdatingSale ? 'Saving Updates...' : 'Save Flash Sale Configuration'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
             </Motion.div>
           )}
         </Motion.div>
@@ -2096,6 +2201,16 @@ const Admin = () => {
                       <label className="text-xs font-black uppercase tracking-widest text-gray-400">Usage Limit</label>
                       <input type="number" min="0" value={couponFormData.usageLimit} onChange={(e) => setCouponFormData({ ...couponFormData, usageLimit: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
                     </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">Expiry Date & Time</label>
+                    <input 
+                      type="datetime-local" 
+                      value={couponFormData.expiryDate ? new Date(new Date(couponFormData.expiryDate).getTime() - new Date(couponFormData.expiryDate).getTimezoneOffset()*60000).toISOString().slice(0,16) : ''} 
+                      onChange={(e) => setCouponFormData({ ...couponFormData, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : null })} 
+                      className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold focus:ring-2 focus:ring-purple-500/20" 
+                    />
+                    <p className="text-[10px] text-gray-400">Optional. Coupon will automatically stop working after this point.</p>
                   </div>
                   <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
                     <input type="checkbox" checked={couponFormData.isActive} onChange={(e) => setCouponFormData({ ...couponFormData, isActive: e.target.checked })} className="w-5 h-5 rounded accent-purple-600" />

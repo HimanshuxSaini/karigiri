@@ -54,11 +54,11 @@ const Hero = () => {
   }, []);
 
   return (
-    <div className="pt-14 md:pt-24 bg-white border-b border-gray-100">
-      <div className="max-w-[1440px] mx-auto min-h-[60vh] md:min-h-[80vh] flex flex-col md:flex-row items-center overflow-hidden relative">
+    <div className="h-[calc(100dvh-4.5rem)] md:h-auto pt-14 md:pt-24 bg-white border-b border-gray-100 flex flex-col">
+      <div className="flex-1 w-full max-w-[1440px] mx-auto flex flex-col md:flex-row items-stretch md:items-center overflow-hidden relative">
         
         {/* Left Side: Content */}
-        <div className="w-full md:w-1/2 p-8 md:p-24 flex flex-col justify-center order-2 md:order-1">
+        <div className="w-full h-[48%] md:h-auto md:w-1/2 px-6 md:px-24 flex flex-col justify-center order-2 md:order-1 pb-6 md:pb-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -67,10 +67,10 @@ const Hero = () => {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-[10px] md:text-sm font-black uppercase tracking-[0.3em] text-[var(--primary)] mb-4">
+              <h2 className="text-[10px] md:text-sm font-black uppercase tracking-[0.3em] text-[var(--primary)] mb-2 md:mb-4">
                 {slides[current].title}
               </h2>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-8 whitespace-pre-line">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-4 md:mb-8 whitespace-pre-line">
                 {slides[current].head}
               </h1>
               <Link 
@@ -84,7 +84,7 @@ const Hero = () => {
         </div>
 
         {/* Right Side: Image Box */}
-        <div className="w-full md:w-1/2 h-[60vh] md:h-[80vh] bg-white order-1 md:order-2 flex items-center justify-center p-6 md:p-16">
+        <div className="w-full h-[52%] md:h-[80vh] md:w-1/2 bg-white order-1 md:order-2 flex items-center justify-center p-4 md:p-16">
           <div className="w-full h-full relative group">
             {/* Elegant Stage for Image */}
             <div className="absolute inset-0 bg-gray-50/50 rounded-[3rem] -z-10 transform scale-95 group-hover:scale-100 transition-transform duration-700" />

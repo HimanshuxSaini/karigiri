@@ -612,3 +612,39 @@ export const incrementCouponUsage = async (couponId) => {
     console.error("Error incrementing coupon usage:", error);
   }
 };
+
+// Flash Sale
+export const fetchFlashSale = async () => {
+  try {
+    const response = await fetch(`${API_URL}/sale`);
+    if (!response.ok) throw new Error('Failed to fetch sale configuration');
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching flash sale:", error);
+    return { isActive: false };
+  }
+};
+
+export const updateFlashSale = async (saleConfig) => {
+  try {
+    const token = await getAdminToken();
+    const response = await fetch(`${API_URL}/sale`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(saleConfig)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update flash sale');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating flash sale:", error);
+    throw error;
+  }
+};

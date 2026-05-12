@@ -101,13 +101,11 @@
 }
 
 .mask-fade-right {
-  mask-image: linear-gradient(to right, black 80%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  /* Disabled fade effect */
 }
 
 .mask-fade-left {
-  mask-image: linear-gradient(to left, black 80%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to left, black 80%, transparent 100%);
+  /* Disabled fade effect */
 }
 
 .app-tab-active {

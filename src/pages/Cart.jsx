@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { fetchCoupons, getCouponEligibility } from '../services/api';
+import LoginModal from '../components/LoginModal';
+import RecommendedProducts from '../components/RecommendedProducts';
 
 const formatCurrency = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
@@ -17,18 +19,29 @@ const getCouponDiscountLabel = (coupon) => {
 };
 
 const Cart = () => {
-  const { items, removeItem, updateQuantity, getTotal, getDeliveryCharges } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotal, getDeliveryCharges, appliedCoupon, setAppliedCoupon } = useCartStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
   const [coupons, setCoupons] = useState([]);
   const [loadingCoupons, setLoadingCoupons] = useState(true);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [discount, setDiscount] = useState(0);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const cartTotal = getTotal();
+  
+  // Derive valid eligibility status
+  const couponEligibility = appliedCoupon ? getCouponEligibility(appliedCoupon, cartTotal) : { valid: false, discount: 0 };
+  const discount = couponEligibility.valid ? couponEligibility.discount : 0;
+  
   const deliveryCharges = getDeliveryCharges();
   const finalTotal = Math.max(0, cartTotal - discount + deliveryCharges);
+
+  // Auto-clear global coupon if cart edits push them under min spend thresholds
+  useEffect(() => {
+    if (appliedCoupon && !couponEligibility.valid) {
+      setAppliedCoupon(null);
+    }
+  }, [couponEligibility.valid, appliedCoupon, setAppliedCoupon]);
 
   useEffect(() => {
     const loadCoupons = async () => {
@@ -48,25 +61,12 @@ const Cart = () => {
     const eligibility = getCouponEligibility(coupon, cartTotal);
     if (eligibility.valid) {
       setAppliedCoupon(coupon);
-      setDiscount(eligibility.discount);
     }
   };
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
-    setDiscount(0);
   };
-
-  useEffect(() => {
-    if (appliedCoupon) {
-      const eligibility = getCouponEligibility(appliedCoupon, cartTotal);
-      if (!eligibility.valid) {
-        removeCoupon();
-      } else {
-        setDiscount(eligibility.discount);
-      }
-    }
-  }, [cartTotal, appliedCoupon]);
 
   if (items.length === 0) {
     return (
@@ -246,14 +246,26 @@ const Cart = () => {
                     <ArrowRight size={18} />
                   </Link>
                 ) : (
-                  <Link to="/" className="w-full btn-primary flex items-center justify-center space-x-2">
+                  <button 
+                    onClick={() => setIsLoginModalOpen(true)} 
+                    className="w-full btn-primary flex items-center justify-center space-x-2"
+                  >
                     <span>Login to Checkout</span>
                     <ArrowRight size={18} />
-                  </Link>
+                  </button>
                 )}
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Recommended Products */}
+        <div className="mt-24 md:mt-32">
+          <RecommendedProducts 
+            title="Pairs well with your bag"
+            excludeProductIds={items.map(i => i.id)}
+            limit={4}
+          />
         </div>
 
         {/* Mobile Sticky Checkout Bar */}
@@ -269,14 +281,22 @@ const Cart = () => {
                   <ArrowRight size={16} />
                 </Link>
              ) : (
-                <Link to="/" className="bg-[var(--primary)] text-white px-8 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg">
+                <button 
+                  onClick={() => setIsLoginModalOpen(true)} 
+                  className="bg-[var(--primary)] text-white px-8 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg active:scale-95 transition-transform"
+                >
                   <span>Login</span>
                   <ArrowRight size={16} />
-                </Link>
+                </button>
              )}
           </div>
         </div>
       </div>
+      
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </div>
   );
 };

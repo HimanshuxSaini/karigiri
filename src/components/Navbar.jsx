@@ -141,7 +141,7 @@ const Navbar = () => {
               onClick={() => user ? navigate('/profile') : setIsLoginModalOpen(true)}
             >
               <User size={20} className="group-hover:text-[var(--primary)]" />
-              <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">
+              <span className={`${!user ? 'block' : 'hidden md:block'} text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]`}>
                 {user ? (user.displayName?.split(' ')[0] || 'Profile') : 'Login'}
               </span>
             </div>

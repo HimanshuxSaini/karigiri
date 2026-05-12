@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FAQ from '../components/FAQ';
-import { fetchProducts, fetchReels } from '../services/api';
+import { fetchProducts, fetchReels, fetchFlashSale } from '../services/api';
 import { categoryStructure } from '../data/categories';
+import CustomizationSection from '../components/CustomizationSection';
 
 
 // Asset Imports
@@ -18,9 +19,11 @@ import yarnImg from '../assets/yarn.png';
 const Home = () => {
   const [products, setProducts] = useState([]);
 
+  const [dealsProducts, setDealsProducts] = useState([]);
   const [reels, setReels] = useState([]);
+  const [saleConfig, setSaleConfig] = useState({ isActive: false });
   const [loading, setLoading] = useState(true);
-  const categories = ['All', ...Object.keys(categoryStructure)];
+  const categories = ['All', ...Object.keys(categoryStructure).filter(cat => cat !== 'Yarn')];
 
 
   useEffect(() => {
@@ -28,21 +31,51 @@ const Home = () => {
       try {
         const data = await fetchProducts();
         if (Array.isArray(data) && data.length > 0) {
-          // Filter products for featured section (2 from each major category)
-          const featured = [
-            ...data.filter(p => p?.category === 'Women').slice(0, 1),
-            ...data.filter(p => p?.category === 'Kids').slice(0, 1),
-            ...data.filter(p => p?.category === 'Bouquet').slice(0, 1),
-            ...data.filter(p => p?.category === 'Laddu Gopal').slice(0, 1),
-            ...data.filter(p => p?.category === 'Yarn').slice(0, 1),
+          // Filter out 'Yarn' category from the main page as requested
+          const filteredData = data.filter(p => p?.category !== 'Yarn');
+
+          // Randomly shuffle product array on each load to display different items
+          const shuffledData = [...filteredData].sort(() => Math.random() - 0.5);
+
+          // Logic for the top "Deals" section specifically requesting real products like Bouquet, Kids, Men under 999
+          const budgetData = shuffledData.filter(p => Number(p.price) < 1000); // Filter under 1000 (or 999)
+          
+          const reqDeals = [
+            ...budgetData.filter(p => p?.category === 'Bouquet').slice(0, 1),
+            ...budgetData.filter(p => p?.category === 'Kids').slice(0, 1),
+            ...budgetData.filter(p => p?.category === 'Men').slice(0, 1),
           ];
-          setProducts(featured.length > 0 ? featured : data.slice(0, 8));
+          
+          // Fill remaining up to 4 with other items strictly from budgetData
+          const filledDeals = [...reqDeals];
+          const otherBudgets = budgetData.filter(p => !filledDeals.find(d => d._id === p._id));
+          
+          if (filledDeals.length < 4) {
+            filledDeals.push(...otherBudgets.slice(0, 4 - filledDeals.length));
+          }
+
+          setDealsProducts(filledDeals);
+
+          // Filter products for featured section (1 random from each major category)
+          const featured = [
+            ...shuffledData.filter(p => p?.category === 'Women').slice(0, 1),
+            ...shuffledData.filter(p => p?.category === 'Kids').slice(0, 1),
+            ...shuffledData.filter(p => p?.category === 'Bouquet').slice(0, 1),
+            ...shuffledData.filter(p => p?.category === 'Laddu Gopal').slice(0, 1),
+          ];
+          
+          // Fill if total items chosen are still low
+          const remainingFeatured = shuffledData.filter(p => !featured.find(f => f._id === p._id)).slice(0, 8 - featured.length);
+          setProducts([...featured, ...remainingFeatured]);
+
         } else {
-          setProducts([]); 
+          setProducts([]);
+          setDealsProducts([]); 
         }
       } catch (err) {
         console.error('Failed to fetch home products:', err);
         setProducts([]);
+        setDealsProducts([]);
       } finally {
         setLoading(false);
       }
@@ -59,8 +92,18 @@ const Home = () => {
       }
     };
 
+    const getSale = async () => {
+      try {
+        const data = await fetchFlashSale();
+        if (data) setSaleConfig(data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
     getFeaturedProducts();
     getReels();
+    getSale();
 
 
   }, []);
@@ -72,7 +115,7 @@ const Home = () => {
 
       {/* Mobile Category Pills - Quick Navigation */}
       <div className="md:hidden sticky top-14 z-40 bg-white shadow-sm border-b border-gray-50 overflow-hidden">
-        <div className="flex overflow-x-auto py-4 px-4 space-x-3 no-scrollbar mask-fade-right">
+        <div className="flex overflow-x-auto py-4 px-4 space-x-3 no-scrollbar">
           {categories.map((cat) => (
             <Link
               key={cat}
@@ -86,17 +129,37 @@ const Home = () => {
       </div>
 
       {/* Flash Sale Countdown */}
-      <section className="bg-[var(--primary)] text-white py-4 md:py-4 text-center overflow-hidden">
-        <motion.div
-          animate={{ scale: [1, 1.01, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 px-4"
-        >
-          <span className="text-[10px] md:text-sm font-black uppercase tracking-widest">Flash Sale Ends In:</span>
-          <FlashSaleTimer />
-          <Link to="/shop" className="bg-white text-[var(--primary)] px-6 py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-wider">Shop Now</Link>
-        </motion.div>
-      </section>
+      <AnimatePresence>
+        {saleConfig?.isActive && (
+          <motion.section 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-[var(--primary)] text-white py-4 md:py-4 text-center overflow-hidden border-b border-white/10"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.01, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 px-4"
+            >
+              <span className="text-[10px] md:text-sm font-black uppercase tracking-widest flex items-center">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse mr-2 hidden sm:inline-block"></span>
+                {saleConfig.text || 'Flash Sale Ends In'}:
+              </span>
+              <FlashSaleTimer 
+                endTime={saleConfig.endTime} 
+                onExpire={() => setSaleConfig(prev => ({ ...prev, isActive: false }))} 
+              />
+              <div className="flex items-center space-x-3">
+                {saleConfig.discountText && (
+                  <span className="text-xs font-bold text-yellow-300 hidden md:inline-block border border-yellow-300/30 px-2 py-0.5 rounded bg-yellow-300/10">{saleConfig.discountText}</span>
+                )}
+                <Link to="/shop" className="bg-white hover:bg-slate-100 text-[var(--primary)] px-6 py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm">Shop Now</Link>
+              </div>
+            </motion.div>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* Under 999 Deals */}
       <section className="py-12 md:py-20 px-4 md:px-12 bg-white">
@@ -108,22 +171,39 @@ const Home = () => {
             </div>
             <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b border-[var(--primary)] pb-0.5 md:pb-1 text-[var(--primary)]">Shop The Collection</Link>
           </div>
-          <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth mask-fade-right">
-            {[
-              { name: "Handmade Woolen Shawl", price: 899, img: "/shawl.png" },
-              { name: "Artisanal Crochet Bag", price: 749, img: "/bag.png" },
-              { name: "Kids Winter Beanie", price: 499, img: "/item4.png" },
-            ].map((deal, i) => (
-              <Link key={i} to="/shop" className="group min-w-[170px] md:min-w-0 snap-center bg-white p-3 rounded-3xl border border-gray-50 shadow-sm md:shadow-none md:border-none md:bg-transparent">
-                <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4">
-                  <img src={deal.img} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-lg" alt={deal.name} />
-                </div>
-                <div className="px-1 text-center sm:text-left">
-                  <h4 className="text-[10px] md:text-xs font-bold text-[var(--text-main)] truncate mb-1">{deal.name}</h4>
-                  <p className="text-xs md:text-sm font-black text-[var(--primary)]">₹{deal.price.toLocaleString('en-IN')}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
+            {loading ? (
+              [...Array(4)].map((_, i) => (
+                 <div key={i} className="min-w-[170px] md:min-w-0 bg-white p-3 rounded-3xl space-y-3">
+                    <div className="aspect-[3/4] shimmer-bg rounded-2xl w-full"></div>
+                    <div className="h-3 shimmer-bg rounded-md w-3/4"></div>
+                    <div className="h-3 shimmer-bg rounded-md w-1/2"></div>
+                 </div>
+              ))
+            ) : dealsProducts.length > 0 ? (
+              dealsProducts.map((deal) => (
+                <Link key={deal._id} to={`/product/${deal._id}`} className="group min-w-[170px] md:min-w-0 snap-center bg-white p-3 rounded-3xl border border-gray-50 shadow-sm md:shadow-none md:border-none md:bg-transparent">
+                  <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4 relative">
+                     <img 
+                       src={deal.image} 
+                       className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-lg" 
+                       alt={deal.name} 
+                     />
+                     <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-full text-[8px] font-black text-[var(--primary)] uppercase">
+                        {deal.category}
+                     </div>
+                  </div>
+                  <div className="px-1 text-center sm:text-left">
+                    <h4 className="text-[10px] md:text-xs font-bold text-[var(--text-main)] truncate mb-1">{deal.name}</h4>
+                    <p className="text-xs md:text-sm font-black text-[var(--primary)]">₹{deal.price.toLocaleString('en-IN')}</p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-4 text-center py-10 text-gray-400 text-sm">
+                No products found. Start uploading!
+              </div>
+            )}
           </div>
           <div className="mt-8 text-center sm:hidden">
             <Link to="/shop" className="inline-block text-[10px] font-black uppercase tracking-[0.2em] border-2 border-[var(--primary)] px-8 py-3 rounded-full text-[var(--primary)]">Explore All Deals</Link>
@@ -155,7 +235,7 @@ const Home = () => {
             ))}
           </div>
         ) : (
-          <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth mask-fade-right">
+          <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
             {products.map((product, index) => (
               <motion.div
                 key={product._id || product.id}
@@ -187,7 +267,7 @@ const Home = () => {
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Karigiri in Motion</h2>
           </div>
-          <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 mask-fade-right no-scrollbar snap-x snap-mandatory scroll-smooth">
+          <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory scroll-smooth">
             {(reels.length > 0 ? reels : [
               { image: "/shawl.png", tag: "Handmade Shawls", handle: "@karigiri_official" },
               { image: "/item4.png", tag: "Kids Collection", handle: "@karigiri_official" },
@@ -218,7 +298,7 @@ const Home = () => {
           <p className="text-sm md:text-lg text-[var(--text-muted)] italic max-w-2xl mx-auto leading-relaxed">Behind every Karigiri creation is a master artisan. We work directly with weavers and knitters to preserve age-old traditions.</p>
         </div>
 
-        <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-6 md:gap-12 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x mask-fade-right">
+        <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-6 md:gap-12 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x">
           {[
             { name: "Nisha Devi", region: "Sonipat, Haryana", craft: "Master Knitter", story: "Nisha leads our local knitting circle in Sonipat, specializing in intricate geometric patterns passed down through generations of her family." },
             { name: "Ajay Kumar Pandey", region: "Sonipat, Haryana", craft: "Premium Weaver", story: "Ajay transforms raw ethically sourced wool into gossamer-thin wraps using traditional looms preserved in our Sonipat studio." }
@@ -245,6 +325,7 @@ const Home = () => {
         </div>
       </section>
 
+      <CustomizationSection />
 
       <FAQ />
     </div>

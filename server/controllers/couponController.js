@@ -12,6 +12,7 @@ const normalizeCouponPayload = (payload = {}) => ({
   minOrderAmount: Number(payload.minOrderAmount || 0),
   usageLimit: Number(payload.usageLimit || 0),
   isActive: payload.isActive !== false,
+  expiryDate: payload.expiryDate || null,
 });
 
 const validateCouponPayload = (payload) => {
@@ -159,6 +160,10 @@ const validateCoupon = async (req, res) => {
       return res.status(400).json({ message: 'This coupon is no longer active' });
     }
 
+    if (coupon.expiryDate && new Date() > new Date(coupon.expiryDate)) {
+      return res.status(400).json({ message: 'This coupon has expired' });
+    }
+
     if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
       return res.status(400).json({ message: 'Coupon usage limit reached' });
     }
@@ -180,8 +185,8 @@ const validateCoupon = async (req, res) => {
     return res.json({
       success: true,
       coupon: {
-        code: coupon.code,
-        discountType: coupon.discountType,
+        ...coupon,
+        _id: coupon.id,
         discountValue: coupon.discountType === 'percentage' ? coupon.discountPercent : coupon.discountAmount,
         discountAmount: discount,
       },

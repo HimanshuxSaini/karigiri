@@ -1,39 +1,56 @@
 import { useState, useEffect } from 'react';
 
-const FlashSaleTimer = () => {
-  const [timeLeft, setTimeLeft] = useState(2 * 3600 + 44 * 60 + 32); // 02:44:32 in seconds
+const FlashSaleTimer = ({ endTime, onExpire }) => {
+  const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
-    if (timeLeft <= 0) {
-      setTimeLeft(2 * 3600 + 44 * 60 + 32); // Reset loop
-      return;
-    }
+    const calculateTimeLeft = () => {
+      if (!endTime) return 0;
+      const diff = new Date(endTime).getTime() - Date.now();
+      return Math.max(0, Math.floor(diff / 1000));
+    };
+
+    setTimeLeft(calculateTimeLeft());
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
+      const seconds = calculateTimeLeft();
+      setTimeLeft(seconds);
+      
+      if (seconds <= 0) {
+        clearInterval(timer);
+        if (onExpire) onExpire();
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [endTime]);
 
   const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
+    const days = Math.floor(seconds / (24 * 3600));
+    const h = Math.floor((seconds % (24 * 3600)) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return {
+      d: String(days).padStart(2, '0'),
       h: String(h).padStart(2, '0'),
       m: String(m).padStart(2, '0'),
-      s: String(s).padStart(2, '0')
+      s: String(s).padStart(2, '0'),
+      days
     };
   };
 
-  const { h, m, s } = formatTime(timeLeft);
+  const { d, h, m, s, days } = formatTime(timeLeft);
+
+  if (timeLeft <= 0) return null;
 
   return (
-    <div className="flex space-x-4">
-      <div>{h} <span className="text-[10px] font-normal">HRS</span></div>
-      <div>{m} <span className="text-[10px] font-normal">MIN</span></div>
-      <div>{s} <span className="text-[10px] font-normal">SEC</span></div>
+    <div className="flex space-x-3 md:space-x-4 font-mono">
+      {days > 0 && (
+        <div>{d} <span className="text-[10px] font-normal opacity-80 font-sans">DAYS</span></div>
+      )}
+      <div>{h} <span className="text-[10px] font-normal opacity-80 font-sans">HRS</span></div>
+      <div>{m} <span className="text-[10px] font-normal opacity-80 font-sans">MIN</span></div>
+      <div>{s} <span className="text-[10px] font-normal opacity-80 font-sans">SEC</span></div>
     </div>
   );
 };

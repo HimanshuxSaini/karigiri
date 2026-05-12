@@ -1,7 +1,7 @@
 import Navbar from '../components/Navbar';
 import { useCartStore, useOrderStore, useUserStore, useAuthStore, useToastStore } from '../store/useStore';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, X, Tag, Loader2 } from 'lucide-react';
+import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, Minus, X, Tag, Loader2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { createOrder, validateCoupon, incrementCouponUsage, fetchCoupons, getCouponEligibility, fetchOrders } from '../services/api';
@@ -20,7 +20,7 @@ const getCouponDiscountLabel = (coupon) => {
 
 const Checkout = () => {
   const { user } = useAuthStore();
-  const { items, getTotal, clearCart, getDeliveryCharges } = useCartStore();
+  const { items, getTotal, clearCart, getDeliveryCharges, updateQuantity, removeItem, appliedCoupon, setAppliedCoupon } = useCartStore();
   const { addOrder } = useOrderStore();
   const { addresses, addAddress } = useUserStore();
   const { showToast } = useToastStore();
@@ -38,8 +38,11 @@ const Checkout = () => {
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponDiscount, setCouponDiscount] = useState(0);
+  const initialCoupon = useCartStore.getState().appliedCoupon;
+  const initialTotal = useCartStore.getState().getTotal();
+  const initialEligibility = initialCoupon ? getCouponEligibility(initialCoupon, initialTotal) : { valid: false, discount: 0 };
+
+  const [couponDiscount, setCouponDiscount] = useState(initialEligibility.valid ? initialEligibility.discount : 0);
   const [couponMessage, setCouponMessage] = useState({ text: '', type: '' });
   const [coupons, setCoupons] = useState([]);
   const [couponsLoading, setCouponsLoading] = useState(true);
@@ -70,38 +73,17 @@ const Checkout = () => {
 
   const cartTotal = getTotal();
   const deliveryCharges = getDeliveryCharges();
-  const isFirstOrder = userOrders.length === 0;
-  const isFirstDeliveryCouponApplied = appliedCoupon?.code?.toUpperCase() === 'FIRSTDELIVERY';
-  const actualDeliveryCharges = (isFirstDeliveryCouponApplied && isFirstOrder) ? 0 : deliveryCharges;
+  const isFirstOrder = !loadingOrders && userOrders.length === 0;
+  const actualDeliveryCharges = isFirstOrder ? 0 : deliveryCharges;
   const finalTotal = Math.max(0, cartTotal - couponDiscount + actualDeliveryCharges);
-  
+
   const appliedCouponId = appliedCoupon?._id || appliedCoupon?.id;
   
-  const displayedCoupons = isFirstOrder 
-    ? [
-        {
-          _id: 'firstdelivery-id',
-          id: 'firstdelivery-id',
-          code: 'FIRSTDELIVERY',
-          discountType: 'delivery',
-          discountAmount: deliveryCharges,
-          description: 'Free delivery on your first order. Use code FIRSTDELIVERY.',
-          minOrderAmount: 0,
-          isActive: true
-        },
-        ...coupons
-      ]
-    : coupons;
+  // Hide special internal coupons from UI list - now applied automatically
+  const displayedCoupons = coupons.filter(c => c.code?.toUpperCase() !== 'FIRSTDELIVERY');
 
   const couponCards = displayedCoupons
     .map((coupon) => {
-      if (coupon.code === 'FIRSTDELIVERY') {
-        return {
-          ...coupon,
-          couponId: 'firstdelivery-id',
-          eligibility: { valid: true, discount: deliveryCharges, message: 'Free delivery applied' }
-        };
-      }
       return {
         ...coupon,
         couponId: coupon._id || coupon.id,
@@ -129,23 +111,11 @@ const Checkout = () => {
     setCouponMessage({ text: '', type: '' });
 
     if (normalizedCode === 'FIRSTDELIVERY') {
-      if (!isFirstOrder) {
-        setCouponMessage({ text: 'The FIRSTDELIVERY coupon is only valid for your first order.', type: 'error' });
-        setAppliedCoupon(null);
-        setCouponDiscount(0);
-        setCouponLoading(false);
-        return;
+      if (isFirstOrder) {
+        setCouponMessage({ text: 'Welcome! Free delivery is already automatically applied to your order total.', type: 'success' });
+      } else {
+        setCouponMessage({ text: 'The FIRSTDELIVERY offer is only valid for new customers.', type: 'error' });
       }
-      setAppliedCoupon({
-        _id: 'firstdelivery-id',
-        id: 'firstdelivery-id',
-        code: 'FIRSTDELIVERY',
-        discountType: 'delivery',
-        discountAmount: deliveryCharges,
-        description: 'Free delivery on your first order'
-      });
-      setCouponDiscount(0);
-      setCouponMessage({ text: 'Coupon applied! Your delivery charge is now ₹0.', type: 'success' });
       setCouponLoading(false);
       return;
     }
@@ -216,17 +186,6 @@ const Checkout = () => {
   useEffect(() => {
     if (!appliedCoupon) return;
 
-    if (appliedCoupon.code === 'FIRSTDELIVERY') {
-      if (!isFirstOrder) {
-        setAppliedCoupon(null);
-        setCouponDiscount(0);
-        setCouponMessage({
-          text: 'FIRSTDELIVERY removed. Only valid for your first order.',
-          type: 'error'
-        });
-      }
-      return;
-    }
 
     const latestAppliedCoupon =
       coupons.find((coupon) => (coupon._id || coupon.id) === appliedCouponId) || appliedCoupon;
@@ -312,8 +271,8 @@ const Checkout = () => {
       }
       if (actualDeliveryCharges > 0) {
         message += `*Delivery Charges:* ${formatCurrency(actualDeliveryCharges)}\n`;
-      } else if (isFirstDeliveryCouponApplied) {
-        message += `*Delivery Charges:* Free (First Order Coupon)\n`;
+      } else if (isFirstOrder) {
+        message += `*Delivery Charges:* Free (First Order Offer)\n`;
       }
       message += `*Total Amount:* ${formatCurrency(finalTotal)}\n\n`;
       message += `*(Note: The admin will verify these details against the securely saved Order ID in the system before providing the QR code.)*`;
@@ -627,21 +586,39 @@ const Checkout = () => {
               
               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
                 {items.map((item) => (
-                  <div key={item.cartItemId || item.id} className="flex space-x-4">
-                    <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm">
+                  <div key={item.cartItemId || item.id} className="flex space-x-4 items-center bg-white/30 p-2 rounded-2xl">
+                    <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm shrink-0">
                       <img src={item.image?.includes('cloudinary.com') ? item.image.replace('/upload/', '/upload/w_100,q_auto:eco,f_auto/') : item.image} className="w-full h-full object-contain" alt={item.name} loading="lazy" />
-                      <span className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--primary)] text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
-                        {item.quantity}
-                      </span>
                     </div>
-                    <div className="flex-grow flex flex-col justify-center">
-                      <p className="text-sm font-bold text-[var(--text-main)] leading-tight">{item.name}</p>
-                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                    <div className="flex-grow min-w-0">
+                      <p className="text-sm font-bold text-[var(--text-main)] truncate">{item.name}</p>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">
                         {item.category} {item.size && item.size !== 'One Size' && `• Size: ${item.size}`}
                       </p>
                     </div>
-                    <div className="flex items-center">
-                      <p className="text-sm font-bold text-[var(--text-main)]">{formatCurrency(item.price * item.quantity)}</p>
+                    <div className="flex flex-col items-end justify-center space-y-1.5 shrink-0">
+                      <p className="text-xs font-bold text-[var(--text-main)]">{formatCurrency(item.price * item.quantity)}</p>
+                      <div className="flex items-center border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden">
+                        <button 
+                          onClick={() => {
+                            if (item.quantity > 1) {
+                              updateQuantity(item.cartItemId || item.id, item.quantity - 1);
+                            } else {
+                              removeItem(item.cartItemId || item.id);
+                            }
+                          }} 
+                          className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
+                        >
+                          {item.quantity === 1 ? <Trash2 size={10} className="text-red-400"/> : <Minus size={10}/>}
+                        </button>
+                        <span className="px-2 text-[10px] font-black text-[var(--primary)]">{item.quantity}</span>
+                        <button 
+                          onClick={() => updateQuantity(item.cartItemId || item.id, item.quantity + 1)} 
+                          className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
+                        >
+                          <Plus size={10}/>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -658,7 +635,7 @@ const Checkout = () => {
                     <span className="font-bold text-[var(--text-main)]">{formatCurrency(actualDeliveryCharges)}</span>
                   ) : (
                     <span className="font-bold text-emerald-600 uppercase tracking-widest text-[10px]">
-                      {isFirstDeliveryCouponApplied ? 'Free (First Order)' : 'Free'}
+                      {isFirstOrder ? 'Free (First Order)' : 'Free'}
                     </span>
                   )}
                 </div>

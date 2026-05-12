@@ -5,7 +5,9 @@ import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
+import RecommendedProducts from '../components/RecommendedProducts';
 import { categoryStructure } from '../data/categories';
+import { useActivityStore } from '../store/useStore';
 
 const ProductSkeleton = () => (
   <div className="animate-pulse flex flex-col h-full">
@@ -52,6 +54,7 @@ const ShopSearchBar = ({ value, onChange, onSubmit, onClear }) => (
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { trackSearch } = useActivityStore();
   
   const categories = ['All', ...Object.keys(categoryStructure)];
   
@@ -73,7 +76,10 @@ const Shop = () => {
 
   useEffect(() => {
     setSearchInput(rawSearchQuery);
-  }, [rawSearchQuery]);
+    if (searchQuery) {
+      trackSearch(searchQuery);
+    }
+  }, [rawSearchQuery, searchQuery, trackSearch]);
 
   // Reset scroll when filters change to show the first product first
   useEffect(() => {
@@ -171,7 +177,7 @@ const Shop = () => {
       <div className="pt-16 md:pt-28 max-w-[1440px] mx-auto">
         {/* Mobile Horizontal Categories */}
         <div className="lg:hidden sticky top-14 z-40 bg-white shadow-sm border-b border-gray-50 overflow-hidden">
-          <div className="flex overflow-x-auto py-4 px-4 space-x-3 no-scrollbar mask-fade-right">
+          <div className="flex overflow-x-auto py-4 px-4 space-x-3 no-scrollbar">
             {categories.map(cat => (
               <button
                 key={cat}
@@ -344,6 +350,15 @@ const Shop = () => {
                 )}
               </AnimatePresence>
             </div>
+            
+            {/* Dynamic Personalized Recommendations */}
+            {!loading && (
+               <RecommendedProducts 
+                 title="Handpicked For You" 
+                 className="mt-24" 
+                 limit={4}
+               />
+            )}
           </main>
         </div>
       </div>
