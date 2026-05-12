@@ -8,6 +8,7 @@ import Wishlist from './pages/Wishlist';
 import ProductDetails from './pages/ProductDetails';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
+import Returns from './pages/Returns';
 import AmbientBackground from './components/AmbientBackground';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
@@ -90,6 +91,7 @@ function App() {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/returns" element={<Returns />} />
           <Route path="/admin" element={<ProtectedRoute isAdmin={true}><Admin /></ProtectedRoute>} />
           {/* Fallback to Home */}
           <Route path="*" element={<Home />} />

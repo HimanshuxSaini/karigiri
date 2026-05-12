@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="text-center sm:text-left">
             <h4 className="font-black uppercase text-xs tracking-widest mb-6 text-slate-900">Online Shopping</h4>
             <ul className="space-y-3 text-[13px] font-bold text-slate-500">
-              <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">Men</Link></li>
+              <li><Link to="/shop" className="hover:text-black hover:underline underline-offset-4">All Collections</Link></li>
               <li><Link to="/shop?category=Women" className="hover:text-black hover:underline underline-offset-4">Women</Link></li>
               <li><Link to="/shop?category=Kids" className="hover:text-black hover:underline underline-offset-4">Kids</Link></li>
               <li><Link to="/shop?category=Men" className="hover:text-black hover:underline underline-offset-4">Men</Link></li>
