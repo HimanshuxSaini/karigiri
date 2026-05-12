@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, RotateCcw, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { ShieldCheck, RotateCcw, Facebook, Instagram, Twitter, Youtube, Smartphone } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -35,14 +35,15 @@ const Footer = () => {
           </div>
 
           <div className="lg:col-span-1 text-center sm:text-left">
-             <h4 className="font-black uppercase text-xs tracking-widest mb-6 text-slate-900">Experience Karigiri App</h4>
-             <div className="flex flex-wrap justify-center sm:justify-start gap-4 mb-8">
-                <button className="bg-black text-white px-4 py-2 rounded flex items-center space-x-2">
-                   <div className="text-[8px] leading-tight text-left uppercase">GET IT ON <br /><span className="text-sm font-bold normal-case">Google Play</span></div>
-                </button>
-                <button className="bg-black text-white px-4 py-2 rounded flex items-center space-x-2">
-                   <div className="text-[8px] leading-tight text-left uppercase">Download on the <br /><span className="text-sm font-bold normal-case">App Store</span></div>
-                </button>
+             <h4 className="font-black uppercase text-xs tracking-widest mb-4 text-slate-900">Mobile Experience</h4>
+             <div className="flex items-start space-x-3 mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 max-w-[260px] mx-auto sm:mx-0">
+                <div className="p-2.5 bg-white rounded-xl shadow-sm flex-shrink-0 text-[var(--primary)]">
+                   <Smartphone size={20} strokeWidth={2.5} />
+                </div>
+                <div className="text-left pt-0.5">
+                   <p className="text-[11px] font-black text-slate-900 uppercase tracking-wider mb-0.5">App-Like Web</p>
+                   <p className="text-[10px] font-bold text-slate-500 leading-snug">Enjoy a seamless shopping experience directly in your mobile browser.</p>
+                </div>
              </div>
              
              <h4 className="font-black uppercase text-xs tracking-widest mb-4 text-slate-900">Keep In Touch</h4>
