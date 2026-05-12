@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FAQ from '../components/FAQ';
-import { fetchProducts, fetchReels, fetchFlashSale } from '../services/api';
+import { fetchProducts, fetchReels, fetchFlashSale, fetchReelsConfig } from '../services/api';
 import { categoryStructure } from '../data/categories';
 import CustomizationSection from '../components/CustomizationSection';
 
@@ -21,6 +21,7 @@ const Home = () => {
 
   const [dealsProducts, setDealsProducts] = useState([]);
   const [reels, setReels] = useState([]);
+  const [reelsConfig, setReelsConfig] = useState({ isVisible: true });
   const [saleConfig, setSaleConfig] = useState({ isActive: false });
   const [loading, setLoading] = useState(true);
   const categories = ['All', ...Object.keys(categoryStructure).filter(cat => cat !== 'Yarn')];
@@ -101,9 +102,19 @@ const Home = () => {
       }
     };
 
+    const getReelsConfig = async () => {
+      try {
+        const data = await fetchReelsConfig();
+        if (data) setReelsConfig(data);
+      } catch (err) {
+        console.error('Failed to fetch reels config:', err);
+      }
+    };
+
     getFeaturedProducts();
     getReels();
     getSale();
+    getReelsConfig();
 
 
   }, []);
@@ -261,34 +272,36 @@ const Home = () => {
 
 
       {/* Instagram Reels Section */}
-      <section className="py-16 md:py-24 px-4 md:px-12 bg-[var(--background)] overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center space-x-3 md:space-x-4 mb-8 md:mb-12">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Karigiri in Motion</h2>
-          </div>
-          <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory scroll-smooth">
-            {(reels.length > 0 ? reels : [
-              { image: "/shawl.png", tag: "Handmade Shawls", handle: "@karigiri_official" },
-              { image: "/item4.png", tag: "Kids Collection", handle: "@karigiri_official" },
-              { image: "/bag.png", tag: "Crochet Bags", handle: "@karigiri_official" },
-              { image: "/bookey.png", tag: "Floral Bouquet", handle: "@karigiri_official" },
-              { image: "/blanket.png", tag: "Premium Blankets", handle: "@karigiri_official" }
-            ]).map((reel, i) => (
-              <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">
-                <div className="absolute inset-0 aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
-                  <img src={(reel.image || reel.img)?.includes('cloudinary.com') ? (reel.image || reel.img).replace('/upload/', '/upload/w_300,q_auto:eco,f_auto/') : (reel.image || reel.img)} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} loading="lazy" />
+      {reelsConfig.isVisible && (
+        <section className="py-16 md:py-24 px-4 md:px-12 bg-[var(--background)] overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center space-x-3 md:space-x-4 mb-8 md:mb-12">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Karigiri in Motion</h2>
+            </div>
+            <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory scroll-smooth">
+              {(reels.length > 0 ? reels : [
+                { image: "/shawl.png", tag: "Handmade Shawls", handle: "@karigiri_official" },
+                { image: "/item4.png", tag: "Kids Collection", handle: "@karigiri_official" },
+                { image: "/bag.png", tag: "Crochet Bags", handle: "@karigiri_official" },
+                { image: "/bookey.png", tag: "Floral Bouquet", handle: "@karigiri_official" },
+                { image: "/blanket.png", tag: "Premium Blankets", handle: "@karigiri_official" }
+              ]).map((reel, i) => (
+                <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">
+                  <div className="absolute inset-0 aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
+                    <img src={(reel.image || reel.img)?.includes('cloudinary.com') ? (reel.image || reel.img).replace('/upload/', '/upload/w_300,q_auto:eco,f_auto/') : (reel.image || reel.img)} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} loading="lazy" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">{reel.tag}</p>
+                    <p className="text-[8px] md:text-[10px] font-medium opacity-80">{reel.handle || '@karigiri_official'}</p>
+                  </div>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">{reel.tag}</p>
-                  <p className="text-[8px] md:text-[10px] font-medium opacity-80">{reel.handle || '@karigiri_official'}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Artisan Section */}
       <section className="py-16 md:py-32 px-4 md:px-12 bg-white">

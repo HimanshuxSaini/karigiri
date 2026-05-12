@@ -41,6 +41,8 @@ import {
   createReel,
   updateReel,
   deleteReel,
+  fetchReelsConfig,
+  updateReelsConfig,
   fetchCoupons,
   createCoupon,
   updateCoupon,
@@ -106,6 +108,8 @@ const Admin = () => {
     discountText: 'Up to 50% OFF'
   });
   const [isUpdatingSale, setIsUpdatingSale] = useState(false);
+  const [reelsConfig, setReelsConfig] = useState({ isVisible: true });
+  const [isUpdatingReelsConfig, setIsUpdatingReelsConfig] = useState(false);
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -173,12 +177,13 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
         fetchCoupons(),
-        fetchFlashSale()
+        fetchFlashSale(),
+        fetchReelsConfig()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
@@ -186,6 +191,9 @@ const Admin = () => {
       setCoupons(couponRes || []);
       if (saleRes) {
         setSaleConfig(saleRes);
+      }
+      if (reelResConfig) {
+        setReelsConfig(reelResConfig);
       }
     } catch (err) {
       console.error('Failed to load admin data:', err);
@@ -205,6 +213,23 @@ const Admin = () => {
       showNotification('Failed to update configuration', 'error');
     } finally {
       setIsUpdatingSale(false);
+    }
+  };
+
+  const handleUpdateReelsConfig = async (newVal) => {
+    const updated = { ...reelsConfig, isVisible: newVal };
+    setReelsConfig(updated);
+    setIsUpdatingReelsConfig(true);
+    try {
+      await updateReelsConfig(updated);
+      showNotification(`Reels section visibility turned ${newVal ? 'ON' : 'OFF'}`);
+    } catch (err) {
+      console.error('Failed to update reels visibility:', err);
+      showNotification('Failed to save visibility setting', 'error');
+      // Rollback locally if failed
+      setReelsConfig(reelsConfig);
+    } finally {
+      setIsUpdatingReelsConfig(false);
     }
   };
 
@@ -1372,17 +1397,33 @@ const Admin = () => {
                       <h3 className="text-2xl font-serif font-bold text-gray-900">Shoppable Reels</h3>
                       <p className="text-sm text-gray-500">Manage video content and instagram integration</p>
                     </div>
-                    <button
-                      onClick={() => {
-                        setEditingReel(null);
-                        setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: 0 });
-                        setShowReelModal(true);
-                      }}
-                      className="flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
-                    >
-                      <Plus size={20} />
-                      <span>Add New Reel</span>
-                    </button>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-3 px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
+                        <span className="text-xs font-bold text-gray-500">Show on Website</span>
+                        <label className="relative inline-flex items-center cursor-pointer scale-90">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            disabled={isUpdatingReelsConfig}
+                            checked={reelsConfig.isVisible}
+                            onChange={(e) => handleUpdateReelsConfig(e.target.checked)}
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingReel(null);
+                          setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: 0 });
+                          setShowReelModal(true);
+                        }}
+                        className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
+                      >
+                        <Plus size={20} />
+                        <span className="hidden sm:inline">Add New Reel</span>
+                        <span className="sm:hidden">Add</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">

@@ -480,6 +480,35 @@ export const deleteReel = async (id) => {
   }
 };
 
+export const fetchReelsConfig = async () => {
+  try {
+    const docRef = doc(db, 'config', 'reelsConfig');
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return snapshot.data();
+    }
+    // Default config if document doesn't exist yet
+    return { isVisible: true };
+  } catch (error) {
+    console.error("Error fetching reels config:", error);
+    return { isVisible: true };
+  }
+};
+
+export const updateReelsConfig = async (config) => {
+  try {
+    const docRef = doc(db, 'config', 'reelsConfig');
+    await setDoc(docRef, { 
+      ...config, 
+      updatedAt: serverTimestamp() 
+    }, { merge: true });
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating reels config:", error);
+    throw error;
+  }
+};
+
 // Coupons
 export const fetchCoupons = async () => {
   try {
