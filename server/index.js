@@ -130,9 +130,12 @@ app.use((err, req, res, next) => {
   if (err.stack) console.error(err.stack);
 
   const status = err.status || 500;
+  const isProd = process.env.NODE_ENV === 'production';
+
   res.status(status).json({
     message: err.message || 'Internal Server Error',
-    error: err
+    // Prevent leaking internal system paths, dependencies, or Firebase details to clients in production
+    ...(isProd ? {} : { error: err })
   });
 });
 
