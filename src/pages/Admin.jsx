@@ -253,7 +253,17 @@ const Admin = () => {
       const idMatch = String(o?._id || o?.id || '').toLowerCase().includes(searchLower);
       const phoneMatch = String(o?.shippingAddress?.phone || '').includes(orderSearch);
       const emailMatch = String(o?.email || '').toLowerCase().includes(searchLower);
-      const statusMatch = orderFilter === 'All' || o?.status === orderFilter;
+      
+      const isSuspicious = o.isDeletedByAdmin === true || o.status?.includes('Suspicious');
+      let statusMatch = false;
+
+      if (orderFilter === 'Suspicious') {
+        statusMatch = isSuspicious;
+      } else {
+        if (isSuspicious) return false; // Exclude completely from normal workflows
+        statusMatch = orderFilter === 'All' || o?.status === orderFilter;
+      }
+
       return statusMatch && (idMatch || phoneMatch || emailMatch);
     });
   }, [orders, orderSearch, orderFilter]);
@@ -263,10 +273,13 @@ const Admin = () => {
     const productsArray = Array.isArray(products) ? products : [];
     const reelsArray = Array.isArray(reels) ? reels : [];
 
-    const totalRevenue = ordersArray.reduce((acc, o) => acc + (Number(o?.totalPrice) || 0), 0);
+    // Clean active stats from fake/deleted orders
+    const activeOrders = ordersArray.filter(o => !o.isDeletedByAdmin && !o.status?.includes('Suspicious'));
+    const totalRevenue = activeOrders.reduce((acc, o) => acc + (Number(o?.totalPrice) || 0), 0);
+    
     return [
       { label: 'TOTAL REVENUE', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: <ShoppingBag className="text-emerald-500" />, color: "bg-emerald-50" },
-      { label: 'TOTAL ORDERS', value: ordersArray.length, icon: <Package className="text-blue-500" />, color: "bg-blue-50" },
+      { label: 'TOTAL ORDERS', value: activeOrders.length, icon: <Package className="text-blue-500" />, color: "bg-blue-50" },
       { label: 'TOTAL PRODUCTS', value: productsArray.length, icon: <LayoutDashboard className="text-purple-500" />, color: "bg-purple-50" },
       { label: 'REELS (MOTION)', value: reelsArray.length, icon: <Eye className="text-rose-500" />, color: "bg-rose-50" },
     ];
@@ -814,7 +827,7 @@ const Admin = () => {
                       </div>
                       <div className="space-y-4">
                         {Array.isArray(orders) && orders.length > 0 ? (
-                          orders.slice(0, 5).map((order, idx) => (
+                          orders.filter(o => !o.isDeletedByAdmin && !o.status?.includes('Suspicious')).slice(0, 5).map((order, idx) => (
                             <div key={order?._id || order?.id || `recent-${idx}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                               <div className="flex items-center space-x-4">
                                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[var(--primary)]">
@@ -1147,16 +1160,20 @@ const Admin = () => {
                 <div className="space-y-6">
                   <div className="flex flex-col md:flex-row justify-between gap-4">
                     <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-fit">
-                      {['All', 'Processing', 'Shipped', 'Delivered'].map((status) => (
+                      {['All', 'Processing', 'Shipped', 'Delivered', 'Suspicious'].map((status) => (
                         <button
                           key={status}
                           onClick={() => setOrderFilter(status)}
                           className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${orderFilter === status
-                              ? 'bg-black text-white'
-                              : 'text-gray-400 hover:text-gray-600'
+                              ? status === 'Suspicious' 
+                                ? 'bg-red-600 text-white shadow-lg shadow-red-100' 
+                                : 'bg-black text-white'
+                              : status === 'Suspicious'
+                                ? 'text-red-500 hover:bg-red-50 border border-dashed border-red-100'
+                                : 'text-gray-400 hover:text-gray-600'
                             }`}
                         >
-                          {status}
+                          {status === 'Suspicious' ? 'Fake Orders' : status}
                         </button>
                       ))}
                     </div>

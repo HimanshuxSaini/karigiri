@@ -21,7 +21,8 @@ import {
   Phone,
   Plus,
   ShoppingBag,
-  Bell
+  Bell,
+  AlertTriangle
 } from 'lucide-react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { auth as firebaseAuth } from '../firebase/config';
@@ -407,9 +408,11 @@ const Profile = () => {
                               </div>
                               <div className="flex flex-col items-start sm:items-end">
                                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${
-                                  order.status === 'Processing' 
-                                    ? 'bg-amber-100 text-amber-700' 
-                                    : 'bg-emerald-100 text-emerald-700'
+                                  order.status?.includes('Suspicious') || order.isDeletedByAdmin
+                                    ? 'bg-red-100 text-red-700 border border-red-200'
+                                    : order.status === 'Processing' 
+                                      ? 'bg-amber-100 text-amber-700' 
+                                      : 'bg-emerald-100 text-emerald-700'
                                 }`}>
                                   {order.status || 'Delivered'}
                                 </span>
@@ -418,6 +421,18 @@ const Profile = () => {
                                 </p>
                               </div>
                             </div>
+                            
+                            {(order.isDeletedByAdmin || order.status?.includes('Suspicious')) && (
+                              <div className="mb-5 p-4 bg-red-50/80 border border-red-200/60 rounded-xl flex items-start space-x-3">
+                                <div className="p-1.5 bg-red-100 rounded-lg text-red-600 mt-0.5 flex-shrink-0">
+                                  <AlertTriangle size={14} />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-extrabold text-red-800 uppercase tracking-wider">ORDER SUSPENDED</p>
+                                  <p className="text-[11px] font-medium text-red-600/90 mt-0.5">This order was detected as fake or suspicious and has been flagged by administrators.</p>
+                                </div>
+                              </div>
+                            )}
                             
                             <div className="flex flex-col gap-4 pt-4 border-t border-white/20 sm:flex-row sm:items-center sm:justify-between">
                               <div className="flex -space-x-3 overflow-hidden">
@@ -819,8 +834,28 @@ const Profile = () => {
                   </div>
                 </div>
 
+                {/* Suspension Alert if Flagged */}
+                {(selectedOrder.isDeletedByAdmin || selectedOrder.status?.includes('Suspicious')) && (
+                  <div className="mb-10 p-6 sm:p-8 rounded-[2rem] bg-red-50/60 border-2 border-red-100 flex flex-col sm:flex-row items-start sm:items-center gap-6 relative overflow-hidden shadow-inner">
+                    <div className="absolute top-0 left-0 h-full w-2 bg-red-500" />
+                    <div className="p-4 bg-red-100 rounded-2xl text-red-600 shadow-sm flex-shrink-0">
+                      <AlertTriangle size={28} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-lg font-black uppercase tracking-wider text-red-800">🚨 Security Check Triggered</h4>
+                      <p className="text-sm font-bold text-red-700 mt-1 leading-relaxed">
+                        Your order could not be processed because our system detected suspicious, automated, or invalid transaction behaviors.
+                      </p>
+                      <p className="text-xs font-semibold text-red-600 mt-2 opacity-80">
+                        If this decision is incorrect, please tap "Need Help?" below immediately.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Visual Order Progress Stepper */}
-                <div className="mb-10 p-6 sm:p-8 rounded-[2rem] bg-white border border-gray-100 shadow-sm">
+                {!(selectedOrder.isDeletedByAdmin || selectedOrder.status?.includes('Suspicious')) && (
+                  <div className="mb-10 p-6 sm:p-8 rounded-[2rem] bg-white border border-gray-100 shadow-sm">
                   <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6 flex items-center space-x-2">
                     <Truck size={14} className="animate-bounce" />
                     <span>Shipping Status & Progress</span>

@@ -334,7 +334,11 @@ export const updateOrderStatus = async (id, status) => {
 export const deleteOrder = async (id) => {
   try {
     const orderDoc = doc(db, 'orders', id);
-    await deleteDoc(orderDoc);
+    await updateDoc(orderDoc, { 
+      status: 'Cancelled (Suspicious)', 
+      isDeletedByAdmin: true,
+      flaggedAt: serverTimestamp() 
+    });
     return { success: true };
   } catch (error) {
     console.error("Error deleting order:", error);
