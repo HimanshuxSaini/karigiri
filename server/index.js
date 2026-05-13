@@ -76,7 +76,6 @@ app.use('/api/products', productRoutes);
 app.use('/api/sale', saleRoutes);
 
 
-
 // Health Check
 app.get('/', (req, res) => {
   res.json({ status: 'active', message: 'Karigiri API is running' });

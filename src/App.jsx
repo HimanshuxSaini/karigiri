@@ -14,6 +14,7 @@ import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import ScrollToTop from './components/ScrollToTop';
 import ToastContainer from './components/Toast';
+import BottomNav from './components/BottomNav';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import IntroVideo from './components/IntroVideo';
@@ -33,7 +34,7 @@ const ProtectedRoute = ({ children, isAdmin = false }) => {
   return children;
 };
 
-import BottomNav from './components/BottomNav';
+
 
 function App() {
   const [showIntro, setShowIntro] = useState(() => {
