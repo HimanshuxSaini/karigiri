@@ -931,15 +931,7 @@ const Profile = () => {
               </div>
 
               <div className="p-8 bg-gray-50 flex justify-end space-x-4">
-                  <a 
-                    href={`https://www.delhivery.com/track/share?waybill=${selectedOrder.trackingId || 'TRK' + String(selectedOrder.id || '102349').slice(-6).toUpperCase()}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors flex items-center space-x-2"
-                  >
-                    <Truck size={16} className="text-[var(--primary)]" />
-                    <span>Track Package</span>
-                  </a>
+
                   <a 
                     href={`https://wa.me/917027311213?text=${encodeURIComponent(
                       `Hello, I need support with my order.\n\n📋 Order ID: #${String(selectedOrder?._id || selectedOrder?.id || '').toUpperCase()}\n📦 Status: ${selectedOrder?.status || 'N/A'}`
