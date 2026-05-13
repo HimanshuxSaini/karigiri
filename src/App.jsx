@@ -22,6 +22,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/config';
 import { useAuthStore } from './store/useStore';
 import { Navigate } from 'react-router-dom';
+import { useCartSync } from './hooks/useCartSync';
 
 const ProtectedRoute = ({ children, isAdmin = false }) => {
   const { user } = useAuthStore();
@@ -47,6 +48,7 @@ function App() {
   };
 
   const setUser = useAuthStore((state) => state.setUser);
+  useCartSync(); // Activate cross-device Firestore cart synchronization
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { createOrder, validateCoupon, incrementCouponUsage, fetchCoupons, getCouponEligibility, fetchOrders } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
+import { getOptimizedImage } from '../utils/imageHelpers';
 
 const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
 
@@ -588,7 +589,7 @@ const Checkout = () => {
                 {items.map((item) => (
                   <div key={item.cartItemId || item.id} className="flex space-x-4 items-center bg-white/30 p-2 rounded-2xl">
                     <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm shrink-0">
-                      <img src={item.image?.includes('cloudinary.com') ? item.image.replace('/upload/', '/upload/w_100,q_auto:eco,f_auto/') : item.image} className="w-full h-full object-contain" alt={item.name} loading="lazy" />
+                      <img src={getOptimizedImage(item.image, { width: 100, quality: 'auto:eco' })} className="w-full h-full object-contain" alt={item.name} loading="lazy" />
                     </div>
                     <div className="flex-grow min-w-0">
                       <p className="text-sm font-bold text-[var(--text-main)] truncate">{item.name}</p>

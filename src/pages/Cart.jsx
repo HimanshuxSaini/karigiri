@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { fetchCoupons, getCouponEligibility } from '../services/api';
 import LoginModal from '../components/LoginModal';
 import RecommendedProducts from '../components/RecommendedProducts';
+import { getOptimizedImage } from '../utils/imageHelpers';
 
 const formatCurrency = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
@@ -99,7 +100,7 @@ const Cart = () => {
               >
                 <div className="w-20 md:w-24 aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-xl overflow-hidden shrink-0">
                   <img 
-                    src={item.image?.includes('cloudinary.com') ? item.image.replace('/upload/', '/upload/w_200,q_auto:eco,f_auto/') : item.image} 
+                    src={getOptimizedImage(item.image, { width: 200, quality: 'auto:eco' })} 
                     alt={item.name} 
                     loading="lazy"
                     className="max-w-full max-h-full object-contain" 

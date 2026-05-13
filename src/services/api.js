@@ -353,6 +353,35 @@ export const saveUserProfile = async (uid, profileData) => {
   }
 };
 
+// Cart Synchronization for Cross-Device persistence
+export const saveCartToFirestore = async (uid, cartItems) => {
+  if (!uid) return;
+  try {
+    const cartDoc = doc(db, 'carts', uid);
+    await setDoc(cartDoc, {
+      items: cartItems,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error syncing cart to Firestore:", error);
+  }
+};
+
+export const fetchCartFromFirestore = async (uid) => {
+  if (!uid) return [];
+  try {
+    const cartDoc = doc(db, 'carts', uid);
+    const snapshot = await getDoc(cartDoc);
+    if (snapshot.exists()) {
+      return snapshot.data().items || [];
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching cart from Firestore:", error);
+    return [];
+  }
+};
+
 // OTP Services
 export const sendOtp = async (email) => {
   try {

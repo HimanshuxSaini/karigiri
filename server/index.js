@@ -27,6 +27,26 @@ const app = express();
 // Security & Performance Middlewares
 const helmet = require('helmet');
 const compression = require('compression');
+const { rateLimit } = require('express-rate-limit');
+
+// General API Rate Limiter (150 requests per 15 mins)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 150,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { message: 'Too many requests from this IP, please try again later.' }
+});
+
+// Strict Rate Limiter for security-critical features (10 requests per 15 mins)
+const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { message: 'Too many attempts. Please wait a few minutes and try again.' }
+});
+
 
 app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP if it interferes with external assets like Cloudinary
@@ -69,11 +89,16 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/otp', otpRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/coupons', couponRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/sale', saleRoutes);
+
+// Strict protection for high-value endpoints (OTP SMS/Email spam & Coupon brute-forcing)
+app.use('/api/otp', strictLimiter, otpRoutes);
+app.use('/api/coupons/validate', strictLimiter); // Apply strict limiter specifically to coupon validation endpoint
+
+// Standard protection for general API paths
+app.use('/api/upload', generalLimiter, uploadRoutes);
+app.use('/api/coupons', generalLimiter, couponRoutes);
+app.use('/api/products', generalLimiter, productRoutes);
+app.use('/api/sale', generalLimiter, saleRoutes);
 
 
 // Health Check

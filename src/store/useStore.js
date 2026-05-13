@@ -69,6 +69,7 @@ export const useCartStore = create(
           ),
         });
       },
+      setItems: (items) => set({ items: items || [] }),
       clearCart: () => set({ items: [], appliedCoupon: null }),
       getTotal: () => {
         return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
