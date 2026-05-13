@@ -920,6 +920,7 @@ const Profile = () => {
                     })}
                   </div>
                 </div>
+                )}
 
                 <div className="mb-10 p-6 rounded-3xl bg-gray-50 border border-gray-100">
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)] mb-4 flex items-center space-x-2">
