@@ -44,6 +44,7 @@ import {
   fetchReelsConfig,
   updateReelsConfig,
   fetchCoupons,
+  fetchAdminCoupons,
   createCoupon,
   updateCoupon,
   deleteCoupon,
@@ -181,7 +182,7 @@ const Admin = () => {
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
-        fetchCoupons(),
+        fetchAdminCoupons(),
         fetchFlashSale(),
         fetchReelsConfig()
       ]);

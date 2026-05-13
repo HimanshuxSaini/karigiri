@@ -129,17 +129,38 @@ const deleteCoupon = async (req, res) => {
 const getAllCoupons = async (req, res) => {
   try {
     const snapshot = await couponsCollection().get();
-    const coupons = snapshot.docs.map((doc) => ({
-      _id: doc.id,
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const now = new Date();
+    const isAdmin = req.query.admin === 'true';
+
+    const coupons = snapshot.docs
+      .map((doc) => ({
+        _id: doc.id,
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .filter((coupon) => {
+        // Admin panel sees all coupons
+        if (isAdmin) return true;
+
+        // Hide inactive coupons from users
+        if (coupon.isActive === false) return false;
+
+        // Hide expired coupons from users
+        if (coupon.expiryDate && new Date(coupon.expiryDate) < now) return false;
+
+        // Hide coupons that have exhausted their usage limit
+        if (coupon.usageLimit > 0 && (coupon.usedCount || 0) >= coupon.usageLimit) return false;
+
+        return true;
+      });
+
     return res.json(coupons);
   } catch (error) {
     console.error('Get all coupons error:', error);
     return res.status(500).json({ message: 'Failed to fetch coupons', error: error.message });
   }
 };
+
 
 const validateCoupon = async (req, res) => {
   try {

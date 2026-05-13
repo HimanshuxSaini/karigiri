@@ -522,6 +522,22 @@ export const fetchCoupons = async () => {
   }
 };
 
+// Admin-only: fetches ALL coupons including expired/inactive ones
+export const fetchAdminCoupons = async () => {
+  try {
+    const token = await getAdminToken();
+    const response = await fetch(`${API_URL}/coupons?admin=true`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch coupons');
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching admin coupons:", error);
+    return [];
+  }
+};
+
+
 export const createCoupon = async (couponData) => {
   try {
     return await fetchAdminCouponApi('', {
@@ -580,6 +596,12 @@ export const getCouponEligibility = (coupon, cartTotal, cartCategories = []) => 
   if (!coupon.isActive) {
     return { valid: false, discount: 0, message: 'This coupon is not active right now' };
   }
+
+  // Check if coupon has expired
+  if (coupon.expiryDate && new Date() > new Date(coupon.expiryDate)) {
+    return { valid: false, discount: 0, message: 'This coupon has expired' };
+  }
+
 
   if (coupon.usageLimit && (coupon.usedCount || 0) >= coupon.usageLimit) {
     return { valid: false, discount: 0, message: 'Coupon usage limit has been reached' };
