@@ -331,6 +331,17 @@ export const updateOrderStatus = async (id, status) => {
   }
 };
 
+export const deleteOrder = async (id) => {
+  try {
+    const orderDoc = doc(db, 'orders', id);
+    await deleteDoc(orderDoc);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    throw error;
+  }
+};
+
 // Auth
 export const loginUser = async (email, password) => {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
