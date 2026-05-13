@@ -940,10 +940,17 @@ const Profile = () => {
                     <Truck size={16} className="text-[var(--primary)]" />
                     <span>Track Package</span>
                   </a>
-                 <button className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white text-sm font-bold hover:shadow-lg transition-all flex items-center space-x-2">
-                   <ExternalLink size={16} />
-                   <span>Need Help?</span>
-                 </button>
+                  <a 
+                    href={`https://wa.me/917027311213?text=${encodeURIComponent(
+                      `Hello, I need support with my order.\n\n📋 Order ID: #${String(selectedOrder?._id || selectedOrder?.id || '').toUpperCase()}\n📦 Status: ${selectedOrder?.status || 'N/A'}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white text-sm font-bold hover:shadow-lg transition-all flex items-center space-x-2 hover:opacity-90"
+                  >
+                    <ExternalLink size={16} />
+                    <span>Need Help?</span>
+                  </a>
               </div>
             </motion.div>
           </div>
