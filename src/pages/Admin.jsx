@@ -431,16 +431,17 @@ const Admin = () => {
   };
 
   const handleDeleteOrder = async (id) => {
-    if (window.confirm('Are you sure you want to DELETE this order permanently? This action cannot be undone.')) {
+    if (window.confirm('Are you sure you want to flag this as a FAKE ORDER? It will be moved to the "Fake Orders" tab.')) {
       try {
         await deleteOrder(id);
-        setOrders(orders.filter(o => (o._id !== id && o.id !== id)));
-        showNotification('Order successfully deleted');
+        // Soft-update local state so it automatically shifts to the Fake Orders tab instantly
+        setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, isDeletedByAdmin: true, status: 'Cancelled (Suspicious)' } : o));
+        showNotification('Order successfully moved to Fake Orders');
         if (selectedOrder && (selectedOrder._id === id || selectedOrder.id === id)) {
           setSelectedOrder(null);
         }
       } catch {
-        showNotification('Failed to delete order', 'error');
+        showNotification('Failed to flag order', 'error');
       }
     }
   };
@@ -1265,7 +1266,7 @@ const Admin = () => {
                             <button
                               onClick={() => handleDeleteOrder(order?._id || order?.id)}
                               className="px-3 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 hover:text-red-700 transition-all flex items-center justify-center"
-                              title="Delete Order"
+                              title="Mark as Fake Order"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -2455,7 +2456,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onDeleteOrder, onPri
                 onClick={() => onDeleteOrder(order?._id || order?.id)}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold transition-all bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 md:ml-auto"
               >
-                Delete Order
+                Mark as Fake
               </button>
             </div>
           </div>
