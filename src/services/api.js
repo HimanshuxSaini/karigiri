@@ -279,6 +279,45 @@ export const fetchOrders = async () => {
   }
 };
 
+export const fetchUserOrders = async (uid, email) => {
+  if (!uid) return [];
+  try {
+    const ordersCol = collection(db, 'orders');
+    
+    // 1. Fetch orders linked directly to user UID
+    const qUid = query(ordersCol, where('user', '==', uid));
+    const snapshotUid = await getDocs(qUid);
+    
+    const orderMap = new Map();
+    
+    snapshotUid.docs.forEach(doc => {
+      const data = doc.data();
+      orderMap.set(doc.id, { _id: doc.id, id: doc.id, ...data });
+    });
+
+    // 2. Also fetch orders linked to user email (covers checkouts that occurred via guest flow)
+    if (email) {
+      const qEmail = query(ordersCol, where('email', '==', email));
+      const snapshotEmail = await getDocs(qEmail);
+      snapshotEmail.docs.forEach(doc => {
+        const data = doc.data();
+        orderMap.set(doc.id, { _id: doc.id, id: doc.id, ...data });
+      });
+    }
+
+    const orders = Array.from(orderMap.values());
+
+    return orders.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || (a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(a.date || 0));
+      const dateB = b.createdAt?.toDate?.() || (b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(b.date || 0));
+      return dateB - dateA;
+    });
+  } catch (error) {
+    console.error("Error fetching user orders:", error);
+    return [];
+  }
+};
+
 
 export const updateOrderStatus = async (id, status) => {
   try {

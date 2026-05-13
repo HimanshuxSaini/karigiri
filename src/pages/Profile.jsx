@@ -1,6 +1,6 @@
 import Navbar from '../components/Navbar';
 import { useAuthStore, useOrderStore, useWishlistStore, useUserStore, useCartStore, useToastStore } from '../store/useStore';
-import { fetchOrders, fetchUserProfile, saveUserProfile } from '../services/api';
+import { fetchOrders, fetchUserOrders, fetchUserProfile, saveUserProfile } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, 
@@ -83,14 +83,7 @@ const Profile = () => {
       if (!user) return;
       setLoadingOrders(true);
       try {
-        const allOrders = await fetchOrders();
-        // Filter orders for current user - check both UID and normalized email
-        const userOrders = (allOrders || []).filter(o => 
-          o && (
-            o.user === user.uid || 
-            (o.email && user.email && o.email.toLowerCase() === user.email.toLowerCase())
-          )
-        );
+        const userOrders = await fetchUserOrders(user.uid, user.email);
         setDbOrders(userOrders);
       } catch (err) {
         console.error("Failed to fetch user orders:", err);

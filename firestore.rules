@@ -14,11 +14,22 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Orders collection: Anyone can create (checkout), only admin can manage
+    // Orders collection: Anyone can create (checkout), users read own, admins manage all
     match /orders/{orderId} {
       allow create: if true;
-      // Allow read/update/delete for admin
+      // Allow users to read their own orders securely
+      allow read: if request.auth != null && (
+        (resource != null && resource.data.user == request.auth.uid) ||
+        (resource != null && request.auth.token.email != null && resource.data.email == request.auth.token.email)
+      );
+      // Admin overrides
       allow read, update, delete: if isAdmin();
+    }
+
+    // Carts collection: Users read/write their own sync state, Admin overrides
+    match /carts/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isAdmin();
     }
 
     // Reels & Config: Public read, Admin write
