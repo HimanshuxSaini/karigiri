@@ -436,6 +436,10 @@ const Admin = () => {
         await deleteOrder(id);
         // Soft-update local state so it automatically shifts to the Fake Orders tab instantly
         setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, isDeletedByAdmin: true, status: 'Cancelled (Suspicious)' } : o));
+        
+        // AUTOMATICALLY switch active view to Fake Orders so admin instantly sees the transition
+        setOrderFilter('Suspicious');
+        
         showNotification('Order successfully moved to Fake Orders');
         if (selectedOrder && (selectedOrder._id === id || selectedOrder.id === id)) {
           setSelectedOrder(null);
