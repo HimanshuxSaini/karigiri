@@ -80,7 +80,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Request Logging
 app.use((req, res, next) => {

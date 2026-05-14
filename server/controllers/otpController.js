@@ -128,9 +128,7 @@ transporter.verify(function (error, success) {
   } catch (error) {
     console.error('OTP Controller Failure:', error);
     res.status(500).json({ 
-      message: 'Failed to send OTP', 
-      error: error.message,
-      code: error.code
+      message: 'Failed to send OTP. Please try again later.'
     });
   }
 };

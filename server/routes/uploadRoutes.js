@@ -30,8 +30,7 @@ router.post('/', protectAdmin, upload.single('image'), async (req, res) => {
     console.error('Cloudinary Upload Error Details:', error);
     res.status(500).json({ 
       message: 'Server error during upload', 
-      error: error.message,
-      details: error
+      error: error.message
     });
   }
 });

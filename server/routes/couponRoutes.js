@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.get('/', getAllCoupons);
 router.post('/validate', validateCoupon);
-router.post('/:id/increment', incrementCouponUsage); // Anyone can increment upon checkout success
+router.post('/:id/increment', protectAdmin, incrementCouponUsage);
 router.post('/', protectAdmin, createCoupon);
 router.put('/:id', protectAdmin, updateCoupon);
 router.delete('/:id', protectAdmin, deleteCoupon);
