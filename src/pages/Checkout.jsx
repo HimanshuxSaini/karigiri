@@ -7,6 +7,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { createOrder, validateCoupon, incrementCouponUsage, fetchCoupons, getCouponEligibility, fetchOrders } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
+import { WHATSAPP } from '../config/constants';
 
 const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
 
@@ -218,10 +219,31 @@ const Checkout = () => {
       return;
     }
 
+    const addr = addresses.find(a => a.id === selectedAddress);
+    if (!addr) {
+      showToast("Selected address not found.", "error");
+      return;
+    }
+
+    // Add strict client-side validation
+    const cleanedPhone = addr.phone?.replace(/\s/g, '');
+    if (!cleanedPhone || cleanedPhone.length < 10 || cleanedPhone.length > 13) {
+      showToast("Please enter a valid 10-12 digit contact number.", "error");
+      return;
+    }
+
+    if (!addr.pincode || !/^\d{6}$/.test(addr.pincode)) {
+      showToast("Please enter a valid 6-digit PIN code.", "error");
+      return;
+    }
+
+    if (!addr.street || !addr.city || !addr.state) {
+      showToast("Please complete all fields in the selected address.", "error");
+      return;
+    }
+
     setIsProcessing(true);
     
-    const addr = addresses.find(a => a.id === selectedAddress);
-
     const orderId = `KG-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
     const orderData = {
@@ -255,11 +277,8 @@ const Checkout = () => {
       addOrder(createdOrder);
       
       // Redirect to WhatsApp
-      const whatsappNumber = "917027311213";
-      // Increment coupon usage if applied
-      if (appliedCoupon?._id) {
-        await incrementCouponUsage(appliedCoupon._id);
-      }
+      const whatsappNumber = WHATSAPP.number;
+      // NOTE: Coupon increment usage is now handled automatically by createOrder server-side for bulletproof security
 
       let message = `*Hello Karigiri, I would like to complete my payment!*\n\n`;
       message += `*Order ID:* ${createdOrder._id || orderId}\n\n`;

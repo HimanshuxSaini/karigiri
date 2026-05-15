@@ -242,18 +242,21 @@ export const uploadProductImage = async (file) => {
   }
 };
 
-// Orders
+// Orders — Server-side validated
 export const createOrder = async (orderData) => {
   try {
-    const ordersCol = collection(db, 'orders');
-    const docRef = await addDoc(ordersCol, {
-      ...orderData,
-      createdAt: serverTimestamp(),
-      status: 'Processing'
+    const response = await fetch(`${API_URL}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
     });
-    return { _id: docRef.id, id: docRef.id, ...orderData, status: 'Processing' };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create order');
+    }
+    return await response.json();
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error('Error creating order:', error);
     throw error;
   }
 };
@@ -432,6 +435,35 @@ export const fetchCartFromFirestore = async (uid) => {
     return [];
   } catch (error) {
     console.error("Error fetching cart from Firestore:", error);
+    return [];
+  }
+};
+
+// Wishlist Synchronization for Cross-Device persistence
+export const saveWishlistToFirestore = async (uid, wishlistItems) => {
+  if (!uid) return;
+  try {
+    const wishlistDoc = doc(db, 'wishlists', uid);
+    await setDoc(wishlistDoc, {
+      items: wishlistItems,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error syncing wishlist to Firestore:", error);
+  }
+};
+
+export const fetchWishlistFromFirestore = async (uid) => {
+  if (!uid) return [];
+  try {
+    const wishlistDoc = doc(db, 'wishlists', uid);
+    const snapshot = await getDoc(wishlistDoc);
+    if (snapshot.exists()) {
+      return snapshot.data().items || [];
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching wishlist from Firestore:", error);
     return [];
   }
 };
@@ -737,14 +769,20 @@ export const validateCoupon = async (code, orderAmount) => {
 
 export const incrementCouponUsage = async (couponId) => {
   try {
+    const token = await getAdminToken().catch(() => null);
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     const response = await fetch(`${API_URL}/coupons/${couponId}/increment`, {
-      method: 'POST'
+      method: 'POST',
+      headers
     });
     if (!response.ok) {
-      console.warn("Failed to increment coupon on backend");
+      console.warn('Failed to increment coupon on backend');
     }
   } catch (error) {
-    console.error("Error connecting to increment coupon endpoint:", error);
+    console.error('Error connecting to increment coupon endpoint:', error);
   }
 };
 

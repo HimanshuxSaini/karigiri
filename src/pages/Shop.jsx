@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard';
 import RecommendedProducts from '../components/RecommendedProducts';
 import { categoryStructure } from '../data/categories';
 import { useActivityStore } from '../store/useStore';
+import { WHATSAPP } from '../config/constants';
 
 const ProductSkeleton = () => (
   <div className="animate-pulse flex flex-col h-full">
@@ -331,7 +332,7 @@ const Shop = () => {
                     <div className="flex flex-col sm:flex-row items-center gap-4">
                       {!searchQuery && (
                         <a 
-                          href={`https://wa.me/917027311213?text=Hi, I want to order a custom product in ${urlSubCategory || categoryFilter} category. I saw the 2-3 days completion promise on your website.`}
+                          href={`${WHATSAPP.chatUrl}?text=Hi, I want to order a custom product in ${urlSubCategory || categoryFilter} category. I saw the 2-3 days completion promise on your website.`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="bg-black text-white px-10 py-5 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] hover:scale-105 transition-all shadow-2xl shadow-black/10 flex items-center"

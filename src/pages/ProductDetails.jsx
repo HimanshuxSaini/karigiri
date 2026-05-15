@@ -2,10 +2,11 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { useCartStore, useWishlistStore, useAuthStore, useActivityStore } from '../store/useStore';
-import { ShoppingBag, Heart, Star, Truck, RotateCcw, Edit3, MessageCircle } from 'lucide-react';
+import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fetchProductById } from '../services/api';
 import RecommendedProducts from '../components/RecommendedProducts';
+import { isAdminEmail, WHATSAPP } from '../config/constants';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -35,7 +36,7 @@ const ProductDetails = () => {
     setActiveImageIndex(0);
   }, [id]);
 
-  const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
+  const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (product) {
@@ -108,12 +109,11 @@ const ProductDetails = () => {
   const isOutOfStock = product.inStock === false;
 
   const handleWhatsAppEnquiry = () => {
-    const number = "917027311213";
     const productUrl = window.location.href;
     const priceText = product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'N/A';
     const message = `Hello Karigiri!\n\nI am interested in this beautiful piece:\n- Product: *${product.name}*\n- Price: *${priceText}*\n- Selected Size: *${selectedSize || 'Standard'}*\n- Link: ${productUrl}\n\nCould you please help me with more details?`;
     
-    const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+    const waUrl = `${WHATSAPP.chatUrl}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
   };
 
@@ -209,20 +209,16 @@ const ProductDetails = () => {
               )}
             </div>
 
-            <div className="flex items-center space-x-2 border rounded p-2 w-fit mb-6">
-              <span className="font-bold border-r pr-2 flex items-center space-x-1">
-                <span>4.5</span>
-                <Star size={16} className="fill-green-600 text-green-600" />
-              </span>
-              <span className="text-slate-400 pl-1 text-sm font-bold">2.4k Ratings</span>
-            </div>
-
             <hr className="mb-6" />
 
             <div className="flex items-baseline space-x-4 mb-8">
               <span className="text-3xl font-black text-slate-900">₹{(product.price || 0).toLocaleString('en-IN')}</span>
-              <span className="text-xl text-slate-400 line-through">₹{((product.price || 0) + 1000).toLocaleString('en-IN')}</span>
-              <span className="text-xl text-[var(--primary)] font-bold">(₹1,000 OFF)</span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <>
+                  <span className="text-xl text-slate-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
+                  <span className="text-xl text-[var(--primary)] font-bold">({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)</span>
+                </>
+              )}
             </div>
 
             <p className="text-[var(--accent)] font-black text-sm mb-8 uppercase tracking-wider">inclusive of all taxes</p>
@@ -314,19 +310,19 @@ const ProductDetails = () => {
               <div className="grid grid-cols-2 gap-y-6">
                 <div>
                   <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Material</h4>
-                  <p className="text-sm font-bold text-slate-800">100% Merino Wool</p>
+                  <p className="text-sm font-bold text-slate-800">{product.material || '100% Handcrafted Wool'}</p>
                 </div>
                 <div>
-                  <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Fit</h4>
-                  <p className="text-sm font-bold text-slate-800">Regular Fit</p>
+                  <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Category</h4>
+                  <p className="text-sm font-bold text-slate-800">{product.category || 'Handmade'}</p>
                 </div>
                 <div>
-                  <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Pattern</h4>
-                  <p className="text-sm font-bold text-slate-800">Solid / Handcrafted</p>
+                  <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Brand</h4>
+                  <p className="text-sm font-bold text-slate-800">{product.brand || 'KARIGIRI'}</p>
                 </div>
                 <div>
-                  <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Occasion</h4>
-                  <p className="text-sm font-bold text-slate-800">Casual / Winter Wear</p>
+                  <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Availability</h4>
+                  <p className={`text-sm font-bold ${product.inStock !== false ? 'text-emerald-600' : 'text-red-500'}`}>{product.inStock !== false ? 'In Stock' : 'Out of Stock'}</p>
                 </div>
               </div>
 

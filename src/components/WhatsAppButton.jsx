@@ -1,9 +1,10 @@
 import { MessageCircle } from 'lucide-react';
+import { WHATSAPP } from '../config/constants';
 
 const WhatsAppButton = () => {
   return (
     <a
-      href="https://wa.me/917027311213"
+      href={WHATSAPP.chatUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="hidden md:flex fixed bottom-8 right-8 z-[90] bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform items-center justify-center group"
@@ -17,3 +18,4 @@ const WhatsAppButton = () => {
 };
 
 export default WhatsAppButton;
+

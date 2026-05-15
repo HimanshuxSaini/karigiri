@@ -5,8 +5,8 @@ import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore'
 import { auth as firebaseAuth } from '../firebase/config';
 import { useState } from 'react';
 import LoginModal from './LoginModal';
-
 import { categoryStructure, navLinks } from '../data/categories';
+import { isAdminEmail, WHATSAPP } from '../config/constants';
 
 const Navbar = () => {
   const { user } = useAuthStore();
@@ -19,7 +19,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
+  const isAdmin = isAdminEmail(user?.email);
 
 
   const handleSearch = (e) => {
@@ -127,7 +127,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4 md:space-x-10">
             {/* WhatsApp Chat Button (Mobile only, next to Profile icon) */}
             <a
-              href="https://wa.me/917027311213"
+              href={WHATSAPP.chatUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="md:hidden flex items-center justify-center p-2 bg-[#25D366] text-white rounded-full shadow-md hover:scale-105 active:scale-95 transition-all"

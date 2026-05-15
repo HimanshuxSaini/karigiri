@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const { isAdminEmail } = require('../config/constants');
 
 const protectAdmin = async (req, res, next) => {
   try {
@@ -14,10 +15,8 @@ const protectAdmin = async (req, res, next) => {
     // Verify token
     const decodedToken = await admin.auth().verifyIdToken(token);
     
-    // Check if user is admin (Hardcoded as per Admin.jsx logic)
-    const adminEmails = ['himanshu0481@gmail.com', 'admin@karigiri.com'];
-    
-    if (!adminEmails.includes(decodedToken.email)) {
+    // Check if user is admin using centralized config
+    if (!isAdminEmail(decodedToken.email)) {
       return res.status(403).json({ message: 'Forbidden: Admin access required' });
     }
 
@@ -34,3 +33,4 @@ const protectAdmin = async (req, res, next) => {
 };
 
 module.exports = { protectAdmin };
+

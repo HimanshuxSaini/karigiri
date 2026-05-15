@@ -98,6 +98,7 @@ export const useWishlistStore = create(
       isInWishlist: (productId) => {
         return !!get().wishlist.find((item) => (item.id || item._id) === productId);
       },
+      setWishlist: (wishlist) => set({ wishlist: wishlist || [] }),
       clearWishlist: () => set({ wishlist: [] }),
     }),
     { name: 'wishlist-storage' }

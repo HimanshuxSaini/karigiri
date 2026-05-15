@@ -55,6 +55,7 @@ import {
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
+import { isAdminEmail } from '../config/constants';
 
 
 const formatDate = (dateObj) => {
@@ -140,7 +141,7 @@ const Admin = () => {
   });
 
   // Admin Check
-  const isAdmin = user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com';
+  const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (isAdmin) {

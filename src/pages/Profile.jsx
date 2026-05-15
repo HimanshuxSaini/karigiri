@@ -1,5 +1,6 @@
 import Navbar from '../components/Navbar';
 import { useAuthStore, useOrderStore, useWishlistStore, useUserStore, useCartStore, useToastStore } from '../store/useStore';
+import { isAdminEmail } from '../config/constants';
 import { fetchOrders, fetchUserOrders, fetchUserProfile, saveUserProfile } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -157,7 +158,7 @@ const Profile = () => {
       { label: 'Purchases', value: dbOrders.length, icon: <ShoppingBag className="text-blue-500" />, bg: "bg-blue-50" },
       { label: 'Wishlist', value: wishlist.length, icon: <Heart className="text-red-500" />, bg: "bg-red-50" },
       { label: 'Pending', value: pendingOrders, icon: <Clock className="text-amber-500" />, bg: "bg-amber-50" },
-      { label: 'Saved', value: "5", icon: <Star className="text-amber-500" />, bg: "bg-amber-50" },
+      { label: 'Saved', value: addresses.length, icon: <Star className="text-amber-500" />, bg: "bg-amber-50" },
     ];
   }, [dbOrders, wishlist]);
 
@@ -196,7 +197,7 @@ const Profile = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-3">
-              {(user?.email === 'himanshu0481@gmail.com' || user?.email === 'admin@karigiri.com') && (
+              {isAdminEmail(user?.email) && (
                 <Link
                   to="/admin"
                   className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all"

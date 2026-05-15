@@ -54,7 +54,7 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// Explicit CORS configuration - More restrictive for production
+// Explicit CORS configuration - Restrictive for production
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
@@ -66,10 +66,10 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    const isVercel = origin.endsWith('.vercel.app');
+    // In development, allow all local origins
     const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
     
-    if (isVercel || isLocal || process.env.NODE_ENV !== 'production') {
+    if (allowedOrigins.includes(origin) || isLocal || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -99,6 +99,7 @@ app.use('/api/upload', generalLimiter, uploadRoutes);
 app.use('/api/coupons', generalLimiter, couponRoutes);
 app.use('/api/products', generalLimiter, productRoutes);
 app.use('/api/sale', generalLimiter, saleRoutes);
+app.use('/api/orders', generalLimiter, require('./routes/orderRoutes'));
 
 
 // Health Check
