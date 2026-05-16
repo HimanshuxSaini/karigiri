@@ -58,6 +58,7 @@ app.use(compression());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://karigiri.vercel.app',
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
 ].filter(Boolean);
 
