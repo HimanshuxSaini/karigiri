@@ -117,7 +117,16 @@ try {
 
     if (serviceAccountVar) {
       // Support JSON string from environment variable (Best for Render/Vercel)
-      credential = admin.credential.cert(JSON.parse(serviceAccountVar));
+      try {
+        const serviceAccount = JSON.parse(serviceAccountVar);
+        // Fix for private key newlines in environment variables
+        if (serviceAccount.private_key) {
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+        credential = admin.credential.cert(serviceAccount);
+      } catch (parseError) {
+        console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', parseError.message);
+      }
     } else {
       // Support local file path or Render secret path
       const pathsToTry = [

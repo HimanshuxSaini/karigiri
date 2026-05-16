@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const { sendEmail } = require('../utils/emailService');
 
 // Create a new order (server-side validated)
 const createOrder = async (req, res) => {
@@ -128,6 +129,83 @@ const createOrder = async (req, res) => {
         // Don't fail the whole order if just updating the coupon usage stat fails
         console.error('Failed to auto-increment coupon count:', couponErr);
       }
+    }
+
+    // Send Order Confirmation Email asynchronously
+    try {
+      const itemsHtml = validatedItems.map(item => `
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name} (x${item.quantity})</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price * item.quantity}</td>
+        </tr>
+      `).join('');
+
+      const mailOptions = {
+        to: email.toLowerCase(),
+        subject: `Order Confirmation - Karigiri (#${docRef.id.slice(-6).toUpperCase()})`,
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; padding: 30px; background-color: #fff; border: 1px solid #eee; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h1 style="color: #5C4033; margin: 0; font-size: 24px; letter-spacing: 2px;">KARIGIRI</h1>
+            </div>
+            <h2 style="color: #333; text-align: center;">Thank you for your order!</h2>
+            <p style="color: #666; font-size: 14px; text-align: center;">We've received your order and are getting it ready to ship.</p>
+            
+            <div style="margin: 30px 0; background-color: #fcfcfc; padding: 20px; border-radius: 8px;">
+              <h3 style="color: #5C4033; margin-top: 0;">Order Details</h3>
+              <p style="margin: 5px 0; color: #666;"><strong>Order ID:</strong> ${docRef.id}</p>
+              <p style="margin: 5px 0; color: #666;"><strong>Payment Method:</strong> ${paymentMethod || 'WhatsApp / QR Code'}</p>
+              
+              <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left; padding: 10px; border-bottom: 2px solid #5C4033;">Item</th>
+                    <th style="text-align: right; padding: 10px; border-bottom: 2px solid #5C4033;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; text-align: right;">Subtotal:</td>
+                    <td style="padding: 10px; font-weight: bold; text-align: right;">₹${calculatedSubtotal}</td>
+                  </tr>
+                  ${validatedCouponDiscount > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; text-align: right; color: #d9534f;">Discount:</td>
+                    <td style="padding: 10px; text-align: right; color: #d9534f;">-₹${validatedCouponDiscount}</td>
+                  </tr>` : ''}
+                  <tr>
+                    <td style="padding: 10px; text-align: right;">Delivery:</td>
+                    <td style="padding: 10px; text-align: right;">₹${finalDelivery}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: 800; text-align: right; font-size: 16px; border-top: 2px solid #5C4033;">Total:</td>
+                    <td style="padding: 10px; font-weight: 800; text-align: right; font-size: 16px; border-top: 2px solid #5C4033;">₹${totalPrice}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            
+            <div style="margin-top: 30px;">
+              <h3 style="color: #5C4033;">Shipping Address</h3>
+              <p style="color: #666; font-size: 14px; line-height: 1.5;">
+                ${shippingAddress.address || shippingAddress.street}<br/>
+                ${shippingAddress.city}, ${shippingAddress.state} ${pincode}<br/>
+                Phone: ${phone}
+              </p>
+            </div>
+            
+            <p style="color: #999; font-size: 12px; text-align: center; margin-top: 40px;">If you have any questions about your order, please contact us.</p>
+          </div>
+        `
+      };
+      
+      // We don't await this so the response is fast. We catch errors internally so it doesn't crash the server.
+      sendEmail(mailOptions).catch(err => console.error('Failed to send order email:', err));
+    } catch (emailErr) {
+      console.error('Error preparing order email:', emailErr);
     }
 
     res.status(201).json({

@@ -69,6 +69,9 @@ const Shop = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState(rawSearchQuery);
+  const [sortBy, setSortBy] = useState('newest'); // newest, price-low, price-high, rating
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [selectedBrands, setSelectedBrands] = useState([]);
 
   // Sync state with URL
   useEffect(() => {
@@ -115,27 +118,26 @@ const Shop = () => {
     setCategoryFilter(cat);
   };
 
-  const applySearchQuery = (value) => {
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    
+    // Update URL debounced-ly or just update results immediately in UI
     const params = new URLSearchParams(searchParams);
-    const trimmedValue = value.trim();
-
-    if (trimmedValue) {
-      params.set('search', trimmedValue);
+    if (value.trim()) {
+      params.set('search', value);
     } else {
       params.delete('search');
     }
-
-    setSearchParams(params);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    applySearchQuery(searchInput);
+    // Using navigate with { replace: true } to avoid cluttering history
+    setSearchParams(params, { replace: true });
   };
 
   const handleClearSearch = () => {
     setSearchInput('');
-    applySearchQuery('');
+    const params = new URLSearchParams(searchParams);
+    params.delete('search');
+    setSearchParams(params, { replace: true });
   };
 
   const clearFilters = () => {
@@ -143,15 +145,33 @@ const Shop = () => {
     setCategoryFilter('All');
     setPriceRange([0, 10000]);
     setSearchInput('');
+    setInStockOnly(false);
+    setSelectedBrands([]);
+    setSortBy('newest');
+  };
+
+  const uniqueBrands = useMemo(() => {
+    if (!products.length) return [];
+    const brands = products
+      .map(p => p.brand || 'KARIGIRI')
+      .filter((v, i, a) => a.indexOf(v) === i);
+    return brands.sort();
+  }, [products]);
+
+  const toggleBrand = (brand) => {
+    setSelectedBrands(prev => 
+      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
+    );
   };
 
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
-    return products.filter(p => {
+    
+    let result = products.filter(p => {
       const pCategory = String(p?.category || '').trim().toLowerCase();
       const pSubCategory = String(p?.subCategory || p?.subcategory || '').trim().toLowerCase();
       const pName = String(p?.name || '').trim().toLowerCase();
-      const pBrand = String(p?.brand || '').trim().toLowerCase();
+      const pBrand = String(p?.brand || 'KARIGIRI').trim().toLowerCase();
       
       const filterCat = categoryFilter.trim().toLowerCase();
       const filterSub = (urlSubCategory || '').trim().toLowerCase();
@@ -161,15 +181,36 @@ const Shop = () => {
       
       const matchesPrice = (Number(p?.price) || 0) >= priceRange[0] && (Number(p?.price) || 0) <= priceRange[1];
       
-      const matchesSearch = !searchQuery || 
-        pName.includes(searchQuery.trim().toLowerCase()) || 
-        pBrand.includes(searchQuery.trim().toLowerCase()) || 
-        pCategory.includes(searchQuery.trim().toLowerCase()) ||
-        pSubCategory.includes(searchQuery.trim().toLowerCase());
+      const searchTerm = searchInput.trim().toLowerCase();
+      const matchesSearch = !searchTerm || 
+        pName.includes(searchTerm) || 
+        pBrand.includes(searchTerm) || 
+        pCategory.includes(searchTerm) ||
+        pSubCategory.includes(searchTerm);
+
+      const matchesStock = !inStockOnly || p.inStock !== false;
+      const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(p.brand || 'KARIGIRI');
       
-      return matchesCategory && matchesSubCategory && matchesPrice && matchesSearch;
+      return matchesCategory && matchesSubCategory && matchesPrice && matchesSearch && matchesStock && matchesBrand;
     });
-  }, [categoryFilter, urlSubCategory, priceRange, searchQuery, products]);
+
+    // Sorting
+    switch (sortBy) {
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      default:
+        break;
+    }
+
+    return result;
+  }, [categoryFilter, urlSubCategory, priceRange, searchInput, products, inStockOnly, selectedBrands, sortBy]);
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -239,7 +280,26 @@ const Shop = () => {
             </div>
 
             <div className="mb-10">
-              <h3 className="font-bold text-[13px] uppercase mb-4">Price Range</h3>
+              <h3 className="font-bold text-[13px] uppercase mb-4 flex items-center">
+                <span className="w-4 h-[2px] bg-black mr-3"></span>
+                Availability
+              </h3>
+              <label className="flex items-center space-x-3 cursor-pointer group">
+                <input 
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  className="w-4 h-4 accent-black rounded border-gray-300"
+                />
+                <span className="text-sm text-gray-600 group-hover:text-black font-medium">In Stock Only</span>
+              </label>
+            </div>
+
+            <div className="mb-10">
+              <h3 className="font-bold text-[13px] uppercase mb-4 flex items-center">
+                <span className="w-4 h-[2px] bg-black mr-3"></span>
+                Price Range
+              </h3>
               <div className="space-y-3">
                 {[[0, 10000], [0, 3000], [3000, 5000], [5000, 10000]].map((range, idx) => (
                   <label key={idx} className="flex items-center space-x-3 cursor-pointer group">
@@ -257,34 +317,102 @@ const Shop = () => {
                 ))}
               </div>
             </div>
+
+            {uniqueBrands.length > 1 && (
+              <div className="mb-10">
+                <h3 className="font-bold text-[13px] uppercase mb-4 flex items-center">
+                  <span className="w-4 h-[2px] bg-black mr-3"></span>
+                  Brands
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                  {uniqueBrands.map(brand => (
+                    <label key={brand} className="flex items-center space-x-3 cursor-pointer group">
+                      <input 
+                        type="checkbox"
+                        checked={selectedBrands.includes(brand)}
+                        onChange={() => toggleBrand(brand)}
+                        className="w-4 h-4 accent-black rounded border-gray-300"
+                      />
+                      <span className="text-sm text-gray-600 group-hover:text-black font-medium truncate">{brand}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </aside>
 
           {/* Main Content */}
           <main className="flex-grow pt-4 md:pt-12 lg:pl-12 pb-24">
-            <div className="md:hidden">
+            <div className="lg:hidden mb-6">
               <ShopSearchBar
                 value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onSubmit={handleSearchSubmit}
+                onChange={handleSearchChange}
+                onSubmit={(e) => e.preventDefault()}
                 onClear={handleClearSearch}
               />
+              <div className="flex justify-between items-center px-1">
+                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  {filteredProducts.length} Results
+                </div>
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="text-[10px] font-bold uppercase tracking-widest bg-transparent focus:outline-none"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex justify-between items-center mb-6 md:mb-10 border-b border-gray-100 pb-4">
+            <div className="hidden lg:flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+              <div className="w-1/2">
+                <div className="flex items-center gap-3 bg-gray-50 px-5 py-3 rounded-2xl border border-gray-100 focus-within:border-black/20 focus-within:bg-white transition-all">
+                  <Search size={16} className="text-gray-400" />
+                  <input 
+                    type="text"
+                    value={searchInput}
+                    onChange={handleSearchChange}
+                    placeholder="Search for items, styles, or collections..."
+                    className="w-full bg-transparent text-[13px] focus:outline-none placeholder:text-gray-400 font-medium"
+                  />
+                  {searchInput && (
+                    <X size={16} className="text-gray-300 hover:text-black cursor-pointer" onClick={handleClearSearch} />
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-6">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Sort By:</span>
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="text-[11px] font-bold uppercase tracking-widest bg-transparent border-none focus:ring-0 cursor-pointer hover:text-black transition-colors"
+                >
+                  <option value="newest">Newest Arrivals</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="rating">Best Rated</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mb-6 md:mb-10">
               <div className="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest font-bold">
                 <Link to="/" className="hover:text-black transition-colors">Home</Link>
                 <span className="mx-2">/</span>
                 <span className="text-black">{categoryFilter}</span>
-                {searchQuery && (
+                {searchInput && (
                   <>
                     <span className="mx-2">/</span>
                     <span className="text-gray-400 font-normal">Search: </span>
-                    <span className="text-black normal-case">"{rawSearchQuery}"</span>
+                    <span className="text-black normal-case">"{searchInput}"</span>
                   </>
                 )}
               </div>
-              <div className="text-[10px] md:text-sm font-black text-gray-900 uppercase tracking-tight">
-                {loading ? '' : `${filteredProducts.length} items`}
+              <div className="hidden lg:block text-xs font-black text-gray-900 uppercase tracking-tight">
+                {loading ? '' : `${filteredProducts.length} items found`}
               </div>
             </div>
 
