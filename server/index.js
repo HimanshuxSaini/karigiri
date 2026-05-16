@@ -61,6 +61,8 @@ const allowedOrigins = [
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
 ].filter(Boolean);
 
+console.log('CORS Configuration: Allowed Origins:', allowedOrigins);
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -73,7 +75,7 @@ app.use(cors({
     if (isAllowed) {
       callback(null, true);
     } else {
-      console.error(`[CORS Error] Origin ${origin} not allowed. Allowed origins:`, allowedOrigins);
+      console.log(`[CORS Error] Origin ${origin} not allowed. Allowed origins:`, allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
