@@ -58,7 +58,7 @@ app.use(compression());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  process.env.FRONTEND_URL
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
 ].filter(Boolean);
 
 app.use(cors({
@@ -68,10 +68,12 @@ app.use(cors({
     
     // In development, allow all local origins
     const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
-    
-    if (allowedOrigins.includes(origin) || isLocal || process.env.NODE_ENV !== 'production') {
+    const isAllowed = allowedOrigins.includes(origin) || isLocal || process.env.NODE_ENV !== 'production';
+
+    if (isAllowed) {
       callback(null, true);
     } else {
+      console.error(`[CORS Error] Origin ${origin} not allowed. Allowed origins:`, allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
