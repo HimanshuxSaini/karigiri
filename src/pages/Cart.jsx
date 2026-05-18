@@ -2,7 +2,7 @@ import Navbar from '../components/Navbar';
 import { useCartStore, useAuthStore } from '../store/useStore';
 import { Trash2, Plus, Minus, ArrowRight, Tag, X, Loader2, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { fetchCoupons, getCouponEligibility } from '../services/api';
 import LoginModal from '../components/LoginModal';
@@ -22,7 +22,6 @@ const getCouponDiscountLabel = (coupon) => {
 const Cart = () => {
   const { items, removeItem, updateQuantity, getTotal, getDeliveryCharges, appliedCoupon, setAppliedCoupon } = useCartStore();
   const { user } = useAuthStore();
-  const navigate = useNavigate();
 
   const [coupons, setCoupons] = useState([]);
   const [loadingCoupons, setLoadingCoupons] = useState(true);

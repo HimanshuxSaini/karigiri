@@ -1,7 +1,7 @@
 import Navbar from '../components/Navbar';
-import { useAuthStore, useOrderStore, useWishlistStore, useUserStore, useCartStore, useToastStore } from '../store/useStore';
+import { useAuthStore, useWishlistStore, useUserStore, useCartStore, useToastStore } from '../store/useStore';
 import { isAdminEmail } from '../config/constants';
-import { fetchOrders, fetchUserOrders, fetchUserProfile, saveUserProfile } from '../services/api';
+import { fetchUserOrders, fetchUserProfile, saveUserProfile } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, 
@@ -25,14 +25,13 @@ import {
   Bell,
   AlertTriangle
 } from 'lucide-react';
-import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { auth as firebaseAuth } from '../firebase/config';
 import { useState, useEffect, useMemo } from 'react';
 import { updateProfile } from 'firebase/auth';
 
 const Profile = () => {
   const { user, logout, setUser } = useAuthStore();
-  const { orders } = useOrderStore();
   const { wishlist, toggleWishlist } = useWishlistStore();
   const { addItem } = useCartStore();
   const { addresses, addAddress, removeAddress } = useUserStore();
@@ -44,7 +43,6 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [addedToCart, setAddedToCart] = useState(null);
-  const navigate = useNavigate();
 
    // Form States
   const [displayName, setDisplayName] = useState(user?.displayName || '');
@@ -95,8 +93,6 @@ const Profile = () => {
     };
     getOrders();
   }, [user]);
-
-  if (!user) return <Navigate to="/" />;
 
   const handleLogout = () => {
     firebaseAuth.signOut();
@@ -152,6 +148,7 @@ const Profile = () => {
     { id: 'wishlist', label: 'Wishlist', icon: Heart },
     { id: 'settings', label: 'Account', icon: Settings },
   ];
+
   const userStats = useMemo(() => {
     const pendingOrders = dbOrders.filter(o => o.status === 'Processing').length;
     return [
@@ -160,9 +157,9 @@ const Profile = () => {
       { label: 'Pending', value: pendingOrders, icon: <Clock className="text-amber-500" />, bg: "bg-amber-50" },
       { label: 'Saved', value: addresses.length, icon: <Star className="text-amber-500" />, bg: "bg-amber-50" },
     ];
-  }, [dbOrders, wishlist]);
+  }, [dbOrders, wishlist, addresses]);
 
-
+  if (!user) return <Navigate to="/" />;
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -171,11 +168,6 @@ const Profile = () => {
       y: 0,
       transition: { duration: 0.6, staggerChildren: 0.1 }
     }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
   };
 
   return (

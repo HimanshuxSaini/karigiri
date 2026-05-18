@@ -20,8 +20,6 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
-  fetchSignInMethodsForEmail,
-  sendPasswordResetEmail,
   signInWithCustomToken
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
@@ -38,8 +36,6 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [slowConnection, setSlowConnection] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +74,6 @@ const LoginModal = ({ isOpen, onClose }) => {
     
     const normalizedEmail = identifier.trim().toLowerCase();
     setLoading(true);
-    setError('');
     setSlowConnection(false);
 
     // Show slow connection warning after 5 seconds
@@ -107,7 +102,6 @@ const LoginModal = ({ isOpen, onClose }) => {
     if (otp.length !== 6) return showToast('Enter 6-digit code', 'error');
     
     setLoading(true);
-    setError('');
 
     try {
       const verification = await verifyOtp(identifier.trim().toLowerCase(), otp);
@@ -140,7 +134,6 @@ const LoginModal = ({ isOpen, onClose }) => {
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
       let userCredential;
@@ -166,8 +159,6 @@ const LoginModal = ({ isOpen, onClose }) => {
     if (!email) return showToast('Please enter your email address', 'error');
     
     setLoading(true);
-    setError('');
-    setSuccess('');
 
     try {
       await requestPasswordReset(email);
@@ -182,7 +173,6 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    setError('');
     try {
       const provider = new GoogleAuthProvider();
       

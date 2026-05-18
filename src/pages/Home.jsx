@@ -11,11 +11,6 @@ import { categoryStructure } from '../data/categories';
 import CustomizationSection from '../components/CustomizationSection';
 
 
-// Asset Imports
-import bootiesImg from '../assets/booties.png';
-import sweaterImg from '../assets/sweater.png';
-import yarnImg from '../assets/yarn.png';
-
 const Home = () => {
   const [products, setProducts] = useState([]);
 

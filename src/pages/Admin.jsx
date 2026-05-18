@@ -44,7 +44,6 @@ import {
   deleteReel,
   fetchReelsConfig,
   updateReelsConfig,
-  fetchCoupons,
   fetchAdminCoupons,
   createCoupon,
   updateCoupon,

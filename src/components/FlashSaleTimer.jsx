@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 
 const FlashSaleTimer = ({ endTime, onExpire }) => {
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!endTime) return 0;
+    const diff = new Date(endTime).getTime() - Date.now();
+    return Math.max(0, Math.floor(diff / 1000));
+  });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -10,7 +14,11 @@ const FlashSaleTimer = ({ endTime, onExpire }) => {
       return Math.max(0, Math.floor(diff / 1000));
     };
 
-    setTimeLeft(calculateTimeLeft());
+    const updateTime = () => {
+      setTimeLeft(calculateTimeLeft());
+    };
+    
+    const timeoutId = setTimeout(updateTime, 0);
 
     const timer = setInterval(() => {
       const seconds = calculateTimeLeft();
@@ -22,8 +30,11 @@ const FlashSaleTimer = ({ endTime, onExpire }) => {
       }
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [endTime]);
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(timer);
+    };
+  }, [endTime, onExpire]);
 
   const formatTime = (seconds) => {
     const days = Math.floor(seconds / (24 * 3600));

@@ -1,50 +1,49 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import bootiesImg from '../assets/booties.png';
-import sweaterImg from '../assets/sweater.png';
 import yarnImg from '../assets/yarn.png';
+
+const slides = [
+  { 
+    title: "Floral Collection", 
+    head: "Artisanal\nCrochet Bouquet.", 
+    img: "/bookey.png", 
+    pos: "object-center",
+    fit: "contain"
+  },
+  { 
+    title: "Kids Collection", 
+    head: "Warmth for\nSmall Wonders.", 
+    img: "/item4.png", 
+    pos: "object-center",
+    fit: "contain" 
+  },
+  { 
+    title: "Women's Luxe", 
+    head: "Handcrafted\nBracelets & Bags.", 
+    img: "/bracelet.png", 
+    pos: "object-center",
+    fit: "contain"
+  },
+  { 
+    title: "Artisanal Comfort", 
+    head: "Premium\nWoolen Blankets.", 
+    img: "/blanket.png", 
+    pos: "object-center",
+    fit: "contain"
+  },
+  { 
+    title: "Heritage Yarn", 
+    head: "Pure Organic\nWool Yarn.", 
+    img: yarnImg, 
+    pos: "object-center",
+    fit: "contain"
+  }
+];
 
 const Hero = () => {
   const [current, setCurrent] = useState(0);
 
-  const slides = [
-    { 
-      title: "Floral Collection", 
-      head: "Artisanal\nCrochet Bouquet.", 
-      img: "/bookey.png", 
-      pos: "object-center",
-      fit: "contain"
-    },
-    { 
-      title: "Kids Collection", 
-      head: "Warmth for\nSmall Wonders.", 
-      img: "/item4.png", 
-      pos: "object-center",
-      fit: "contain" 
-    },
-    { 
-      title: "Women's Luxe", 
-      head: "Handcrafted\nBracelets & Bags.", 
-      img: "/bracelet.png", 
-      pos: "object-center",
-      fit: "contain"
-    },
-    { 
-      title: "Artisanal Comfort", 
-      head: "Premium\nWoolen Blankets.", 
-      img: "/blanket.png", 
-      pos: "object-center",
-      fit: "contain"
-    },
-    { 
-      title: "Heritage Yarn", 
-      head: "Pure Organic\nWool Yarn.", 
-      img: yarnImg, 
-      pos: "object-center",
-      fit: "contain"
-    }
-  ];
 
   useEffect(() => {
     const next = setInterval(() => {

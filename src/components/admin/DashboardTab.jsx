@@ -28,7 +28,7 @@ const formatDate = (dateObj) => {
 
 const COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#F43F5E', '#F59E0B', '#14B8A6'];
 
-const DashboardTab = ({ products, orders, reels, coupons, setActiveTab }) => {
+const DashboardTab = ({ products, orders, reels, setActiveTab }) => {
   const activeOrders = useMemo(() => {
     return Array.isArray(orders) ? orders.filter(o => !o.isDeletedByAdmin && !o.status?.includes('Suspicious')) : [];
   }, [orders]);

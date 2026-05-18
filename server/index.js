@@ -165,7 +165,7 @@ try {
 }
 
 // Global Error Handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('SERVER ERROR:', err);
   if (err.stack) console.error(err.stack);
 

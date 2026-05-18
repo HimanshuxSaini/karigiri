@@ -4,7 +4,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, Minus, X, Tag, Loader2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { createOrder, validateCoupon, incrementCouponUsage, fetchCoupons, getCouponEligibility, fetchOrders } from '../services/api';
+import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { WHATSAPP } from '../config/constants';
@@ -208,7 +208,7 @@ const Checkout = () => {
       setCouponDiscount(updatedCouponState.discount);
       setCouponMessage({ text: updatedCouponState.message, type: 'success' });
     }
-  }, [appliedCoupon, appliedCouponId, cartTotal, couponDiscount, coupons, isFirstOrder]);
+  }, [appliedCoupon, appliedCouponId, cartTotal, couponDiscount, coupons, isFirstOrder, setAppliedCoupon]);
 
   if (!user) return <Navigate to="/" />;
   if (items.length === 0 && !isOrdered) return <Navigate to="/shop" />;
