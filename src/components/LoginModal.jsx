@@ -30,7 +30,7 @@ import { sendOtp, verifyOtp, requestPasswordReset } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 
 const LoginModal = ({ isOpen, onClose }) => {
-  const [view, setView] = useState('otp'); // 'otp', 'login', 'signup', 'forgot'
+  const [view, setView] = useState('login'); // 'otp', 'login', 'signup', 'forgot'
   const [step, setStep] = useState('number'); // 'number', 'verify'
   const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
@@ -51,6 +51,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
+      setView('login');
       setStep('number');
       setIdentifier('');
       setLoading(false);
