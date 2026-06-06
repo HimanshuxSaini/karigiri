@@ -246,36 +246,49 @@ const ProductDetails = () => {
               </div>
             )}
 
-            <div className="hidden md:flex space-x-4 mb-12">
-              <button
+            {/* Action Buttons */}
+            <div className="hidden md:flex items-stretch gap-3 mb-12">
+              {/* Add to Bag — primary CTA */}
+              <motion.button
+                whileHover={!isOutOfStock ? { scale: 1.02 } : {}}
+                whileTap={!isOutOfStock ? { scale: 0.97 } : {}}
                 disabled={isOutOfStock}
                 onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
-                className={`flex-grow py-5 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-all shadow-xl ${
-                  isOutOfStock 
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                    : 'bg-[var(--primary)] text-white hover:opacity-90'
+                className={`flex-1 h-14 rounded-xl font-black text-[11px] uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 transition-all duration-200 ${
+                  isOutOfStock
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                    : 'bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/25 hover:shadow-xl hover:shadow-[var(--primary)]/30 hover:brightness-110'
                 }`}
               >
-                <ShoppingBag size={20} />
+                <ShoppingBag size={17} strokeWidth={2.5} />
                 <span>{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
-              </button>
-              
-              <button
-                onClick={handleWhatsAppEnquiry}
-                className="px-8 py-5 bg-[#25D366] text-white rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 hover:bg-[#20ba5a] transition-all shadow-xl"
-              >
-                <MessageCircle size={20} fill="currentColor" />
-                <span>Enquire</span>
-              </button>
+              </motion.button>
 
-              <button
-                onClick={() => toggleWishlist(product)}
-                className={`px-8 py-5 border-2 rounded font-black uppercase tracking-widest flex items-center justify-center space-x-3 transition-all ${isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-slate-200 text-slate-900 hover:border-slate-900'
-                  }`}
+              {/* WhatsApp Enquire */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleWhatsAppEnquiry}
+                className="h-14 px-6 rounded-xl bg-[#22C55E] text-white font-black text-[11px] uppercase tracking-[0.18em] flex items-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:bg-[#16a34a] hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-200"
               >
-                <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
+                <MessageCircle size={17} strokeWidth={2.5} fill="currentColor" />
+                <span>Enquire</span>
+              </motion.button>
+
+              {/* Wishlist */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => toggleWishlist(product)}
+                className={`h-14 px-6 rounded-xl border-2 font-black text-[11px] uppercase tracking-[0.18em] flex items-center gap-2.5 transition-all duration-200 ${
+                  isWishlisted
+                    ? 'border-rose-400 text-rose-500 bg-rose-50 shadow-md shadow-rose-200'
+                    : 'border-slate-200 text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                }`}
+              >
+                <Heart size={17} strokeWidth={2.5} fill={isWishlisted ? 'currentColor' : 'none'} />
                 <span>Wishlist</span>
-              </button>
+              </motion.button>
             </div>
 
             <div className="space-y-6 mb-12">
