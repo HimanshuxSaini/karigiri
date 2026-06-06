@@ -9,7 +9,7 @@ import { LayoutGrid } from 'lucide-react';
  * Shows in-stock products from the same category as `product`.
  * Falls back to same brand if fewer than 2 category matches are found.
  */
-const SimilarProducts = ({ product, limit = 4, className = '' }) => {
+const SimilarProducts = ({ product, limit = 4, className = '', onLoaded }) => {
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,6 +55,13 @@ const SimilarProducts = ({ product, limit = 4, className = '' }) => {
 
     return matches.slice(0, limit);
   }, [allProducts, product, limit]);
+
+  // Notify parent about which IDs are shown so they can be excluded elsewhere
+  useEffect(() => {
+    if (!loading && onLoaded) {
+      onLoaded(similar.map(p => p._id || p.id));
+    }
+  }, [similar, loading, onLoaded]);
 
   if (loading || similar.length === 0) return null;
 

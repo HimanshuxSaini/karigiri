@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import { useCartStore, useWishlistStore, useAuthStore, useActivityStore } from '../store/useStore';
 import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle } from 'lucide-react';
@@ -21,6 +21,7 @@ const ProductDetails = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({ transformOrigin: 'center' });
+  const [similarIds, setSimilarIds] = useState([]);
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
@@ -117,6 +118,11 @@ const ProductDetails = () => {
     const waUrl = `${WHATSAPP.chatUrl}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
   };
+
+  // Stable callback — avoids SimilarProducts re-rendering in a loop
+  const handleSimilarLoaded = useCallback((ids) => {
+    setSimilarIds(ids);
+  }, []);
 
   const optimizeImage = (url) => {
     if (!url || typeof url !== 'string') return url;
@@ -359,6 +365,7 @@ const ProductDetails = () => {
         <SimilarProducts
           product={product}
           limit={4}
+          onLoaded={handleSimilarLoaded}
         />
       </div>
 
@@ -366,7 +373,7 @@ const ProductDetails = () => {
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 pb-24 md:pb-32 pt-4">
         <RecommendedProducts 
           title="Recommended For You"
-          excludeProductIds={[product._id || product.id]}
+          excludeProductIds={[product._id || product.id, ...similarIds]}
           limit={4}
         />
       </div>
