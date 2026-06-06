@@ -20,19 +20,7 @@ const ProductDetails = () => {
   const { trackProductVisit } = useActivityStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showSizeChart, setShowSizeChart] = useState(false);
-  const [zoomStyle, setZoomStyle] = useState({ transformOrigin: 'center' });
   const [similarIds, setSimilarIds] = useState([]);
-
-  const handleMouseMove = (e) => {
-    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
-    setZoomStyle({ transformOrigin: `${x}% ${y}%` });
-  };
-
-  const handleMouseLeave = () => {
-    setZoomStyle({ transformOrigin: 'center' });
-  };
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -141,9 +129,7 @@ const ProductDetails = () => {
           {/* Image Gallery */}
           <div className="lg:w-3/5">
             {/* Featured Image */}
-            <div 
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
+            <div
               className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group"
             >
               <motion.img
@@ -151,9 +137,8 @@ const ProductDetails = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                style={{ ...zoomStyle }}
                 src={optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[activeImageIndex] : '')}
-                className={`max-w-full max-h-full object-contain transition-transform duration-200 hover:scale-[1.5] cursor-zoom-in ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
+                className={`max-w-full max-h-full object-contain ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
                 alt={product.name}
                 loading="eager"
                 onError={(e) => {

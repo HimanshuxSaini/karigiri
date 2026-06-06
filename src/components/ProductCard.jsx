@@ -27,7 +27,7 @@ const ProductCard = ({ product }) => {
           src={getOptimizedImage(product.image, { width: 400, quality: 'auto:eco' })}
           alt={product.name}
           loading="lazy"
-          className="max-w-full max-h-full object-contain drop-shadow-lg"
+          className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg"
           onError={(e) => {
             e.target.src = "/placeholder.png";
           }}
@@ -53,8 +53,8 @@ const ProductCard = ({ product }) => {
             disabled={isOutOfStock}
             onClick={(e) => { e.preventDefault(); if (!isOutOfStock) addItem(product); }}
             className={`w-full py-2 text-[10px] md:text-sm font-bold rounded uppercase tracking-wider transition-colors ${isOutOfStock
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-[var(--primary)] text-white hover:opacity-90'
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-[var(--primary)] text-white hover:opacity-90'
               }`}
           >
             {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
