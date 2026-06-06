@@ -74,6 +74,11 @@ const ProductDetails = () => {
     }
   }, [id, trackProductVisit]);
 
+  // Stable callback — must be defined before any early returns (Rules of Hooks)
+  const handleSimilarLoaded = useCallback((ids) => {
+    setSimilarIds(ids);
+  }, []);
+
   if (loading) return (
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
@@ -118,11 +123,6 @@ const ProductDetails = () => {
     const waUrl = `${WHATSAPP.chatUrl}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
   };
-
-  // Stable callback — avoids SimilarProducts re-rendering in a loop
-  const handleSimilarLoaded = useCallback((ids) => {
-    setSimilarIds(ids);
-  }, []);
 
   const optimizeImage = (url) => {
     if (!url || typeof url !== 'string') return url;
