@@ -6,6 +6,7 @@ import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle } from 'luci
 import { motion } from 'framer-motion';
 import { fetchProductById } from '../services/api';
 import RecommendedProducts from '../components/RecommendedProducts';
+import SimilarProducts from '../components/SimilarProducts';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
 
 const ProductDetails = () => {
@@ -353,8 +354,16 @@ const ProductDetails = () => {
         </div>
       </div>
 
+      {/* Similar Products Section */}
+      <div className="max-w-[1440px] mx-auto px-4 md:px-12 pt-16">
+        <SimilarProducts
+          product={product}
+          limit={4}
+        />
+      </div>
+
       {/* Recommended Products Section */}
-      <div className="max-w-[1440px] mx-auto px-4 md:px-12 pb-24 md:pb-32 border-t border-slate-100 pt-20">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-12 pb-24 md:pb-32 pt-4">
         <RecommendedProducts 
           title="Recommended For You"
           excludeProductIds={[product._id || product.id]}
