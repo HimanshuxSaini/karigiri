@@ -372,9 +372,9 @@ const ProductDetails = () => {
       {/* Recommended Products Section */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 pb-24 md:pb-32 pt-4">
         <RecommendedProducts 
-          title="Recommended For You"
+          title="You May Also Like"
           excludeProductIds={[product._id || product.id, ...similarIds]}
-          limit={4}
+          limit={10}
         />
       </div>
 
