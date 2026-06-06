@@ -1,4 +1,4 @@
-import { ShoppingCart, Heart, Star } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useCartStore, useWishlistStore } from '../store/useStore';
@@ -39,13 +39,6 @@ const ProductCard = ({ product }) => {
           </div>
         )}
         
-        {/* Rating badge */}
-        <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur px-1.5 py-0.5 rounded flex items-center space-x-1 text-[8px] md:text-[10px] font-bold">
-           <span>4.2</span>
-           <Star size={10} className="fill-orange-400 text-orange-400" />
-           <span className="text-gray-400 border-l pl-1">1.2k</span>
-        </div>
-
         {/* Add to Wishlist Button */}
         <button 
           onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
