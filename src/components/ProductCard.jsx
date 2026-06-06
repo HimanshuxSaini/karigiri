@@ -18,16 +18,16 @@ const ProductCard = ({ product }) => {
   const isOutOfStock = product.inStock === false;
 
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -5 }}
       className={`bg-white overflow-hidden group h-full flex flex-col relative rounded-sm border border-transparent hover:border-gray-100 transition-all ${isOutOfStock ? 'opacity-80' : ''}`}
     >
       <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
-        <img 
-          src={getOptimizedImage(product.image, { width: 400, quality: 'auto:eco' })} 
+        <img
+          src={getOptimizedImage(product.image, { width: 400, quality: 'auto:eco' })}
           alt={product.name}
           loading="lazy"
-          className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg"
+          className="max-w-full max-h-full object-contain drop-shadow-lg"
           onError={(e) => {
             e.target.src = "/placeholder.png";
           }}
@@ -38,9 +38,9 @@ const ProductCard = ({ product }) => {
             Out of Stock
           </div>
         )}
-        
+
         {/* Add to Wishlist Button */}
-        <button 
+        <button
           onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
           className={`absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 bg-white rounded-full shadow-sm transition-all duration-300 ${isWishlisted ? 'text-red-500' : 'text-gray-400'}`}
         >
@@ -49,22 +49,21 @@ const ProductCard = ({ product }) => {
 
         {/* Add to Cart - Visible on hover (Desktop) and always available (Mobile via a small icon or similar) */}
         <div className="absolute bottom-0 left-0 right-0 p-2 md:p-4 translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 bg-white/90 backdrop-blur lg:block hidden">
-           <button 
-              disabled={isOutOfStock}
-              onClick={(e) => { e.preventDefault(); if (!isOutOfStock) addItem(product); }}
-              className={`w-full py-2 text-[10px] md:text-sm font-bold rounded uppercase tracking-wider transition-colors ${
-                isOutOfStock 
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                  : 'bg-[var(--primary)] text-white hover:opacity-90'
+          <button
+            disabled={isOutOfStock}
+            onClick={(e) => { e.preventDefault(); if (!isOutOfStock) addItem(product); }}
+            className={`w-full py-2 text-[10px] md:text-sm font-bold rounded uppercase tracking-wider transition-colors ${isOutOfStock
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-[var(--primary)] text-white hover:opacity-90'
               }`}
-           >
-             {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
-           </button>
+          >
+            {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
+          </button>
         </div>
-        
+
         {/* Mobile Quick Add */}
         {!isOutOfStock && (
-          <button 
+          <button
             onClick={(e) => { e.preventDefault(); addItem(product); }}
             className="lg:hidden absolute bottom-2 right-2 p-2 bg-[var(--primary)] text-white rounded-full shadow-lg"
           >
@@ -72,7 +71,7 @@ const ProductCard = ({ product }) => {
           </button>
         )}
       </Link>
-      
+
       <div className="py-2 md:py-4 px-1">
         <Link to={`/product/${productId}`}>
           <h3 className="font-bold text-[10px] md:text-sm text-gray-900 truncate">{product.brand || "KARIGIRI"}</h3>
