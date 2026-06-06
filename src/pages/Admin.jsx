@@ -26,7 +26,8 @@ import {
   User,
   MapPin,
   CreditCard,
-  Tag
+  Tag,
+  Megaphone
 } from 'lucide-react';
 
 import {
@@ -49,7 +50,9 @@ import {
   updateCoupon,
   deleteCoupon,
   fetchFlashSale,
-  updateFlashSale
+  updateFlashSale,
+  fetchSettings,
+  updateSettings
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
@@ -112,6 +115,9 @@ const Admin = () => {
   const [isUpdatingSale, setIsUpdatingSale] = useState(false);
   const [reelsConfig, setReelsConfig] = useState({ isVisible: true });
   const [isUpdatingReelsConfig, setIsUpdatingReelsConfig] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
+  const [newAnnouncement, setNewAnnouncement] = useState('');
+  const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -121,6 +127,7 @@ const Admin = () => {
     { id: 'reels', label: 'Reels', icon: Eye },
     { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'sale', label: 'Flash Sale', icon: Clock },
+    { id: 'announcements', label: 'Banner Offers', icon: Megaphone },
   ];
 
   // Form State
@@ -167,7 +174,8 @@ const Admin = () => {
         inStock: product.inStock,
         sizeType: product.sizeType || 'none',
         sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
-        deliveryCharge: product.deliveryCharge || 0
+        deliveryCharge: product.deliveryCharge || 0,
+        badge: product.badge || 'none'
       });
       setShowProductModal(true);
 
@@ -180,18 +188,31 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
         fetchAdminCoupons(),
         fetchFlashSale(),
-        fetchReelsConfig()
+        fetchReelsConfig(),
+        fetchSettings()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
       setReels(reelRes || []);
       setCoupons(couponRes || []);
+      
+      const defaultAnnouncements = [
+        "It's 14°C in your area – try our Heavy Knit Cardigans!",
+        "SHOP YOUR FIRST ORDER WITH FREE DELIVERY",
+        "USE CODE: FESTIVE30 FOR 30% OFF ON WINTER ETHNIC WEAR",
+        "EASY 7-DAY RETURNS & EXCHANGE",
+      ];
+      setAnnouncements(
+        settingsRes?.announcements && settingsRes.announcements.length > 0 
+          ? settingsRes.announcements 
+          : defaultAnnouncements
+      );
       if (saleRes) {
         setSaleConfig(saleRes);
       }
@@ -415,7 +436,8 @@ const Admin = () => {
         inStock: true,
         sizeType: 'none',
         sizes: [],
-        deliveryCharge: 0
+        deliveryCharge: 0,
+        badge: 'none'
       });
     } catch {
       showNotification(getFriendlyErrorMessage('FAILED TO SAVE PRODUCT'), 'error');
@@ -981,7 +1003,8 @@ const Admin = () => {
                             inStock: true,
                             sizeType: 'none',
                             sizes: [],
-                            deliveryCharge: 0
+                            deliveryCharge: 0,
+                            badge: 'none'
                           });
                           setShowProductModal(true);
                         }}
@@ -1664,6 +1687,82 @@ const Admin = () => {
                         </button>
                       </div>
                     </form>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'announcements' && (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-gray-900">Banner Offers</h2>
+                      <p className="text-gray-500 mt-2">Manage the scrolling offers at the top of the store</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setIsUpdatingSettings(true);
+                        try {
+                          await updateSettings({ announcements });
+                          addToast('Banner offers updated successfully', 'success');
+                        } catch (err) {
+                          addToast(err.message || 'Failed to update offers', 'error');
+                        } finally {
+                          setIsUpdatingSettings(false);
+                        }
+                      }}
+                      disabled={isUpdatingSettings}
+                      className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      {isUpdatingSettings ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+
+                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold mb-6">Current Offers</h3>
+                    
+                    <div className="space-y-4 mb-8">
+                      {announcements.map((text, index) => (
+                        <div key={index} className="flex justify-between items-center bg-gray-50 p-4 rounded-xl">
+                          <span className="text-sm font-medium">{text}</span>
+                          <button
+                            onClick={() => setAnnouncements(announcements.filter((_, i) => i !== index))}
+                            className="text-red-500 hover:text-red-700 p-2"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))}
+                      {announcements.length === 0 && (
+                        <p className="text-gray-500 italic">No custom offers configured. Default offers will be shown.</p>
+                      )}
+                    </div>
+
+                    <div className="flex gap-4">
+                      <input
+                        type="text"
+                        value={newAnnouncement}
+                        onChange={(e) => setNewAnnouncement(e.target.value)}
+                        placeholder="e.g. FREE SHIPPING ON ORDERS OVER ₹999"
+                        className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent outline-none"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && newAnnouncement.trim()) {
+                            setAnnouncements([...announcements, newAnnouncement.trim()]);
+                            setNewAnnouncement('');
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={() => {
+                          if (newAnnouncement.trim()) {
+                            setAnnouncements([...announcements, newAnnouncement.trim()]);
+                            setNewAnnouncement('');
+                          }
+                        }}
+                        className="px-6 py-3 bg-gray-100 text-gray-900 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                      >
+                        Add Offer
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

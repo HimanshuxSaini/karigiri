@@ -6,7 +6,7 @@ import { useCartStore, useWishlistStore } from '../store/useStore';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import QuickViewModal from './QuickViewModal';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, priority = false }) => {
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -43,7 +43,8 @@ const ProductCard = ({ product }) => {
           <img
             src={getOptimizedImage(product.image, { width: 400, quality: 'auto:eco' })}
             alt={product.name}
-            loading="lazy"
+            loading={priority ? undefined : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             onLoad={() => setImageLoaded(true)}
             className={`max-w-full max-h-full object-contain drop-shadow-lg transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             onError={(e) => {
@@ -52,31 +53,31 @@ const ProductCard = ({ product }) => {
             }}
           />
 
-          {/* Out of Stock badge */}
-          {isOutOfStock && (
-            <div className="absolute top-2 left-2 z-10 bg-red-600/95 backdrop-blur-sm text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
-              Out of Stock
-            </div>
-          )}
+          {/* Badges Container (Top Left) */}
+          <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1.5">
+            {/* Out of Stock badge */}
+            {isOutOfStock ? (
+              <div className="bg-red-600/95 backdrop-blur-sm text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
+                Out of Stock
+              </div>
+            ) : hasDiscount ? (
+              <div className="bg-emerald-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
+                {discountPct}% OFF
+              </div>
+            ) : null}
 
-          {/* Discount badge */}
-          {!isOutOfStock && hasDiscount && (
-            <div className="absolute top-2 left-2 z-10 bg-emerald-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
-              {discountPct}% OFF
-            </div>
-          )}
-
-          {/* New / Bestseller badge */}
-          {badge && badge === 'new' && (
-            <div className="absolute top-2 right-10 z-10 bg-sky-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm">
-              New
-            </div>
-          )}
-          {badge && badge === 'bestseller' && (
-            <div className="absolute top-2 right-10 z-10 bg-amber-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm">
-              🔥 Best
-            </div>
-          )}
+            {/* New / Bestseller badge */}
+            {badge === 'new' && (
+              <div className="bg-sky-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
+                New
+              </div>
+            )}
+            {badge === 'bestseller' && (
+              <div className="bg-amber-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
+                🔥 Best
+              </div>
+            )}
+          </div>
 
           {/* Wishlist button */}
           <button

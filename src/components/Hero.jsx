@@ -100,6 +100,7 @@ const Hero = () => {
                 <img 
                   src={slides[current].img} 
                   alt={slides[current].title} 
+                  fetchPriority="high"
                   className="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)]"
                 />
               </motion.div>

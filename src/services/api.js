@@ -855,3 +855,39 @@ export const addReview = async ({ productId, name, rating, comment }) => {
     throw error;
   }
 };
+
+// Settings / Announcements
+export const fetchSettings = async () => {
+  try {
+    const response = await fetch(`${API_URL}/settings`);
+    if (!response.ok) throw new Error('Failed to fetch settings');
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching settings:", error);
+    return { announcements: [] };
+  }
+};
+
+export const updateSettings = async (settingsData) => {
+  try {
+    const token = await getAdminToken();
+    const response = await fetch(`${API_URL}/settings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(settingsData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update settings');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating settings:", error);
+    throw error;
+  }
+};

@@ -240,8 +240,8 @@ const Shop = () => {
 
         <div className="flex px-4 md:px-12">
           {/* Sidebar Filters */}
-          <aside className="hidden lg:block w-64 pt-12 pr-8 border-r border-gray-100 flex-shrink-0 sticky top-28 self-start">
-            <div className="flex items-center justify-between mb-8">
+          <aside className="hidden lg:block w-64 pt-6 pr-6 border-r border-gray-100 flex-shrink-0 sticky top-24 self-start max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="font-bold text-sm uppercase tracking-wider">Filters</h2>
               {(categoryFilter !== 'All' || searchQuery) && (
                 <button 
@@ -253,17 +253,17 @@ const Shop = () => {
               )}
             </div>
             
-            <div className="mb-10">
-              <h3 className="font-bold text-[13px] uppercase mb-6 flex items-center">
+            <div className="mb-6">
+              <h3 className="font-bold text-[13px] uppercase mb-3 flex items-center">
                 <span className="w-4 h-[2px] bg-black mr-3"></span>
                 Categories
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {categories.map(cat => (
                   <button
                     key={cat}
                     onClick={() => handleCategoryChange(cat)}
-                    className={`w-full flex items-center justify-between py-3 px-4 rounded-xl transition-all duration-300 group ${
+                    className={`w-full flex items-center justify-between py-1.5 px-3 rounded-lg transition-all duration-200 group ${
                       categoryFilter === cat 
                         ? 'bg-black text-white shadow-xl shadow-black/10' 
                         : 'hover:bg-gray-50 text-gray-600 hover:text-black font-medium'
@@ -281,8 +281,8 @@ const Shop = () => {
               </div>
             </div>
 
-            <div className="mb-10">
-              <h3 className="font-bold text-[13px] uppercase mb-4 flex items-center">
+            <div className="mb-6">
+              <h3 className="font-bold text-[13px] uppercase mb-3 flex items-center">
                 <span className="w-4 h-[2px] bg-black mr-3"></span>
                 Availability
               </h3>
@@ -297,12 +297,12 @@ const Shop = () => {
               </label>
             </div>
 
-            <div className="mb-10">
-              <h3 className="font-bold text-[13px] uppercase mb-4 flex items-center">
+            <div className="mb-6">
+              <h3 className="font-bold text-[13px] uppercase mb-3 flex items-center">
                 <span className="w-4 h-[2px] bg-black mr-3"></span>
                 Price Range
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {[[0, 10000], [0, 3000], [3000, 5000], [5000, 10000]].map((range, idx) => (
                   <label key={idx} className="flex items-center space-x-3 cursor-pointer group">
                     <input 
@@ -321,12 +321,12 @@ const Shop = () => {
             </div>
 
             {uniqueBrands.length > 1 && (
-              <div className="mb-10">
-                <h3 className="font-bold text-[13px] uppercase mb-4 flex items-center">
+              <div className="mb-6">
+                <h3 className="font-bold text-[13px] uppercase mb-3 flex items-center">
                   <span className="w-4 h-[2px] bg-black mr-3"></span>
                   Brands
                 </h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
                   {uniqueBrands.map(brand => (
                     <label key={brand} className="flex items-center space-x-3 cursor-pointer group">
                       <input 

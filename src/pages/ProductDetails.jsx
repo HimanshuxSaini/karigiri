@@ -236,6 +236,7 @@ const ProductDetails = () => {
                 className={`max-w-full max-h-full object-contain ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
                 alt={product.name}
                 loading="eager"
+                fetchPriority="high"
                 onError={(e) => {
                   e.target.src = "/placeholder.png";
                 }}

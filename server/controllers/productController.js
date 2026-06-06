@@ -80,7 +80,7 @@ const deleteProduct = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const db = admin.firestore();
-    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge } = req.body;
+    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge } = req.body;
     
     const productData = {
       name,
@@ -95,6 +95,7 @@ const createProduct = async (req, res) => {
       sizes: sizes || [],
       deliveryCharge: deliveryCharge !== undefined ? Number(deliveryCharge) : 0,
       inStock: inStock !== undefined ? inStock : true,
+      badge: badge || 'none',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
@@ -120,7 +121,7 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const db = admin.firestore();
-    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge } = req.body;
+    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge } = req.body;
     
     const productRef = db.collection('products').doc(req.params.id);
     const doc = await productRef.get();
@@ -139,6 +140,7 @@ const updateProduct = async (req, res) => {
         sizes: sizes !== undefined ? sizes : (doc.data().sizes || []),
         deliveryCharge: deliveryCharge !== undefined ? Number(deliveryCharge) : (doc.data().deliveryCharge || 0),
         inStock: inStock !== undefined ? inStock : doc.data().inStock,
+        badge: badge !== undefined ? badge : (doc.data().badge || 'none'),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       };
 

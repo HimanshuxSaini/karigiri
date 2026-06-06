@@ -1,17 +1,32 @@
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CloudSnow, Thermometer } from 'lucide-react';
+import { fetchSettings } from '../services/api';
 
 const AnnouncementBar = () => {
-  const temperature = 14; // Mock temperature
-  const weatherMessage = temperature < 15 ? 
-    `It's ${temperature}°C in your area – try our Heavy Knit Cardigans!` : 
-    `Perfect weather for our Merino base layers.`;
-
-  const announcements = [
-    weatherMessage,
+  const [customAnnouncements, setCustomAnnouncements] = useState([
+    "It's 14°C in your area – try our Heavy Knit Cardigans!",
     "SHOP YOUR FIRST ORDER WITH FREE DELIVERY",
     "USE CODE: FESTIVE30 FOR 30% OFF ON WINTER ETHNIC WEAR",
     "EASY 7-DAY RETURNS & EXCHANGE",
+  ]);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const settings = await fetchSettings();
+        if (settings?.announcements?.length > 0) {
+          setCustomAnnouncements(settings.announcements);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings for announcement bar:", error);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const announcements = [
+    ...customAnnouncements
   ];
 
   return (

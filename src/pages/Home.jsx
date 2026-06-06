@@ -9,6 +9,7 @@ import FAQ from '../components/FAQ';
 import { fetchProducts, fetchReels, fetchFlashSale, fetchReelsConfig } from '../services/api';
 import { categoryStructure } from '../data/categories';
 import CustomizationSection from '../components/CustomizationSection';
+import { getOptimizedImage } from '../utils/imageHelpers';
 
 
 const Home = () => {
@@ -193,11 +194,13 @@ const Home = () => {
                  </div>
               ))
             ) : dealsProducts.length > 0 ? (
-              dealsProducts.map((deal) => (
+              dealsProducts.map((deal, i) => (
                 <Link key={deal._id} to={`/product/${deal._id}`} className="group min-w-[170px] md:min-w-0 snap-center bg-white p-3 rounded-3xl border border-gray-50 shadow-sm md:shadow-none md:border-none md:bg-transparent">
                   <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4 relative">
                      <img 
-                       src={deal.image} 
+                       src={getOptimizedImage(deal.image, { width: 300, quality: 'auto:eco' })} 
+                       loading={i < 2 ? undefined : "lazy"}
+                       fetchPriority={i < 2 ? "high" : "auto"}
                        className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-lg" 
                        alt={deal.name} 
                      />
@@ -257,7 +260,7 @@ const Home = () => {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="min-w-[220px] md:min-w-0 snap-center"
               >
-                <ProductCard product={product} />
+                <ProductCard product={product} priority={index < 4} />
               </motion.div>
             ))}
           </div>
