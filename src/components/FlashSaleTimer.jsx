@@ -15,7 +15,11 @@ const FlashSaleTimer = ({ endTime, onExpire }) => {
     };
 
     const updateTime = () => {
-      setTimeLeft(calculateTimeLeft());
+      const seconds = calculateTimeLeft();
+      setTimeLeft(seconds);
+      if (seconds <= 0 && onExpire) {
+        onExpire();
+      }
     };
     
     const timeoutId = setTimeout(updateTime, 0);

@@ -69,9 +69,10 @@ const Shop = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState(rawSearchQuery);
-  const [sortBy, setSortBy] = useState('newest'); // newest, price-low, price-high, rating
+  const [sortBy, setSortBy] = useState('newest');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(12);
 
   // Sync state with URL
   useEffect(() => {
@@ -85,9 +86,10 @@ const Shop = () => {
     }
   }, [rawSearchQuery, searchQuery, trackSearch]);
 
-  // Reset scroll when filters change to show the first product first
+  // Reset scroll and page when filters change to show the first product first
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+    setVisibleCount(12);
   }, [categoryFilter, urlSubCategory, priceRange, searchQuery]);
 
   useEffect(() => {
@@ -425,12 +427,12 @@ const Shop = () => {
                     </motion.div>
                   ))
                 ) : filteredProducts.length > 0 ? (
-                  filteredProducts.map((product, index) => (
+                  filteredProducts.slice(0, visibleCount).map((product, index) => (
                     <motion.div
                       key={product._id || product.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                      transition={{ duration: 0.4, delay: (index % 12) * 0.04 }}
                     >
                       <ProductCard product={product} />
                     </motion.div>
@@ -479,7 +481,24 @@ const Shop = () => {
                 )}
               </AnimatePresence>
             </div>
-            
+
+            {/* Load More */}
+            {!loading && filteredProducts.length > visibleCount && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center mt-12 mb-4"
+              >
+                <button
+                  onClick={() => setVisibleCount(c => c + 12)}
+                  className="group px-10 py-4 border-2 border-black text-black font-black text-[11px] uppercase tracking-[0.2em] rounded-full hover:bg-black hover:text-white transition-all duration-300 flex items-center gap-3"
+                >
+                  <span>Load More</span>
+                  <span className="text-[10px] opacity-50 group-hover:opacity-80">({filteredProducts.length - visibleCount} remaining)</span>
+                </button>
+              </motion.div>
+            )}
+
             {/* Dynamic Personalized Recommendations */}
             {!loading && (
                <RecommendedProducts 

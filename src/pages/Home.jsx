@@ -91,7 +91,13 @@ const Home = () => {
     const getSale = async () => {
       try {
         const data = await fetchFlashSale();
-        if (data) setSaleConfig(data);
+        if (data) {
+          if (data.isActive) {
+            const isExpired = !data.endTime || new Date(data.endTime).getTime() <= Date.now();
+            if (isExpired) data.isActive = false;
+          }
+          setSaleConfig(data);
+        }
       } catch (e) {
         console.error(e);
       }

@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { clearAllStores } from './utils/clearStores';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import AmbientBackground from './components/AmbientBackground';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
@@ -8,19 +8,18 @@ import WhatsAppButton from './components/WhatsAppButton';
 import ScrollToTop from './components/ScrollToTop';
 import ToastContainer from './components/Toast';
 import BottomNav from './components/BottomNav';
+import BackToTop from './components/BackToTop';
 import ErrorBoundary from './components/ErrorBoundary';
-import { AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import IntroVideo from './components/IntroVideo';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/config';
 import { useAuthStore } from './store/useStore';
-import { Navigate } from 'react-router-dom';
 import { useCartSync } from './hooks/useCartSync';
 import { useWishlistSync } from './hooks/useWishlistSync';
 import { isAdminEmail } from './config/constants';
 
-// Lazy-loaded pages for code splitting — Admin alone is 134KB
+// Lazy-loaded pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
 const Shop = lazy(() => import('./pages/Shop'));
 const Cart = lazy(() => import('./pages/Cart'));
@@ -39,86 +38,93 @@ const PageLoader = () => (
   </div>
 );
 
+// Page transition wrapper — wraps each route for smooth fade+slide
+const PageWrapper = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -8 }}
+    transition={{ duration: 0.22, ease: 'easeInOut' }}
+  >
+    {children}
+  </motion.div>
+);
+
 const ProtectedRoute = ({ children, isAdmin = false }) => {
   const { user } = useAuthStore();
-  
   const isUserAdmin = isAdminEmail(user?.email);
-
-  if (!user || (isAdmin && !isUserAdmin)) {
-    return <Navigate to="/" replace />;
-  }
+  if (!user || (isAdmin && !isUserAdmin)) return <Navigate to="/" replace />;
   return children;
 };
 
-
-function App() {
-  const [showIntro, setShowIntro] = useState(() => {
-    return !sessionStorage.getItem('hasSeenIntro');
-  });
-
-  const handleIntroComplete = () => {
-    sessionStorage.setItem('hasSeenIntro', 'true');
-    setShowIntro(false);
-  };
-
+// Inner component — needs to be inside Router to access useLocation
+const AppInner = () => {
+  const location = useLocation();
+  const [showIntro, setShowIntro] = useState(() => !sessionStorage.getItem('hasSeenIntro'));
   const setUser = useAuthStore((state) => state.setUser);
-  useCartSync();     // Activate cross-device Firestore cart synchronization
-  useWishlistSync(); // Activate cross-device Firestore wishlist synchronization
+
+  useCartSync();
+  useWishlistSync();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Get the last known UID from the store
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       const lastUid = useAuthStore.getState().lastUid;
-
-      if (user) {
-        // If the user has changed, clear all local data from previous sessions
-        if (lastUid && lastUid !== user.uid) {
-          clearAllStores();
-        }
-        setUser(user);
+      if (firebaseUser) {
+        if (lastUid && lastUid !== firebaseUser.uid) clearAllStores();
+        setUser(firebaseUser);
       } else {
         setUser(null);
-        // Also clear if explicitly logging out
         clearAllStores();
       }
     });
-
     return () => unsubscribe();
   }, [setUser]);
 
   return (
+    <>
+      <ScrollToTop />
+      <AnimatePresence>
+        {showIntro && (
+          <IntroVideo onComplete={() => {
+            sessionStorage.setItem('hasSeenIntro', 'true');
+            setShowIntro(false);
+          }} />
+        )}
+      </AnimatePresence>
+      <div className="min-h-screen relative pb-16 md:pb-0">
+        <ToastContainer />
+        <WhatsAppButton />
+        <AnnouncementBar />
+        <AmbientBackground />
+        <BackToTop />
+        <Suspense fallback={<PageLoader />}>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+              <Route path="/shop" element={<PageWrapper><Shop /></PageWrapper>} />
+              <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
+              <Route path="/checkout" element={<PageWrapper><ProtectedRoute><Checkout /></ProtectedRoute></PageWrapper>} />
+              <Route path="/wishlist" element={<PageWrapper><Wishlist /></PageWrapper>} />
+              <Route path="/product/:id" element={<PageWrapper><ProductDetails /></PageWrapper>} />
+              <Route path="/profile" element={<PageWrapper><ProtectedRoute><Profile /></ProtectedRoute></PageWrapper>} />
+              <Route path="/admin" element={<PageWrapper><ProtectedRoute isAdmin={true}><Admin /></ProtectedRoute></PageWrapper>} />
+              <Route path="/:type" element={<PageWrapper><Policies /></PageWrapper>} />
+              <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
+            </Routes>
+          </AnimatePresence>
+        </Suspense>
+        <Footer />
+        <BottomNav />
+      </div>
+    </>
+  );
+};
+
+function App() {
+  return (
     <Router>
       <ErrorBoundary>
-        <ScrollToTop />
-        <AnimatePresence>
-          {showIntro && (
-            <IntroVideo onComplete={handleIntroComplete} />
-          )}
-        </AnimatePresence>
-        <div className="min-h-screen relative pb-16 md:pb-0">
-          <ToastContainer />
-          <WhatsAppButton />
-          <AnnouncementBar />
-          <AmbientBackground />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/product/:id" element={<ProductDetails />} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute isAdmin={true}><Admin /></ProtectedRoute>} />
-              {/* Legal / Policy pages */}
-              <Route path="/:type" element={<Policies />} />
-              {/* 404 fallback */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-          <Footer />
-          <BottomNav />
-        </div>
+        <AppInner />
       </ErrorBoundary>
     </Router>
   );

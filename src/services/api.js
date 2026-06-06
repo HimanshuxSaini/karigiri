@@ -9,6 +9,7 @@ import {
   doc, 
   query, 
   where, 
+  orderBy,
   serverTimestamp 
 } from 'firebase/firestore';
 import { 
@@ -818,6 +819,39 @@ export const updateFlashSale = async (saleConfig) => {
     return await response.json();
   } catch (error) {
     console.error("Error updating flash sale:", error);
+    throw error;
+  }
+};
+
+// Reviews
+export const fetchReviews = async (productId) => {
+  try {
+    const q = query(
+      collection(db, 'reviews'),
+      where('productId', '==', productId),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return [];
+  }
+};
+
+export const addReview = async ({ productId, name, rating, comment }) => {
+  try {
+    const reviewsCol = collection(db, 'reviews');
+    const docRef = await addDoc(reviewsCol, {
+      productId,
+      name: name || 'Anonymous',
+      rating: Number(rating),
+      comment,
+      createdAt: serverTimestamp(),
+    });
+    return { id: docRef.id, productId, name, rating, comment };
+  } catch (error) {
+    console.error('Error adding review:', error);
     throw error;
   }
 };

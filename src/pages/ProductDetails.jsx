@@ -1,13 +1,34 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { useCartStore, useWishlistStore, useAuthStore, useActivityStore } from '../store/useStore';
-import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { fetchProductById } from '../services/api';
+import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle, Share2, Copy, Check, Star, ChevronRight, ShieldCheck, Scissors } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fetchProductById, fetchReviews, addReview } from '../services/api';
 import RecommendedProducts from '../components/RecommendedProducts';
 import SimilarProducts from '../components/SimilarProducts';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
+
+const FREE_DELIVERY_THRESHOLD = 1000;
+
+// Star rating component
+const StarRating = ({ value, onChange, size = 20 }) => (
+  <div className="flex gap-1">
+    {[1,2,3,4,5].map(star => (
+      <button
+        key={star}
+        type="button"
+        onClick={() => onChange && onChange(star)}
+        className={`transition-transform ${onChange ? 'hover:scale-110 cursor-pointer' : 'cursor-default'}`}
+      >
+        <Star
+          size={size}
+          className={star <= value ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-100'}
+        />
+      </button>
+    ))}
+  </div>
+);
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -21,12 +42,22 @@ const ProductDetails = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [similarIds, setSimilarIds] = useState([]);
+  // Share
+  const [copied, setCopied] = useState(false);
+
+  // Reviews
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewName, setReviewName] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
     setActiveImageIndex(0);
   }, [id]);
 
-  const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (product) {
@@ -67,6 +98,19 @@ const ProductDetails = () => {
     setSimilarIds(ids);
   }, []);
 
+
+
+  // Load reviews
+  useEffect(() => {
+    const pId = product?._id || product?.id;
+    if (!pId) return;
+    setReviewsLoading(true);
+    fetchReviews(pId).then(data => {
+      setReviews(data);
+      setReviewsLoading(false);
+    });
+  }, [product]);
+
   if (loading) return (
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
@@ -102,15 +146,49 @@ const ProductDetails = () => {
 
   const isWishlisted = isInWishlist(product._id || product.id);
   const isOutOfStock = product.inStock === false;
+  const isAdmin = isAdminEmail(user?.email);
+  const productId = product._id || product.id;
+
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.name, url });
+      } catch (_) {}
+    } else {
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const handleWhatsAppEnquiry = () => {
     const productUrl = window.location.href;
     const priceText = product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'N/A';
     const message = `Hello Karigiri!\n\nI am interested in this beautiful piece:\n- Product: *${product.name}*\n- Price: *${priceText}*\n- Selected Size: *${selectedSize || 'Standard'}*\n- Link: ${productUrl}\n\nCould you please help me with more details?`;
-    
-    const waUrl = `${WHATSAPP.chatUrl}?text=${encodeURIComponent(message)}`;
-    window.open(waUrl, '_blank');
+    window.open(`${WHATSAPP.chatUrl}?text=${encodeURIComponent(message)}`, '_blank');
   };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewComment.trim()) return;
+    setSubmittingReview(true);
+    try {
+      const newReview = await addReview({ productId, name: reviewName || 'Anonymous', rating: reviewRating, comment: reviewComment });
+      setReviews(prev => [{ ...newReview, createdAt: { seconds: Date.now() / 1000 } }, ...prev]);
+      setReviewComment('');
+      setReviewName('');
+      setReviewRating(5);
+      setReviewSubmitted(true);
+      setTimeout(() => setReviewSubmitted(false), 3000);
+    } catch (_) {}
+    setSubmittingReview(false);
+  };
+
+  const avgRating = reviews.length
+    ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1)
+    : null;
 
   const optimizeImage = (url) => {
     if (!url || typeof url !== 'string') return url;
@@ -124,7 +202,24 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
 
+
+
       <div className="pt-32 pb-44 md:pb-24 max-w-[1440px] mx-auto px-4 md:px-12">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-8">
+          <Link to="/" className="hover:text-slate-700 transition-colors">Home</Link>
+          <ChevronRight size={12} />
+          <Link to={`/shop?category=${product.category || ''}`} className="hover:text-slate-700 transition-colors capitalize">{product.category || 'Shop'}</Link>
+          {product.subCategory && (
+            <>
+              <ChevronRight size={12} />
+              <Link to={`/shop?category=${product.category}&sub=${product.subCategory}`} className="hover:text-slate-700 transition-colors capitalize">{product.subCategory}</Link>
+            </>
+          )}
+          <ChevronRight size={12} />
+          <span className="text-slate-800 normal-case font-black truncate max-w-[120px] md:max-w-xs">{product.name}</span>
+        </nav>
+
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Image Gallery */}
           <div className="lg:w-3/5">
@@ -185,20 +280,30 @@ const ProductDetails = () => {
           {/* Product Info */}
           <div className="lg:w-2/5">
             <div className="flex justify-between items-start mt-8 md:mt-0">
-              <div>
+              <div className="flex-1 min-w-0 pr-3">
                 <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-1">{product.brand}</h2>
                 <h3 className="text-lg md:text-xl text-slate-500 mb-4">{product.name}</h3>
               </div>
-              {isAdmin && (
-                <Link
-                  to="/admin"
-                  state={{ editProduct: product }}
-                  className="flex items-center space-x-2 px-3 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100"
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Share button */}
+                <button
+                  onClick={handleShare}
+                  className="h-9 w-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:border-slate-900 hover:text-slate-900 transition-all"
+                  title="Share product"
                 >
-                  <Edit3 size={12} />
-                  <span>Edit</span>
-                </Link>
-              )}
+                  {copied ? <Check size={15} className="text-emerald-500" /> : <Share2 size={15} />}
+                </button>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    state={{ editProduct: product }}
+                    className="flex items-center space-x-2 px-3 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100"
+                  >
+                    <Edit3 size={12} />
+                    <span>Edit</span>
+                  </Link>
+                )}
+              </div>
             </div>
 
             <hr className="mb-6" />
@@ -213,7 +318,17 @@ const ProductDetails = () => {
               )}
             </div>
 
-            <p className="text-[var(--accent)] font-black text-sm mb-8 uppercase tracking-wider">inclusive of all taxes</p>
+            <p className="text-[var(--accent)] font-black text-sm uppercase tracking-wider">inclusive of all taxes</p>
+
+            {/* Authenticity badge */}
+            <div className="flex items-center gap-3 my-5 py-3 px-4 bg-amber-50 border border-amber-100 rounded-xl">
+              <ShieldCheck size={18} className="text-amber-600 shrink-0" />
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">Authenticity Guaranteed</p>
+                <p className="text-[9px] text-amber-600/80 font-medium">100% Handcrafted · Verified Artisan · Karigiri Certified</p>
+              </div>
+              <Scissors size={15} className="text-amber-400 ml-auto shrink-0" />
+            </div>
 
             {product.sizeType !== 'none' && product.sizes && product.sizes.length > 0 && (
               <div className="mb-10">
@@ -354,6 +469,91 @@ const ProductDetails = () => {
         />
       </div>
 
+      {/* Reviews Section */}
+      <div className="max-w-[1440px] mx-auto px-4 md:px-12 py-16 border-t border-slate-100">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-xl font-black uppercase tracking-tight">Customer Reviews</h2>
+            {avgRating && (
+              <div className="flex items-center gap-2 mt-1">
+                <StarRating value={Math.round(avgRating)} size={14} />
+                <span className="text-sm font-black text-slate-700">{avgRating}</span>
+                <span className="text-xs text-slate-400">({reviews.length} review{reviews.length !== 1 ? 's' : ''})</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Review Form */}
+        <div className="bg-slate-50 rounded-2xl p-5 md:p-6 mb-8">
+          <h3 className="text-sm font-black uppercase tracking-widest mb-4">Write a Review</h3>
+          {reviewSubmitted ? (
+            <div className="flex items-center gap-3 text-emerald-600 py-4">
+              <Check size={20} className="shrink-0" />
+              <p className="font-bold text-sm">Thank you! Your review has been submitted.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleReviewSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  value={reviewName}
+                  onChange={e => setReviewName(e.target.value)}
+                  placeholder="Your name (optional)"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--primary)] bg-white"
+                />
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">Rating</span>
+                  <StarRating value={reviewRating} onChange={setReviewRating} />
+                </div>
+              </div>
+              <textarea
+                value={reviewComment}
+                onChange={e => setReviewComment(e.target.value)}
+                placeholder="Share your experience with this product..."
+                required
+                rows={3}
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--primary)] resize-none bg-white"
+              />
+              <button
+                type="submit"
+                disabled={submittingReview || !reviewComment.trim()}
+                className="bg-[var(--primary)] text-white px-8 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submittingReview ? 'Submitting...' : 'Post Review'}
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Review list */}
+        {reviewsLoading ? (
+          <div className="space-y-4">
+            {[1,2].map(i => <div key={i} className="h-20 bg-slate-100 animate-pulse rounded-xl" />)}
+          </div>
+        ) : reviews.length === 0 ? (
+          <p className="text-slate-400 text-sm text-center py-8">No reviews yet. Be the first to review!</p>
+        ) : (
+          <div className="space-y-4">
+            {reviews.map(r => (
+              <div key={r.id} className="bg-white border border-slate-100 rounded-2xl p-5">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-black text-sm text-slate-900">{r.name || 'Anonymous'}</p>
+                    <StarRating value={r.rating} size={13} />
+                  </div>
+                  {r.createdAt?.seconds && (
+                    <span className="text-[10px] text-slate-400 font-bold">
+                      {new Date(r.createdAt.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">{r.comment}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Recommended Products Section */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 pb-24 md:pb-32 pt-4">
         <RecommendedProducts 
@@ -363,33 +563,47 @@ const ProductDetails = () => {
         />
       </div>
 
-      {/* Mobile Sticky Actions */}
-      <div className="md:hidden fixed bottom-[72px] left-0 right-0 bg-white border-t border-gray-100 p-3 pb-[calc(env(safe-area-inset-bottom,8px)+8px)] z-50 flex items-center space-x-3 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-        <button
-          onClick={() => toggleWishlist(product)}
-          className={`h-12 w-12 shrink-0 border rounded-xl flex items-center justify-center transition-all ${isWishlisted ? 'border-pink-500 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400'
+      {/* Mobile Sticky Actions — improved bar with labels */}
+      <div className="md:hidden fixed bottom-[72px] left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 px-3 py-2 pb-[calc(env(safe-area-inset-bottom,6px)+6px)] z-50 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
+        <div className="flex items-stretch gap-2">
+          {/* Wishlist */}
+          <button
+            onClick={() => toggleWishlist(product)}
+            className={`flex flex-col items-center justify-center gap-0.5 w-14 rounded-xl py-1.5 border transition-all ${isWishlisted ? 'border-pink-400 text-pink-500 bg-pink-50' : 'border-gray-200 text-gray-400 bg-white'}`}
+          >
+            <Heart size={17} fill={isWishlisted ? 'currentColor' : 'none'} />
+            <span className="text-[7px] font-black uppercase tracking-tight">{isWishlisted ? 'Saved' : 'Save'}</span>
+          </button>
+          {/* Enquire */}
+          <button
+            onClick={handleWhatsAppEnquiry}
+            className="flex flex-col items-center justify-center gap-0.5 w-14 rounded-xl py-1.5 bg-[#25D366] text-white shadow-md"
+          >
+            <MessageCircle size={17} fill="currentColor" strokeWidth={0} />
+            <span className="text-[7px] font-black uppercase tracking-tight">Enquire</span>
+          </button>
+          {/* Share */}
+          <button
+            onClick={handleShare}
+            className="flex flex-col items-center justify-center gap-0.5 w-14 rounded-xl py-1.5 border border-gray-200 text-gray-500 bg-white"
+          >
+            {copied ? <Check size={17} className="text-emerald-500" /> : <Share2 size={17} />}
+            <span className="text-[7px] font-black uppercase tracking-tight">{copied ? 'Copied!' : 'Share'}</span>
+          </button>
+          {/* Add to Bag */}
+          <button
+            disabled={isOutOfStock}
+            onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
+            className={`flex-1 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all ${
+              isOutOfStock
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-[var(--primary)] text-white hover:brightness-110'
             }`}
-        >
-          <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
-        </button>
-        <button
-          onClick={handleWhatsAppEnquiry}
-          className="h-12 w-12 shrink-0 bg-[#25D366] text-white rounded-xl flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95"
-        >
-          <MessageCircle size={20} fill="currentColor" />
-        </button>
-        <button
-          disabled={isOutOfStock}
-          onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
-          className={`min-h-12 flex-grow px-4 rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center space-x-2 shadow-lg transition-colors ${
-            isOutOfStock 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-[var(--primary)] text-white'
-          }`}
-        >
-          <ShoppingBag size={18} />
-          <span className="whitespace-nowrap">{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
-        </button>
+          >
+            <ShoppingBag size={16} strokeWidth={2.5} />
+            <span className="whitespace-nowrap">{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Size Chart Modal */}

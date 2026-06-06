@@ -136,7 +136,8 @@ const Admin = () => {
     inStock: true,
     sizeType: 'none',
     sizes: [],
-    deliveryCharge: 0
+    deliveryCharge: 0,
+    badge: 'none'
   });
 
   // Admin Check
@@ -315,7 +316,8 @@ const Admin = () => {
       inStock: product.inStock,
       sizeType: product.sizeType || 'none',
       sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
-      deliveryCharge: product.deliveryCharge || 0
+      deliveryCharge: product.deliveryCharge || 0,
+      badge: product.badge || 'none'
     });
     setShowProductModal(true);
   };
@@ -1734,6 +1736,18 @@ const Admin = () => {
                       {['Women', 'Kids', 'Men', 'Bouquet', 'Laddu Gopal', 'Yarn'].map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Product Badge</label>
+                    <select
+                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      value={formData.badge || 'none'}
+                      onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                    >
+                      <option value="none">None</option>
+                      <option value="new">New</option>
+                      <option value="bestseller">Bestseller</option>
                     </select>
                   </div>
 

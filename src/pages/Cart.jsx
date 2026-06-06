@@ -1,6 +1,6 @@
 import Navbar from '../components/Navbar';
 import { useCartStore, useAuthStore } from '../store/useStore';
-import { Trash2, Plus, Minus, ArrowRight, Tag, X, Loader2, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, Tag, X, Loader2, ChevronRight, Truck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -86,7 +86,40 @@ const Cart = () => {
       <Navbar />
       
       <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-serif text-[var(--primary)] mb-12">Shopping Bag</h1>
+        <h1 className="text-4xl font-serif text-[var(--primary)] mb-6">Shopping Bag</h1>
+
+        {/* Free Delivery Progress Bar */}
+        {(() => {
+          const threshold = 1000;
+          const pct = Math.min(100, Math.round((cartTotal / threshold) * 100));
+          const remaining = threshold - cartTotal;
+          return (
+            <div className="mb-8 bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <Truck size={16} className={pct >= 100 ? 'text-emerald-500' : 'text-slate-400'} />
+                {pct >= 100 ? (
+                  <p className="text-sm font-black text-emerald-600">🎉 You've unlocked Free Delivery!</p>
+                ) : (
+                  <p className="text-sm font-medium text-slate-600">
+                    Add <span className="font-black text-slate-900">₹{remaining.toLocaleString('en-IN')}</span> more for
+                    <span className="font-black text-emerald-600"> Free Delivery</span>
+                  </p>
+                )}
+              </div>
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${pct}%`,
+                    background: pct >= 100
+                      ? 'linear-gradient(90deg,#10b981,#059669)'
+                      : 'linear-gradient(90deg,#f59e0b,#d97706)'
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
           {/* Cart Items */}
