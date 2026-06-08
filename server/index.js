@@ -5,7 +5,7 @@ const cors = require('cors');
 const admin = require('firebase-admin');
 const dns = require('dns');
 
-// Force IPv4 globally to prevent ENETUNREACH errors on cloud providers like Render
+// Force IPv4 globally to prevent ENETUNREACH errors on cloud providers like Render...
 if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder('ipv4first');
 }
@@ -69,7 +69,7 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     // In development, allow all local origins
     const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
     const isAllowed = allowedOrigins.includes(origin) || isLocal || process.env.NODE_ENV !== 'production';
