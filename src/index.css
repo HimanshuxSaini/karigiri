@@ -17,18 +17,22 @@
   body {
     @apply bg-[var(--background)] text-[var(--text-main)] antialiased font-sans;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-sans font-bold text-[var(--primary)];
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-[var(--primary)] text-[var(--secondary)] rounded-full 
-           hover:opacity-90 transition-all duration-300 transform hover:scale-105
-           active:scale-95 shadow-lg;
+    @apply px-6 py-3 bg-[var(--primary)] text-[var(--secondary)] rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg;
   }
-  
+
   .glass-card {
     @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl;
   }
@@ -51,16 +55,15 @@
   .hover-lift:hover {
     transform: translateY(-8px);
   }
-  
+
   .nav-link {
     @apply relative text-[var(--text-main)] font-medium hover:text-[var(--primary)] transition-colors;
   }
-  
+
   .nav-link::after {
-    @apply content-[''] absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[var(--primary)] 
-           transition-all duration-300;
+    @apply content-[''] absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[var(--primary)] transition-all duration-300;
   }
-  
+
   .nav-link:hover::after {
     @apply w-full;
   }
@@ -86,15 +89,19 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none !important;
 }
+
 .scrollbar-hide {
-  -ms-overflow-style: none !important; /* IE and Edge */
-  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important;
+  /* IE and Edge.... */
+  scrollbar-width: none !important;
+  /* Firefox */
 }
 
 /* More robust version */
 .no-scrollbar::-webkit-scrollbar {
   display: none !important;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
@@ -114,14 +121,20 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
