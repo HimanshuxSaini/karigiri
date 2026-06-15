@@ -589,6 +589,10 @@ const Admin = () => {
       usageLimit: Number(couponFormData.usageLimit) || 0
     };
 
+    if (payload.expiryDate && new Date(payload.expiryDate) < new Date()) {
+      payload.isActive = false;
+    }
+
     try {
       if (editingCoupon) {
         const couponId = editingCoupon._id || editingCoupon.id;
@@ -2251,16 +2255,16 @@ const Admin = () => {
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10"
+              className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl relative z-10"
             >
-              <div className="h-24 bg-black p-6 flex justify-between items-center">
-                <h3 className="text-white font-serif text-2xl">{editingReel ? 'Edit Reel' : 'Add New Reel'}</h3>
+              <div className="bg-black p-5 flex justify-between items-center">
+                <h3 className="text-white font-serif text-xl">{editingReel ? 'Edit Reel' : 'Add New Reel'}</h3>
                 <button onClick={() => setShowReelModal(false)} className="text-white hover:opacity-70">
                   <XCircle size={24} />
                 </button>
               </div>
-              <div className="p-8">
-                <form onSubmit={handleSubmitReel} className="space-y-6">
+              <div className="p-6">
+                <form onSubmit={handleSubmitReel} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Reel Preview / Image</label>
                     <div className="flex justify-center">
@@ -2291,13 +2295,13 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div>
                       <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Tag (e.g. #NewArrival)</label>
                       <input
                         type="text"
                         required
-                        className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        className="w-full px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
                         value={reelFormData.tag}
                         onChange={(e) => setReelFormData({ ...reelFormData, tag: e.target.value })}
                       />
@@ -2307,7 +2311,7 @@ const Admin = () => {
                       <input
                         type="text"
                         required
-                        className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        className="w-full px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
                         value={reelFormData.handle}
                         onChange={(e) => setReelFormData({ ...reelFormData, handle: e.target.value })}
                       />
@@ -2317,18 +2321,18 @@ const Admin = () => {
                       <input
                         type="number"
                         required
-                        className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        className="w-full px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
                         value={reelFormData.order}
                         onChange={(e) => setReelFormData({ ...reelFormData, order: parseInt(e.target.value) })}
                       />
                     </div>
                   </div>
 
-                  <div className="flex space-x-4 pt-4">
+                  <div className="flex space-x-4 pt-3">
                     <button
                       type="submit"
                       disabled={uploadingImage}
-                      className="flex-grow bg-[var(--primary)] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg disabled:opacity-50"
+                      className="flex-grow bg-[var(--primary)] text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg disabled:opacity-50"
                     >
                       {editingReel ? 'Update Reel' : 'Create Reel'}
                     </button>
@@ -2350,13 +2354,13 @@ const Admin = () => {
         {showCouponModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCouponModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-            <Motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-xl relative z-10">
+            <Motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-lg relative z-10">
               <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden">
-                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 flex items-center justify-between">
-                  <h3 className="text-white font-serif text-2xl">{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h3>
+                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-5 flex items-center justify-between">
+                  <h3 className="text-white font-serif text-xl">{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h3>
                   <button onClick={() => setShowCouponModal(false)} className="text-white hover:opacity-70"><X size={24} /></button>
                 </div>
-                <form onSubmit={handleSubmitCoupon} className="p-8 space-y-5">
+                <form onSubmit={handleSubmitCoupon} className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-black uppercase tracking-widest text-gray-400">Code *</label>
@@ -2413,10 +2417,24 @@ const Admin = () => {
                     />
                     <p className="text-[10px] text-gray-400">Optional. Coupon will automatically stop working after this point.</p>
                   </div>
-                  <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
-                    <input type="checkbox" checked={couponFormData.isActive} onChange={(e) => setCouponFormData({ ...couponFormData, isActive: e.target.checked })} className="w-5 h-5 rounded accent-purple-600" />
-                    <label className="text-sm font-bold text-gray-700">Coupon is Active</label>
-                  </div>
+                  {(() => {
+                    const isCouponExpired = couponFormData.expiryDate && new Date(couponFormData.expiryDate) < new Date();
+                    return (
+                      <div className={`flex items-center space-x-3 p-4 rounded-xl ${isCouponExpired ? 'bg-red-50' : 'bg-gray-50'}`}>
+                        <input 
+                          type="checkbox" 
+                          disabled={isCouponExpired}
+                          checked={isCouponExpired ? false : couponFormData.isActive} 
+                          onChange={(e) => setCouponFormData({ ...couponFormData, isActive: e.target.checked })} 
+                          className="w-5 h-5 rounded accent-purple-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed" 
+                        />
+                        <div className="flex flex-col">
+                          <label className={`text-sm font-bold ${isCouponExpired ? 'text-red-700' : 'text-gray-700'}`}>Coupon is Active</label>
+                          {isCouponExpired && <span className="text-[10px] text-red-600 mt-0.5 font-medium">Expired coupons cannot be activated. Extend the expiry date first.</span>}
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <div className="flex space-x-3 pt-2">
                     <button
                       type="submit"

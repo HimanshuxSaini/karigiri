@@ -75,7 +75,11 @@ const CouponManager = ({ coupons, setCoupons, setEditingCoupon, setCouponFormDat
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {coupons.map((coupon) => (
+                {coupons.map((coupon) => {
+                  const isExpired = coupon.expiryDate && new Date(coupon.expiryDate) < new Date();
+                  const isTrulyActive = coupon.isActive && !isExpired;
+                  
+                  return (
                   <tr key={coupon._id || coupon.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg text-xs font-black tracking-wider">{coupon.code}</span>
@@ -87,8 +91,8 @@ const CouponManager = ({ coupons, setCoupons, setEditingCoupon, setCouponFormDat
                     <td className="px-6 py-4 text-sm font-bold text-gray-600">₹{coupon.minOrderAmount || 0}</td>
                     <td className="px-6 py-4 text-sm font-bold text-gray-600">{coupon.usedCount || 0} / {coupon.usageLimit || '∞'}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${coupon.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                        {coupon.isActive ? 'Active' : 'Inactive'}
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isTrulyActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                        {isTrulyActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -98,7 +102,7 @@ const CouponManager = ({ coupons, setCoupons, setEditingCoupon, setCouponFormDat
                       </div>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
