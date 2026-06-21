@@ -40,11 +40,11 @@ const policyContent = {
     sections: [
       {
         heading: 'Acceptance of Terms',
-        content: `By accessing and using the Karigiri website, you agree to be bound by these Terms & Conditions. If you do not agree with any part of these terms, please do not use our website.`
+        content: `By accessing and using the PrathamKarigiri website, you agree to be bound by these Terms & Conditions. If you do not agree with any part of these terms, please do not use our website.`
       },
       {
         heading: 'Products & Pricing',
-        content: `All products listed on Karigiri are handcrafted artisanal items. Prices are listed in Indian Rupees (₹) and are inclusive of all applicable taxes. Due to the handmade nature of our products, slight variations in color, texture, and dimensions are natural and expected.`
+        content: `All products listed on PrathamKarigiri are handcrafted artisanal items. Prices are listed in Indian Rupees (₹) and are inclusive of all applicable taxes. Due to the handmade nature of our products, slight variations in color, texture, and dimensions are natural and expected.`
       },
       {
         heading: 'Orders & Payment',
@@ -56,7 +56,7 @@ const policyContent = {
       },
       {
         heading: 'Limitation of Liability',
-        content: `Karigiri shall not be liable for any indirect, incidental, or consequential damages arising from the use of our website or products. Our maximum liability is limited to the purchase price of the product in question.`
+        content: `PrathamKarigiri shall not be liable for any indirect, incidental, or consequential damages arising from the use of our website or products. Our maximum liability is limited to the purchase price of the product in question.`
       },
       {
         heading: 'Governing Law',

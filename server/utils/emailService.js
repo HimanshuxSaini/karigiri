@@ -51,8 +51,8 @@ const sendEmail = async (mailOptions) => {
       },
       body: JSON.stringify({
         sender: {
-          name: 'Karigiri',
-          email: process.env.SMTP_FROM_EMAIL || 'hello@karigiri.com'
+          name: 'PrathamKarigiri',
+          email: process.env.SMTP_FROM_EMAIL || 'hello@prathamkarigiri.com'
         },
         to: [{ email: mailOptions.to }],
         subject: mailOptions.subject,
@@ -70,7 +70,7 @@ const sendEmail = async (mailOptions) => {
   } else {
     console.log(`Using fallback Nodemailer SMTP. Port: ${process.env.SMTP_PORT || 2525}`);
     // If not using API, send using the Nodemailer transporter
-    const defaultFrom = `"Karigiri" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`;
+    const defaultFrom = `"PrathamKarigiri" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`;
     return await transporter.sendMail({
       from: mailOptions.from || defaultFrom,
       ...mailOptions

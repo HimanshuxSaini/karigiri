@@ -52,7 +52,7 @@ const IntroVideo = ({ onComplete }) => {
           Welcome to
         </span>
         <h1 className="text-2xl md:text-4xl font-extrabold tracking-[0.2em] text-[var(--primary)] uppercase mt-1">
-          Karigiri
+          PrathamKarigiri
         </h1>
         <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em] mt-1.5">
           Artisanal Handcrafted Heritage

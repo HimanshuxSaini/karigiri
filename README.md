@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="https://karigiri.com/favicon.png" alt="Karigiri Logo" width="100" />
+  <img src="https://prathamkarigiri.com/favicon.png" alt="PrathamKarigiri Logo" width="100" />
 
-  # 🧶 Karigiri - Artisanal E-commerce Platform
+  # 🧶 PrathamKarigiri - Artisanal E-commerce Platform
 
   <p align="center">
     <strong>Premium handcrafted woolen products, crochet bouquets, and artisanal crafts.</strong>
@@ -25,7 +25,7 @@
 
 <br />
 
-> **Karigiri** is a premium, mobile-first e-commerce experience dedicated to bringing the finest handcrafted woolen products and artisanal crafts directly to your doorstep. From master artisans in Sonipat, Haryana, to the world.
+> **PrathamKarigiri** is a premium, mobile-first e-commerce experience dedicated to bringing the finest handcrafted woolen products and artisanal crafts directly to your doorstep. From master artisans in Sonipat, Haryana, to the world.
 
 ## ✨ Features
 
@@ -63,8 +63,8 @@ Make sure you have Node.js (v18+) and npm installed.
 ### 1. Clone & Install
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/karigiri.git
-cd karigiri
+git clone https://github.com/your-username/prathamkarigiri.git
+cd prathamkarigiri
 
 # Install frontend dependencies
 npm install
@@ -107,7 +107,7 @@ The app will be available at `http://localhost:5173`.
 ## 📂 Project Structure
 
 ```text
-karigiri/
+prathamkarigiri/
 ├── src/
 │   ├── components/       # Reusable UI components (Buttons, Nav, Cards)
 │   ├── pages/            # Top-level route components (Home, Shop, Cart)
@@ -128,4 +128,4 @@ karigiri/
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 
 ## 📄 License
-This project is private and proprietary. All rights reserved. © Karigiri
+This project is private and proprietary. All rights reserved. © PrathamKarigiri

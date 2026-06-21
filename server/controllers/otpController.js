@@ -28,17 +28,17 @@ exports.sendOtp = async (req, res) => {
 
     // Send Email
     const mailOptions = {
-      from: `"Karigiri" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
+      from: `"PrathamKarigiri" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
       to: email,
-      subject: 'Login OTP for Karigiri',
+      subject: 'Login OTP for PrathamKarigiri',
       html: `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: auto; padding: 40px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">KARIGIRI</h1>
+            <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">PrathamKarigiri</h1>
             <p style="color: #A0522D; font-size: 12px; text-transform: uppercase; letter-spacing: 4px; margin-top: 5px;">Handcrafted Excellence</p>
           </div>
           <p style="color: #333; font-size: 16px;">Welcome back!</p>
-          <p style="color: #666; font-size: 14px; line-height: 1.6;">Use the verification code below to sign in to your Karigiri account.</p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">Use the verification code below to sign in to your PrathamKarigiri account.</p>
           <div style="background: #fdf5e6; padding: 30px; text-align: center; border-radius: 15px; margin: 30px 0; border: 1px dashed #d2b48c;">
             <h1 style="color: #5C4033; letter-spacing: 8px; margin: 0; font-size: 36px; font-weight: 800;">${otp}</h1>
           </div>
@@ -125,17 +125,17 @@ exports.forgotPassword = async (req, res) => {
 
     // Send via SMTP
     const mailOptions = {
-      from: `"Karigiri Support" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
+      from: `"PrathamKarigiri Support" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
       to: email,
-      subject: 'Reset Your Karigiri Password',
+      subject: 'Reset Your PrathamKarigiri Password',
       html: `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: auto; padding: 40px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">KARIGIRI</h1>
+            <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">PrathamKarigiri</h1>
             <p style="color: #A0522D; font-size: 12px; text-transform: uppercase; letter-spacing: 4px; margin-top: 5px;">Handcrafted Excellence</p>
           </div>
           <p style="color: #333; font-size: 16px;">Hello,</p>
-          <p style="color: #666; font-size: 14px; line-height: 1.6;">We received a request to reset your password for your Karigiri account. Click the button below to proceed.</p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">We received a request to reset your password for your PrathamKarigiri account. Click the button below to proceed.</p>
           <div style="text-align: center; margin: 35px 0;">
             <a href="${resetLink}" style="background-color: #5C4033; color: white; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 15px rgba(92, 64, 51, 0.2);">RESET PASSWORD</a>
           </div>

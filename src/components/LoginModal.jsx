@@ -245,7 +245,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         {view === 'signup' ? 'Create Account' : 
                          view === 'forgot' ? 'Reset Password' : 'Welcome Back'}
                       </h2>
-                      <p className="text-gray-500 font-medium text-xs mt-1">Experience Karigiri Excellence</p>
+                      <p className="text-gray-500 font-medium text-xs mt-1">Experience PrathamKarigiri Excellence</p>
                     </div>
                   </div>
                   <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400">
@@ -414,7 +414,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   {view === 'otp' ? (
                     <div className="flex flex-col space-y-3">
                       <p className="text-sm text-gray-500 font-medium">
-                        New to Karigiri? 
+                        New to PrathamKarigiri? 
                         <button 
                           onClick={() => setView('signup')}
                           className="ml-2 text-[var(--primary)] font-bold hover:underline"

@@ -5,7 +5,7 @@
 
 const ADMIN_EMAILS = [
   'himanshu0481@gmail.com',
-  'admin@karigiri.com'
+  'admin@prathamkarigiri.com'
 ];
 
 const isAdminEmail = (email) => {
@@ -14,8 +14,8 @@ const isAdminEmail = (email) => {
 };
 
 const BRAND = {
-  name: 'KARIGIRI',
-  email: 'karigiri@gmail.com',
+  name: 'PrathamKarigiri',
+  email: 'prathamkarigiri@gmail.com',
   phone: '+91 70273 11213',
   address: 'Sonipat, Haryana, India',
 };

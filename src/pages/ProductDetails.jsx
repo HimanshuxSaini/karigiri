@@ -166,7 +166,7 @@ const ProductDetails = () => {
   const handleWhatsAppEnquiry = () => {
     const productUrl = window.location.href;
     const priceText = product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'N/A';
-    const message = `Hello Karigiri!\n\nI am interested in this beautiful piece:\n- Product: *${product.name}*\n- Price: *${priceText}*\n- Selected Size: *${selectedSize || 'Standard'}*\n- Link: ${productUrl}\n\nCould you please help me with more details?`;
+    const message = `Hello PrathamKarigiri!\n\nI am interested in this beautiful piece:\n- Product: *${product.name}*\n- Price: *${priceText}*\n- Selected Size: *${selectedSize || 'Standard'}*\n- Link: ${productUrl}\n\nCould you please help me with more details?`;
     window.open(`${WHATSAPP.chatUrl}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -326,7 +326,7 @@ const ProductDetails = () => {
               <ShieldCheck size={18} className="text-amber-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">Authenticity Guaranteed</p>
-                <p className="text-[9px] text-amber-600/80 font-medium">100% Handcrafted · Verified Artisan · Karigiri Certified</p>
+                <p className="text-[9px] text-amber-600/80 font-medium">100% Handcrafted · Verified Artisan · PrathamKarigiri Certified</p>
               </div>
               <Scissors size={15} className="text-amber-400 ml-auto shrink-0" />
             </div>
@@ -439,7 +439,7 @@ const ProductDetails = () => {
                 </div>
                 <div>
                   <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Brand</h4>
-                  <p className="text-sm font-bold text-slate-800">{product.brand || 'KARIGIRI'}</p>
+                  <p className="text-sm font-bold text-slate-800">{product.brand || 'PrathamKarigiri'}</p>
                 </div>
                 <div>
                   <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Availability</h4>

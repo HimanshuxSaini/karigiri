@@ -9,7 +9,7 @@
     "providers": {
       "emailPassword": true,
       "googleSignIn": {
-        "oAuthBrandDisplayName": "Karigiri",
+        "oAuthBrandDisplayName": "PrathamKarigiri",
         "supportEmail": "himanshu0481@gmail.com"
       }
     }

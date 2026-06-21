@@ -62,7 +62,7 @@ const Footer = () => {
                    <p className="text-sm font-bold text-slate-900 italic">
                      <span className="font-black">100% ORIGINAL</span> guarantee
                    </p>
-                   <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">for all products at karigiri.com</p>
+                   <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">for all products at prathamkarigiri.com</p>
                 </div>
              </div>
 
@@ -103,7 +103,7 @@ const Footer = () => {
            <div className="sm:col-span-2">
               <h5 className="text-slate-900 mb-4">Our Commitment</h5>
               <p className="leading-relaxed normal-case text-slate-400 font-normal italic">
-                 "Karigiri is more than a store. It is a movement to protect the heritage of hand-weaving. Every purchase supports an artisan community directly, ensuring that true craftsmanship never dies out in the fast-fashion world."
+                 "PrathamKarigiri is more than a store. It is a movement to protect the heritage of hand-weaving. Every purchase supports an artisan community directly, ensuring that true craftsmanship never dies out in the fast-fashion world."
               </p>
            </div>
         </div>

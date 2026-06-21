@@ -26,7 +26,7 @@ const QuickViewModal = ({ product, onClose }) => {
 
   const handleWhatsApp = () => {
     const priceText = product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'N/A';
-    const message = `Hello Karigiri!\n\nI am interested in:\n- *${product.name}*\n- Price: *${priceText}*\n- Size: *${selectedSize}*\n\nPlease share more details!`;
+    const message = `Hello PrathamKarigiri!\n\nI am interested in:\n- *${product.name}*\n- Price: *${priceText}*\n- Size: *${selectedSize}*\n\nPlease share more details!`;
     window.open(`${WHATSAPP.chatUrl}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -73,7 +73,7 @@ const QuickViewModal = ({ product, onClose }) => {
             <div className="md:w-3/5 p-5 md:p-6 flex flex-col gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)] mb-1">
-                  {product.brand || 'KARIGIRI'}
+                  {product.brand || 'PrathamKarigiri'}
                 </p>
                 <h3 className="text-lg font-black text-slate-900 leading-snug">{product.name}</h3>
               </div>

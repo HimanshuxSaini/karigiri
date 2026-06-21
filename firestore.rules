@@ -5,7 +5,7 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && 
         (request.auth.token.email == 'himanshu0481@gmail.com' || 
-         request.auth.token.email == 'admin@karigiri.com');
+         request.auth.token.email == 'admin@prathamkarigiri.com');
     }
 
     // Products collection: Anyone can read, only admin can write

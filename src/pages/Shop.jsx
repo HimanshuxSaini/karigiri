@@ -155,7 +155,7 @@ const Shop = () => {
   const uniqueBrands = useMemo(() => {
     if (!products.length) return [];
     const brands = products
-      .map(p => p.brand || 'KARIGIRI')
+      .map(p => p.brand || 'PrathamKarigiri')
       .filter((v, i, a) => a.indexOf(v) === i);
     return brands.sort();
   }, [products]);
@@ -173,7 +173,7 @@ const Shop = () => {
       const pCategory = String(p?.category || '').trim().toLowerCase();
       const pSubCategory = String(p?.subCategory || p?.subcategory || '').trim().toLowerCase();
       const pName = String(p?.name || '').trim().toLowerCase();
-      const pBrand = String(p?.brand || 'KARIGIRI').trim().toLowerCase();
+      const pBrand = String(p?.brand || 'PrathamKarigiri').trim().toLowerCase();
       
       const filterCat = categoryFilter.trim().toLowerCase();
       const filterSub = (urlSubCategory || '').trim().toLowerCase();
@@ -191,7 +191,7 @@ const Shop = () => {
         pSubCategory.includes(searchTerm);
 
       const matchesStock = !inStockOnly || p.inStock !== false;
-      const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(p.brand || 'KARIGIRI');
+      const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(p.brand || 'PrathamKarigiri');
       
       return matchesCategory && matchesSubCategory && matchesPrice && matchesSearch && matchesStock && matchesBrand;
     });

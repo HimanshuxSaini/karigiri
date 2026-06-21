@@ -280,7 +280,7 @@ const Checkout = () => {
       const whatsappNumber = WHATSAPP.number;
       // NOTE: Coupon increment usage is now handled automatically by createOrder server-side for bulletproof security
 
-      let message = `*Hello Karigiri, I would like to complete my payment!*\n\n`;
+      let message = `*Hello PrathamKarigiri, I would like to complete my payment!*\n\n`;
       message += `*Order ID:* ${createdOrder._id || orderId}\n\n`;
       message += `*Items Ordered:*\n`;
       items.forEach(item => {
@@ -338,7 +338,7 @@ const Checkout = () => {
           </div>
           <h2 className="text-4xl font-serif text-[var(--primary)] mb-4">Crafting Your Order</h2>
           <p className="text-[var(--text-muted)] mb-10 leading-relaxed">
-            Thank you for choosing Karigiri. We've received your order and our artisans are beginning their work. You'll receive updates via email.
+            Thank you for choosing PrathamKarigiri. We've received your order and our artisans are beginning their work. You'll receive updates via email.
           </p>
           <div className="space-y-4">
             <Link to="/profile" className="btn-primary block w-full text-center py-4">View My Orders</Link>

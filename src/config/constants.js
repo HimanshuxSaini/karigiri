@@ -6,7 +6,7 @@
 // Admin emails authorized for admin panel access
 export const ADMIN_EMAILS = [
   'himanshu0481@gmail.com',
-  'admin@karigiri.com'
+  'admin@prathamkarigiri.com'
 ];
 
 // Check if a given email is an admin
@@ -24,11 +24,11 @@ export const WHATSAPP = {
 
 // Brand information
 export const BRAND = {
-  name: 'KARIGIRI',
+  name: 'PrathamKarigiri',
   tagline: 'Artisanal Woolens & Yarn',
-  fullName: 'Karigiri Handcrafted Pvt Ltd',
-  email: 'karigiri@gmail.com',
-  salesEmail: 'sales@karigiri.com',
+  fullName: 'pratham ai gurukul (Pratham Guru Education and Welfare Society)',
+  email: 'prathamkarigiri@gmail.com',
+  salesEmail: 'sales@prathamkarigiri.com',
   phone: '+91 70273 11213',
   address: {
     line1: '573, behind Holy Child School',
@@ -39,9 +39,9 @@ export const BRAND = {
     country: 'India',
   },
   social: {
-    instagram: 'https://www.instagram.com/karigiri_official',
-    facebook: 'https://www.facebook.com/karigiri',
-    twitter: 'https://twitter.com/karigiri',
-    youtube: 'https://www.youtube.com/@karigiri',
+    instagram: 'https://www.instagram.com/prathamkarigiri_official',
+    facebook: 'https://www.facebook.com/prathamkarigiri',
+    twitter: 'https://twitter.com/prathamkarigiri',
+    youtube: 'https://www.youtube.com/@prathamkarigiri',
   },
 };

@@ -95,7 +95,7 @@ const Admin = () => {
   const [reelFormData, setReelFormData] = useState({
     image: '',
     tag: '',
-    handle: '@karigiri_official',
+    handle: '@prathamkarigiri_official',
     order: 0
   });
   const [coupons, setCoupons] = useState([]);
@@ -139,7 +139,7 @@ const Admin = () => {
     description: '',
     image: '',
     images: [],
-    brand: 'KARIGIRI',
+    brand: 'PrathamKarigiri',
     inStock: true,
     sizeType: 'none',
     sizes: [],
@@ -432,7 +432,7 @@ const Admin = () => {
         description: '',
         image: '',
         images: [],
-        brand: 'KARIGIRI',
+        brand: 'PrathamKarigiri',
         inStock: true,
         sizeType: 'none',
         sizes: [],
@@ -448,6 +448,7 @@ const Admin = () => {
     try {
       await updateOrderStatus(id, status);
       setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, status } : o));
+      setSelectedOrder(prev => prev && (prev._id === id || prev.id === id) ? { ...prev, status } : prev);
       showNotification(`Order status updated to ${status}`);
     } catch {
       showNotification('Failed to update status', 'error');
@@ -491,7 +492,7 @@ const Admin = () => {
     setReelFormData({
       image: reel.image,
       tag: reel.tag,
-      handle: reel.handle || '@karigiri_official',
+      handle: reel.handle || '@prathamkarigiri_official',
       order: reel.order || 0
     });
     setShowReelModal(true);
@@ -515,7 +516,7 @@ const Admin = () => {
       }
       setShowReelModal(false);
       setEditingReel(null);
-      setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: 0 });
+      setReelFormData({ image: '', tag: '', handle: '@prathamkarigiri_official', order: 0 });
     } catch {
       showNotification('Failed to save reel', 'error');
     }
@@ -629,10 +630,10 @@ const Admin = () => {
     const date = formatDate(orderData?.createdAt);
     const total = Number(orderData?.totalPrice || 0).toLocaleString('en-IN');
 
-    const brandName = "KARIGIRI";
+    const brandName = "PrathamKarigiri";
     const brandAddress = "Sonipat, Haryana, India";
     const brandPhone = "+91 93158 55431";
-    const brandEmail = "karigiri@gmail.com";
+    const brandEmail = "prathamkarigiri@gmail.com";
 
     const itemsHtml = (orderData?.orderItems || []).map(item => {
       const price = Number(item.price || 0);
@@ -745,7 +746,7 @@ const Admin = () => {
           </div>
 
           <div class="footer">
-            <p>Thank you for shopping with Karigiri Artisanal Collection!</p>
+            <p>Thank you for shopping with PrathamKarigiri Artisanal Collection!</p>
             <p>This is a computer generated invoice and does not require a physical signature.</p>
           </div>
 
@@ -798,7 +799,7 @@ const Admin = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 md:gap-6">
             <div>
               <h1 className="text-3xl md:text-5xl font-serif font-bold text-gray-900">Admin Control</h1>
-              <p className="text-sm md:text-base text-gray-500 mt-1 md:mt-2 font-medium">Managing <span className="text-[var(--primary)] font-bold">Karigiri Artisanal Collection</span></p>
+              <p className="text-sm md:text-base text-gray-500 mt-1 md:mt-2 font-medium">Managing <span className="text-[var(--primary)] font-bold">PrathamKarigiri Artisanal Collection</span></p>
             </div>
 
             <div className="flex items-center space-x-2 md:space-x-3 w-full sm:w-auto">
@@ -1003,7 +1004,7 @@ const Admin = () => {
                             description: '',
                             image: '',
                             images: [],
-                            brand: 'KARIGIRI',
+                            brand: 'PrathamKarigiri',
                             inStock: true,
                             sizeType: 'none',
                             sizes: [],
@@ -1053,7 +1054,7 @@ const Admin = () => {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-bold text-gray-900 truncate">{p?.name || 'Unnamed Product'}</p>
-                                <p className="text-xs text-gray-400 mb-1">{p?.brand || 'KARIGIRI'}</p>
+                                <p className="text-xs text-gray-400 mb-1">{p?.brand || 'PrathamKarigiri'}</p>
                                 <p className="font-bold text-[var(--primary)]">₹{(Number(p?.price) || 0).toLocaleString()}</p>
                               </div>
                             </div>
@@ -1136,7 +1137,7 @@ const Admin = () => {
                                     </div>
                                     <div>
                                       <p className="font-bold text-gray-900">{p?.name || 'Unnamed Product'}</p>
-                                      <p className="text-xs text-gray-400">{p?.brand || 'KARIGIRI'}</p>
+                                      <p className="text-xs text-gray-400">{p?.brand || 'PrathamKarigiri'}</p>
                                     </div>
                                   </div>
                                 </td>
@@ -1489,7 +1490,7 @@ const Admin = () => {
                       <button
                         onClick={() => {
                           setEditingReel(null);
-                          setReelFormData({ image: '', tag: '', handle: '@karigiri_official', order: 0 });
+                          setReelFormData({ image: '', tag: '', handle: '@prathamkarigiri_official', order: 0 });
                           setShowReelModal(true);
                         }}
                         className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"

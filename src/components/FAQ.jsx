@@ -4,16 +4,16 @@ import { Plus, Minus } from 'lucide-react';
 
 const faqData = [
   {
-    question: "What makes Karigiri's wool unique?",
+    question: "What makes PrathamKarigiri's wool unique?",
     answer: "We source premium wool and handle all our artisanal knitting and design work right here in Sonipat, Haryana. Our Merino and Pashmina are hand-sorted to ensure only the longest and softest fibers are used, resulting in superior warmth and a signature silky feel that machine-made alternatives cannot replicate."
   },
   {
     question: "How do you support local artisans?",
-    answer: "Karigiri works directly with master weavers and knitters based in Sonipat. We eliminate middlemen to ensure that the majority of the product value goes directly to the artisans, helping preserve ancestral techniques while providing sustainable livelihoods in our local community."
+    answer: "PrathamKarigiri works directly with master weavers and knitters based in Sonipat. We eliminate middlemen to ensure that the majority of the product value goes directly to the artisans, helping preserve ancestral techniques while providing sustainable livelihoods in our local community."
   },
 
   {
-    question: "Is Karigiri a sustainable brand?",
+    question: "Is PrathamKarigiri a sustainable brand?",
     answer: "Sustainability is at our core. We use 100% biodegradable natural fibers, low-impact traditional dyes, and follow a zero-waste production model. By focusing on quality over quantity, we promote 'Slow Fashion' that lasts for generations."
   },
   {
@@ -77,7 +77,7 @@ const FAQ = () => {
             transition={{ delay: 0.1 }}
             className="text-3xl md:text-5xl font-black text-[var(--primary)] mb-6"
           >
-            Why Choose Karigiri?
+            Why Choose PrathamKarigiri?
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 10 }}

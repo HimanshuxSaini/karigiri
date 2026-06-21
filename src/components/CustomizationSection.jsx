@@ -42,7 +42,7 @@ const CustomizationSection = () => {
 
   const handleWhatsAppContact = () => {
     const number = "917027311213";
-    const text = encodeURIComponent("Hi Karigiri Team! ✨ I'm interested in getting a custom order crafted. Can you please guide me on how to proceed?");
+    const text = encodeURIComponent("Hi PrathamKarigiri Team! ✨ I'm interested in getting a custom order crafted. Can you please guide me on how to proceed?");
     window.open(`https://wa.me/${number}?text=${text}`, '_blank');
   };
 

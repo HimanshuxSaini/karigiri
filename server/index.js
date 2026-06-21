@@ -59,7 +59,7 @@ app.use(compression());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://karigiri.vercel.app',
+  'https://prathamkarigiri.vercel.app',
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
 ].filter(Boolean);
 
@@ -111,7 +111,7 @@ app.use('/api/settings', generalLimiter, settingsRoutes);
 
 // Health Check
 app.get('/', (req, res) => {
-  res.json({ status: 'active', message: 'Karigiri API is running' });
+  res.json({ status: 'active', message: 'PrathamKarigiri API is running' });
 });
 
 // Initialize Firebase Admin

@@ -88,7 +88,7 @@ const createProduct = async (req, res) => {
       description,
       image,
       images: images || [],
-      brand: brand || 'KARIGIRI',
+      brand: brand || 'PrathamKarigiri',
       category,
       subCategory: subCategory || '',
       sizeType: sizeType || 'none',

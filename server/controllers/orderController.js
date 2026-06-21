@@ -142,11 +142,11 @@ const createOrder = async (req, res) => {
 
       const mailOptions = {
         to: email.toLowerCase(),
-        subject: `Order Confirmation - Karigiri (#${docRef.id.slice(-6).toUpperCase()})`,
+        subject: `Order Confirmation - PrathamKarigiri (#${docRef.id.slice(-6).toUpperCase()})`,
         html: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; padding: 30px; background-color: #fff; border: 1px solid #eee; border-radius: 10px;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <h1 style="color: #5C4033; margin: 0; font-size: 24px; letter-spacing: 2px;">KARIGIRI</h1>
+              <h1 style="color: #5C4033; margin: 0; font-size: 24px; letter-spacing: 2px;">PrathamKarigiri</h1>
             </div>
             <h2 style="color: #333; text-align: center;">Thank you for your order!</h2>
             <p style="color: #666; font-size: 14px; text-align: center;">We've received your order and are getting it ready to ship.</p>

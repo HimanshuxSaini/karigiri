@@ -6,7 +6,7 @@ const ERROR_MESSAGES = {
   // Firebase Auth Errors
   'auth/invalid-email': 'That email doesn\'t seem quite right. Could you double-check the stitching?',
   'auth/user-disabled': 'This account has been gently retired. Please reach out to our artisans for help.',
-  'auth/user-not-found': 'We couldn\'t find a Karigiri account with this email. Why not create a new one?',
+  'auth/user-not-found': 'We couldn\'t find a PrathamKarigiri account with this email. Why not create a new one?',
   'auth/wrong-password': 'The password doesn\'t match our records. Please try again or reset it.',
   'auth/email-already-in-use': 'This email is already part of our family. Try signing in instead!',
   'auth/operation-not-allowed': 'Our workshop isn\'t accepting this sign-in method right now.',
@@ -16,7 +16,7 @@ const ERROR_MESSAGES = {
   'auth/popup-closed-by-user': 'The sign-in window was tucked away before we could finish.',
   
   // Custom API / Logic Errors
-  'ACCOUNT NOT FOUND': 'We couldn\'t find your Karigiri account. Join our artisanal community today!',
+  'ACCOUNT NOT FOUND': 'We couldn\'t find your PrathamKarigiri account. Join our artisanal community today!',
   'FAILED TO SEND OTP': 'The code got lost in the mail. Please double-check your email address.',
   'INVALID CODE': 'That code doesn\'t quite fit. Please check and try one more time.',
   'SERVER UNREACHABLE': 'Our digital workshop is currently being polished. We\'ll be back to our crafts soon.',

@@ -124,7 +124,7 @@ const ProductCard = ({ product, priority = false }) => {
 
         <div className="py-2 md:py-4 px-1">
           <Link to={`/product/${productId}`}>
-            <h3 className="font-bold text-[10px] md:text-sm text-gray-900 truncate">{product.brand || 'KARIGIRI'}</h3>
+            <h3 className="font-bold text-[10px] md:text-sm text-gray-900 truncate">{product.brand || 'PrathamKarigiri'}</h3>
             <p className="text-[10px] md:text-xs text-gray-500 truncate mb-1">{product.name}</p>
           </Link>
           <div className="flex flex-wrap items-center gap-1 md:gap-2">

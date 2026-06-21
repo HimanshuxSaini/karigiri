@@ -43,7 +43,7 @@ const Navbar = () => {
               <Menu size={22} />
             </button>
             <Link to="/" className="text-xl md:text-2xl font-black tracking-tighter text-black flex items-center">
-              KARI<span className="text-[var(--primary)]">GIRI</span>
+              PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
             </Link>
 
             <div className="hidden lg:flex space-x-10 text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
@@ -189,7 +189,7 @@ const Navbar = () => {
             >
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <span className="text-xl font-black tracking-tighter">
-                  KARI<span className="text-[var(--primary)]">GIRI</span>
+                  PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
                 </span>
                 <button onClick={() => setIsMobileMenuOpen(false)}>
                   <X size={24} className="text-gray-400" />

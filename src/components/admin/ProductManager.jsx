@@ -72,7 +72,7 @@ const ProductManager = ({ products, handleEditProduct, handleDeleteProduct, hand
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-900 truncate">{p?.name || 'Unnamed Product'}</p>
-                    <p className="text-xs text-gray-400 mb-1">{p?.brand || 'KARIGIRI'}</p>
+                    <p className="text-xs text-gray-400 mb-1">{p?.brand || 'PrathamKarigiri'}</p>
                     <p className="font-bold text-[var(--primary)]">₹{(Number(p?.price) || 0).toLocaleString()}</p>
                   </div>
                 </div>
@@ -155,7 +155,7 @@ const ProductManager = ({ products, handleEditProduct, handleDeleteProduct, hand
                         </div>
                         <div>
                           <p className="font-bold text-gray-900">{p?.name || 'Unnamed Product'}</p>
-                          <p className="text-xs text-gray-400">{p?.brand || 'KARIGIRI'}</p>
+                          <p className="text-xs text-gray-400">{p?.brand || 'PrathamKarigiri'}</p>
                         </div>
                       </div>
                     </td>
