@@ -42,8 +42,13 @@ const Navbar = () => {
             >
               <Menu size={22} />
             </button>
-            <Link to="/" className="text-xl md:text-2xl font-black tracking-tighter text-black flex items-center">
-              PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
+            <Link to="/" className="flex flex-col items-start justify-center group">
+              <div className="text-xl md:text-2xl font-black tracking-tighter text-black flex items-center leading-none">
+                PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
+              </div>
+              <span className="text-[8px] md:text-[9px] uppercase font-bold tracking-[0.2em] text-gray-500 mt-1 ml-0.5 group-hover:text-[var(--primary)] transition-colors">
+                Pratham Guru Enterprises
+              </span>
             </Link>
 
             <div className="hidden lg:flex space-x-10 text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
@@ -188,9 +193,14 @@ const Navbar = () => {
               className="fixed inset-y-0 left-0 w-[280px] bg-white z-[101] shadow-2xl lg:hidden flex flex-col"
             >
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                <span className="text-xl font-black tracking-tighter">
-                  PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-black tracking-tighter leading-none">
+                    PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
+                  </span>
+                  <span className="text-[8px] uppercase font-bold tracking-[0.2em] text-gray-500 mt-1 ml-0.5">
+                    Pratham Guru Enterprises
+                  </span>
+                </div>
                 <button onClick={() => setIsMobileMenuOpen(false)}>
                   <X size={24} className="text-gray-400" />
                 </button>
