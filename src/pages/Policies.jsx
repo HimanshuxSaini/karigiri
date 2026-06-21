@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
@@ -147,6 +148,10 @@ const policyContent = {
 const Policies = () => {
   const { type } = useParams();
   const data = policyContent[type];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [type]);
 
   if (!data) {
     return (
