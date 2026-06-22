@@ -80,8 +80,13 @@ const deleteProduct = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const db = admin.firestore();
-    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge } = req.body;
+    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge, stockCount } = req.body;
     
+    let finalInStock = inStock !== undefined ? inStock : true;
+    if (stockCount !== undefined) {
+      finalInStock = Number(stockCount) > 0;
+    }
+
     const productData = {
       name,
       price: Number(price),
@@ -94,7 +99,8 @@ const createProduct = async (req, res) => {
       sizeType: sizeType || 'none',
       sizes: sizes || [],
       deliveryCharge: deliveryCharge !== undefined ? Number(deliveryCharge) : 0,
-      inStock: inStock !== undefined ? inStock : true,
+      inStock: finalInStock,
+      stockCount: stockCount !== undefined ? Number(stockCount) : 0,
       badge: badge || 'none',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -121,12 +127,17 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const db = admin.firestore();
-    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge } = req.body;
+    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge, stockCount } = req.body;
     
     const productRef = db.collection('products').doc(req.params.id);
     const doc = await productRef.get();
 
     if (doc.exists) {
+      let finalInStock = inStock !== undefined ? inStock : doc.data().inStock;
+      if (stockCount !== undefined) {
+        finalInStock = Number(stockCount) > 0;
+      }
+
       const updateData = {
         name: name || doc.data().name,
         price: price !== undefined ? Number(price) : doc.data().price,
@@ -139,7 +150,8 @@ const updateProduct = async (req, res) => {
         sizeType: sizeType !== undefined ? sizeType : (doc.data().sizeType || 'none'),
         sizes: sizes !== undefined ? sizes : (doc.data().sizes || []),
         deliveryCharge: deliveryCharge !== undefined ? Number(deliveryCharge) : (doc.data().deliveryCharge || 0),
-        inStock: inStock !== undefined ? inStock : doc.data().inStock,
+        inStock: finalInStock,
+        ...(stockCount !== undefined && { stockCount: Number(stockCount) }),
         badge: badge !== undefined ? badge : (doc.data().badge || 'none'),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       };

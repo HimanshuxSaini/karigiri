@@ -57,6 +57,11 @@ const createOrder = async (req, res) => {
       if (productData.inStock === false) {
         return res.status(400).json({ message: `${productData.name} is currently out of stock` });
       }
+      
+      // Check stockCount if it exists
+      if (productData.stockCount !== undefined && productData.stockCount < quantity) {
+        return res.status(400).json({ message: `Insufficient stock for ${productData.name}. Only ${productData.stockCount} left.` });
+      }
 
       calculatedSubtotal += realPrice * quantity;
       calculatedDelivery += deliveryCharge * quantity;
@@ -109,6 +114,29 @@ const createOrder = async (req, res) => {
     };
 
     const docRef = await db.collection('orders').add(orderData);
+
+    // Update stock counts
+    try {
+      const batch = db.batch();
+      for (const item of validatedItems) {
+        const productRef = db.collection('products').doc(item.product);
+        const productDoc = await productRef.get();
+        if (productDoc.exists) {
+          const currentStock = productDoc.data().stockCount;
+          if (currentStock !== undefined) {
+            const newStock = Math.max(0, currentStock - item.quantity);
+            batch.update(productRef, {
+              stockCount: newStock,
+              inStock: newStock > 0,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+          }
+        }
+      }
+      await batch.commit();
+    } catch (stockErr) {
+      console.error('Failed to update stock counts:', stockErr);
+    }
 
     // Automatically increment coupon usage server-side if a valid coupon was used
     if (couponCode) {

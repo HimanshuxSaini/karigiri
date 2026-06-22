@@ -122,6 +122,7 @@ const Admin = () => {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products', label: 'Inventory', icon: Package },
+    { id: 'stock', label: 'Stock', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingBag },
     { id: 'billing', label: 'Billing', icon: Printer },
     { id: 'reels', label: 'Reels', icon: Eye },
@@ -141,6 +142,7 @@ const Admin = () => {
     images: [],
     brand: 'PrathamKarigiri',
     inStock: true,
+    stockCount: 0,
     sizeType: 'none',
     sizes: [],
     deliveryCharge: 0,
@@ -335,6 +337,7 @@ const Admin = () => {
       images: product.images || [],
       brand: product.brand,
       inStock: product.inStock,
+      stockCount: product.stockCount !== undefined ? product.stockCount : 0,
       sizeType: product.sizeType || 'none',
       sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
       deliveryCharge: product.deliveryCharge || 0,
@@ -434,6 +437,7 @@ const Admin = () => {
         images: [],
         brand: 'PrathamKarigiri',
         inStock: true,
+        stockCount: 0,
         sizeType: 'none',
         sizes: [],
         deliveryCharge: 0,
@@ -441,6 +445,16 @@ const Admin = () => {
       });
     } catch {
       showNotification(getFriendlyErrorMessage('FAILED TO SAVE PRODUCT'), 'error');
+    }
+  };
+
+  const handleUpdateProductStock = async (id, newStock) => {
+    try {
+      const updatedProduct = await updateProduct(id, { stockCount: newStock });
+      setProducts(products.map(p => p._id === id ? updatedProduct : p));
+      showNotification('Stock updated successfully');
+    } catch {
+      showNotification('Failed to update stock', 'error');
     }
   };
 
@@ -977,6 +991,86 @@ const Admin = () => {
                 </>
               )}
 
+              {activeTab === 'stock' && (
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="relative flex-grow max-w-md">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        className="w-full pl-12 pr-6 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left min-w-[600px]">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                          <tr>
+                            <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Product</th>
+                            <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Category</th>
+                            <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Stock Count</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {filteredProducts.length === 0 ? (
+                            <tr>
+                              <td colSpan="3" className="px-6 py-20 text-center">
+                                <p className="font-bold text-gray-900">No products found</p>
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredProducts.map((p, idx) => (
+                              <tr key={p?._id || p?.id || `stock-${idx}`} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center space-x-4">
+                                    <div className="w-12 aspect-[3/4] rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
+                                      <img
+                                        src={p?.image || p?.images?.[0] || '/placeholder.png'}
+                                        alt={p?.name || 'Product'}
+                                        className="w-full h-full object-contain bg-white"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.png'; }}
+                                      />
+                                    </div>
+                                    <p className="font-bold text-gray-900 line-clamp-1">{p?.name || 'Unnamed Product'}</p>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-gray-100 text-gray-600">
+                                    {p?.category || 'Uncategorized'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center space-x-3">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      defaultValue={p?.stockCount !== undefined ? p.stockCount : 0}
+                                      onBlur={(e) => {
+                                        const newVal = Number(e.target.value);
+                                        if (newVal !== (p?.stockCount || 0)) {
+                                          handleUpdateProductStock(p._id || p.id, newVal);
+                                        }
+                                      }}
+                                      className="w-24 px-4 py-2 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 font-bold"
+                                    />
+                                    {p?.stockCount <= 0 && <span className="text-[10px] text-red-500 font-bold uppercase">Out of Stock</span>}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {activeTab === 'products' && (
                 <div className="space-y-6">
                   <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -1072,7 +1166,7 @@ const Admin = () => {
                                 </span>
                                 <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${p?.inStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
                                   }`}>
-                                  {p?.inStock ? 'In Stock' : 'Out of Stock'}
+                                  {p?.stockCount !== undefined ? `${p.stockCount} In Stock` : (p?.inStock ? 'In Stock' : 'Out of Stock')}
                                 </span>
                               </div>
                               <div className="flex space-x-1">
@@ -1162,9 +1256,9 @@ const Admin = () => {
                                   <p className="font-bold text-gray-900">₹{(Number(p?.price) || 0).toLocaleString()}</p>
                                 </td>
                                 <td className="px-6 py-4">
-                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${p?.inStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider inline-block ${p?.inStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
                                     }`}>
-                                    {p?.inStock ? 'In Stock' : 'Out of Stock'}
+                                    {p?.stockCount !== undefined ? `${p.stockCount} In Stock` : (p?.inStock ? 'In Stock' : 'Out of Stock')}
                                   </span>
                                 </td>
                                 <td className="px-6 py-4">
@@ -2198,15 +2292,28 @@ const Admin = () => {
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     ></textarea>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id="inStock"
-                      checked={formData.inStock}
-                      onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
-                      className="w-5 h-5 accent-[var(--primary)]"
-                    />
-                    <label htmlFor="inStock" className="text-sm font-bold text-gray-700">Available in Stock</label>
+                  <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Stock Count</label>
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        value={formData.stockCount !== undefined ? formData.stockCount : 0}
+                        onChange={(e) => setFormData({ ...formData, stockCount: Number(e.target.value) })}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-3 pt-8">
+                      <input
+                        type="checkbox"
+                        id="inStock"
+                        checked={formData.inStock}
+                        onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
+                        className="w-5 h-5 accent-[var(--primary)]"
+                      />
+                      <label htmlFor="inStock" className="text-sm font-bold text-gray-700">Available in Stock</label>
+                    </div>
                   </div>
                   <div className="md:col-span-2 flex space-x-4 mt-4">
                     <button

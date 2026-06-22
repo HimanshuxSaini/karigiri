@@ -10,7 +10,8 @@ import {
   query, 
   where, 
   orderBy,
-  serverTimestamp 
+  serverTimestamp,
+  increment
 } from 'firebase/firestore';
 import { 
   signInWithEmailAndPassword, 
@@ -338,6 +339,31 @@ export const updateOrderStatus = async (id, status) => {
 export const deleteOrder = async (id) => {
   try {
     const orderDoc = doc(db, 'orders', id);
+    
+    // Fetch the order to restore stock
+    const snapshot = await getDoc(orderDoc);
+    if (snapshot.exists()) {
+      const orderData = snapshot.data();
+      if (orderData.orderItems && Array.isArray(orderData.orderItems)) {
+        for (const item of orderData.orderItems) {
+          if (item.product) {
+            const productRef = doc(db, 'products', item.product);
+            const prodSnap = await getDoc(productRef);
+            if (prodSnap.exists()) {
+              const currentStock = prodSnap.data().stockCount;
+              if (currentStock !== undefined) {
+                await updateDoc(productRef, {
+                  stockCount: increment(item.quantity || 1),
+                  inStock: true,
+                  updatedAt: serverTimestamp()
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
     await updateDoc(orderDoc, { 
       status: 'Cancelled (Suspicious)', 
       isDeletedByAdmin: true,

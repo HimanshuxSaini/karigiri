@@ -321,6 +321,19 @@ const ProductDetails = () => {
 
             <p className="text-[var(--accent)] font-black text-sm uppercase tracking-wider">inclusive of all taxes</p>
 
+            {/* Low Stock Alert */}
+            {product.stockCount !== undefined && product.stockCount > 0 && product.stockCount < 10 && (
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-100 rounded-xl text-red-600 animate-pulse">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                </span>
+                <p className="text-xs font-black uppercase tracking-wider">
+                  Only {product.stockCount} left in stock - Hurry up!
+                </p>
+              </div>
+            )}
+
             {/* Authenticity badge */}
             <div className="flex items-center gap-3 my-5 py-3 px-4 bg-amber-50 border border-amber-100 rounded-xl">
               <ShieldCheck size={18} className="text-amber-600 shrink-0" />
@@ -443,7 +456,11 @@ const ProductDetails = () => {
                 </div>
                 <div>
                   <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Availability</h4>
-                  <p className={`text-sm font-bold ${product.inStock !== false ? 'text-emerald-600' : 'text-red-500'}`}>{product.inStock !== false ? 'In Stock' : 'Out of Stock'}</p>
+                  <p className={`text-sm font-bold ${product.inStock !== false ? (product.stockCount !== undefined && product.stockCount < 10 ? 'text-red-500' : 'text-emerald-600') : 'text-red-500'}`}>
+                    {product.inStock !== false 
+                      ? (product.stockCount !== undefined && product.stockCount < 10 && product.stockCount > 0 ? `Only ${product.stockCount} Left` : 'In Stock') 
+                      : 'Out of Stock'}
+                  </p>
                 </div>
               </div>
 
