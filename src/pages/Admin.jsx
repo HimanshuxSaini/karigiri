@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import {
@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   LayoutDashboard,
   ChevronRight,
+  ChevronLeft,
   Search,
   Filter,
   CheckCircle,
@@ -27,7 +28,9 @@ import {
   MapPin,
   CreditCard,
   Tag,
-  Megaphone
+  Megaphone,
+  AlertTriangle,
+  ArrowRight
 } from 'lucide-react';
 
 import {
@@ -77,6 +80,28 @@ const Admin = () => {
   const { user } = useAuthStore();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const tabsContainerRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (tabsContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsContainerRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    // Small timeout to allow DOM to render tabs first
+    const timer = setTimeout(checkScroll, 100);
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, []);
+
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -829,22 +854,57 @@ const Admin = () => {
           </div>
 
           {/* Horizontal Tab Navigation */}
-          <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto no-scrollbar">
-            <div className="flex items-center min-w-max md:min-w-0">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${activeTab === tab.id
-                      ? 'bg-black text-white shadow-xl'
-                      : 'text-gray-400 hover:text-gray-900'
-                    }`}
-                >
-                  <tab.icon size={16} />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+          <div className="relative">
+            <div 
+              ref={tabsContainerRef}
+              onScroll={checkScroll}
+              className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto no-scrollbar"
+            >
+              <div className="flex items-center min-w-max md:min-w-0">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${activeTab === tab.id
+                        ? 'bg-black text-white shadow-xl'
+                        : 'text-gray-400 hover:text-gray-900'
+                      }`}
+                  >
+                    <tab.icon size={16} />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
+            
+            {/* Scroll Indicator Gradient & Arrow */}
+            <AnimatePresence>
+              {canScrollLeft && (
+                <Motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="pointer-events-none absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white via-white/80 to-transparent rounded-l-[2rem] flex items-center justify-start pl-4"
+                >
+                  <div className="bg-white rounded-full p-1.5 shadow-sm border border-gray-100 text-gray-400 animate-pulse">
+                    <ChevronLeft size={16} />
+                  </div>
+                </Motion.div>
+              )}
+
+              {canScrollRight && (
+                <Motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="pointer-events-none absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white/80 to-transparent rounded-r-[2rem] flex items-center justify-end pr-4"
+                >
+                  <div className="bg-white rounded-full p-1.5 shadow-sm border border-gray-100 text-gray-400 animate-pulse">
+                    <ChevronRight size={16} />
+                  </div>
+                </Motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {loading ? (
@@ -947,45 +1007,75 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    {/* Phone Verification Feature Card */}
-                    <div className="lg:col-span-2 bg-gradient-to-br from-gray-900 to-black p-8 rounded-[3rem] text-white overflow-hidden relative group">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
-                      <div className="relative z-10">
-                        <div className="flex items-center space-x-3 mb-8">
-                          <div className="p-3 bg-emerald-500/20 rounded-2xl text-emerald-400">
-                            <ShieldCheck size={24} />
-                          </div>
-                          <h3 className="text-2xl font-bold">Security Features</h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          <div className="p-6 bg-white/5 rounded-3xl border border-white/10 hover:border-emerald-500/50 transition-all cursor-pointer group/item">
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400">
-                                <Smartphone size={20} />
+                    {/* Low Stock Alerts */}
+                    {(() => {
+                      const lowStockProducts = Array.isArray(products) 
+                        ? products.filter(p => p.stockCount !== undefined && p.stockCount <= 5).sort((a, b) => a.stockCount - b.stockCount)
+                        : [];
+                      return (
+                        <div className="lg:col-span-2 bg-rose-50 p-8 rounded-[3rem] border border-rose-100 relative group overflow-hidden shadow-sm">
+                          <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
+                          <div className="relative z-10 h-full flex flex-col">
+                            <div className="flex items-center justify-between mb-6">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-3 bg-rose-500/20 rounded-2xl text-rose-600">
+                                  <AlertTriangle size={24} />
+                                </div>
+                                <h3 className="text-xl font-bold text-rose-950">Low Stock Alerts</h3>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Eye size={16} className="text-white/40 group-hover/item:text-emerald-400 transition-colors" />
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                              </div>
+                              {lowStockProducts.length > 0 && (
+                                <span className="bg-rose-100 text-rose-700 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                                  {lowStockProducts.length} Alerts
+                                </span>
+                              )}
                             </div>
-                            <h4 className="text-lg font-bold mb-1">Phone Verification</h4>
-                            <p className="text-sm text-white/50 leading-relaxed">SMS OTP authentication is active and securing user transactions.</p>
-                          </div>
 
-                          <div className="p-6 bg-white/5 rounded-3xl border border-white/10 opacity-50 grayscale hover:grayscale-0 transition-all">
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="p-2 bg-blue-500/10 rounded-xl text-blue-400">
-                                <ShieldCheck size={20} />
-                              </div>
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/10 px-2 py-1 rounded">Coming Soon</span>
+                            <div className="space-y-3 flex-1">
+                              {lowStockProducts.length > 0 ? (
+                                lowStockProducts.slice(0, 3).map((product, idx) => (
+                                  <div 
+                                    key={product._id || product.id || idx} 
+                                    className="flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-rose-100/50 hover:bg-white hover:shadow-md transition-all cursor-pointer group/item" 
+                                    onClick={() => setActiveTab('stock')}
+                                  >
+                                    <div className="flex items-center space-x-4">
+                                      <div className="w-12 h-14 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-200">
+                                        <img src={product.image || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover group-hover/item:scale-110 transition-transform" />
+                                      </div>
+                                      <div>
+                                        <p className="font-bold text-sm text-gray-900 truncate max-w-[140px] md:max-w-[180px]">{product.name}</p>
+                                        <p className="text-xs text-gray-500 font-medium">ID: {String(product._id || product.id).slice(-6).toUpperCase()}</p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end">
+                                      <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg ${product.stockCount === 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                                        {product.stockCount === 0 ? 'Out of Stock' : `${product.stockCount} Left`}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="flex flex-col items-center justify-center h-full py-10 text-emerald-600 bg-emerald-50/50 rounded-3xl border border-emerald-100/50">
+                                  <ShieldCheck size={40} className="mb-3 opacity-50" />
+                                  <p className="font-bold text-sm">Inventory is healthy!</p>
+                                  <p className="text-xs text-emerald-600/70 mt-1">All products are well stocked.</p>
+                                </div>
+                              )}
                             </div>
-                            <h4 className="text-lg font-bold mb-1">Two-Factor Auth</h4>
-                            <p className="text-sm text-white/30 leading-relaxed">Advanced biometric and multi-device authentication layer.</p>
+                            
+                            {lowStockProducts.length > 3 && (
+                              <button 
+                                onClick={() => setActiveTab('stock')}
+                                className="mt-6 flex items-center justify-center space-x-2 text-xs font-black uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-100/50 py-3 rounded-xl transition-colors w-full"
+                              >
+                                <span>View all {lowStockProducts.length} items</span>
+                                <ArrowRight size={14} strokeWidth={3} />
+                              </button>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </div>
 
                 </>

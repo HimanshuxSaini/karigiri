@@ -156,6 +156,13 @@ const updateProduct = async (req, res) => {
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       };
 
+      // Firestore rejects undefined values, so we must strip them out
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+          delete updateData[key];
+        }
+      });
+
       await productRef.update(updateData);
       const updatedDoc = await productRef.get();
       
