@@ -176,40 +176,26 @@ const LoginModal = ({ isOpen, onClose }) => {
     try {
       const provider = new GoogleAuthProvider();
       
-      // Detect if the user is on a mobile device
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
       
-      if (isMobile) {
-        // On mobile devices, popups are frequently blocked. Use redirect instead.
-        await signInWithRedirect(auth, provider);
-        // The page will redirect to Google, then come back. Logic handles this globally.
-      } else {
-        // On desktop, popups work fine and provide a faster experience.
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        
-        const userData = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          phoneNumber: user.phoneNumber,
-          lastLogin: new Date().toISOString(),
-          provider: 'google.com'
-        };
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        phoneNumber: user.phoneNumber,
+        lastLogin: new Date().toISOString(),
+        provider: 'google.com'
+      };
 
-        setUser(userData);
-        onClose();
-        navigate('/profile');
-      }
+      setUser(userData);
+      onClose();
+      navigate('/profile');
     } catch (error) {
       showToast(getFriendlyErrorMessage(error), 'error');
     } finally {
-      // On desktop we stop loading. On mobile we keep it spinning until the browser redirects.
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (!isMobile) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
