@@ -111,7 +111,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="w-full xl:w-auto xl:flex-grow xl:max-w-lg mx-0 xl:mx-6 order-last xl:order-none pb-2 xl:pb-0">
+          <div className="hidden md:block w-full xl:w-auto xl:flex-grow xl:max-w-lg mx-0 xl:mx-6 order-last xl:order-none pb-2 xl:pb-0">
             <div className="relative">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-[var(--primary)]"
