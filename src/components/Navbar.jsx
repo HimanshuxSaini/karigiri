@@ -34,8 +34,8 @@ const Navbar = () => {
   return (
     <>
       <nav className="fixed top-0 md:top-9 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-1.5 md:py-2.5 transition-all">
-        <div className="max-w-[1440px] mx-auto flex flex-wrap md:flex-nowrap justify-between items-center min-h-[3rem] md:h-14 gap-y-2 md:gap-y-0 pb-1 md:pb-0">
-          <div className="flex items-center space-x-4 md:space-x-12">
+        <div className="max-w-[1440px] mx-auto flex flex-wrap xl:flex-nowrap justify-between items-center min-h-[3rem] md:h-14 gap-y-3 xl:gap-y-0 pb-2 xl:pb-0">
+          <div className="flex items-center space-x-4 md:space-x-8 xl:space-x-12">
             <button
               className="lg:hidden text-gray-800 p-2 hover:bg-gray-100 rounded-full transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -51,7 +51,7 @@ const Navbar = () => {
               </span>
             </Link>
 
-            <div className="hidden lg:flex space-x-10 text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
+            <div className="hidden lg:flex space-x-6 xl:space-x-10 text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
               {navLinks.map((link) => (
                 <div
                   key={link.name}
@@ -111,7 +111,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="w-full md:w-auto md:flex-grow md:max-w-lg mx-0 md:mx-6 lg:mx-12 order-last md:order-none pb-2 md:pb-0">
+          <div className="w-full xl:w-auto xl:flex-grow xl:max-w-lg mx-0 xl:mx-6 order-last xl:order-none pb-2 xl:pb-0">
             <div className="relative">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-[var(--primary)]"
