@@ -73,7 +73,7 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className={`absolute top-full left-0 ${categoryStructure[link.name].width} bg-white/95 backdrop-blur-xl shadow-[0_25px_60px_rgba(0,0,0,0.1)] rounded-[3rem] border border-gray-100 p-12 grid ${categoryStructure[link.name].gridCols} gap-10 z-50 mt-0 overflow-hidden`}
+                        className={`absolute top-full ${categoryStructure[link.name].position || 'left-0'} ${categoryStructure[link.name].width} bg-white/95 backdrop-blur-xl shadow-[0_25px_60px_rgba(0,0,0,0.1)] rounded-[2rem] lg:rounded-[3rem] border border-gray-100 p-6 lg:p-8 xl:p-12 grid ${categoryStructure[link.name].gridCols} gap-6 lg:gap-8 xl:gap-10 z-50 mt-0 overflow-hidden`}
                         onMouseEnter={() => setHoveredCategory(link.name)}
                         onMouseLeave={() => setHoveredCategory(null)}
                       >

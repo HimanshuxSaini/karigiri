@@ -62,6 +62,8 @@ const allowedOrigins = [
   'https://karigiri.vercel.app',
   'https://prathamkarigiri.vercel.app',
   'https://pratham-karigiri.vercel.app',
+  'https://prathamkarigiri.in',
+  'https://www.prathamkarigiri.in',
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
 ].filter(Boolean);
 

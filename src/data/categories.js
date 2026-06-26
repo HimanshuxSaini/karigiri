@@ -1,7 +1,8 @@
 export const categoryStructure = {
   'Women': {
-    width: 'w-[1000px]',
-    gridCols: 'grid-cols-5',
+    width: 'w-[90vw] lg:w-[85vw] xl:w-[1000px]',
+    gridCols: 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-5',
+    position: 'left-0',
     image: '/shawl.png',
     sections: [
       { title: 'Winterwear', items: ['Sweaters', 'Ponchos', 'Caps, Hats, Beanies', 'Neckwarmers', 'Mufflers', 'Socks'] },
@@ -12,8 +13,9 @@ export const categoryStructure = {
     ]
   },
   'Kids': {
-    width: 'w-[800px]',
-    gridCols: 'grid-cols-4',
+    width: 'w-[90vw] lg:w-[85vw] xl:w-[800px]',
+    gridCols: 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    position: 'left-0 lg:-left-10 xl:left-0',
     image: '/item4.png',
     sections: [
       { title: 'Clothing', items: ['Handmade Sweaters', 'Frocks', 'Poncho', 'Vests', 'Rompers / Jumpsuits', 'Winterwear Sets'] },
@@ -23,8 +25,9 @@ export const categoryStructure = {
     ]
   },
   'Men': {
-    width: 'w-[900px]',
-    gridCols: 'grid-cols-4',
+    width: 'w-[90vw] lg:w-[85vw] xl:w-[900px]',
+    gridCols: 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    position: 'left-0 lg:left-1/2 lg:-translate-x-1/2',
     image: '/item4.png', // Placeholder or use a real one if available
     sections: [
       { title: 'Winterwear', items: ['Sweaters', 'Cardigans', 'Vests', 'Hoodies', 'Jackets', 'Coats'] },
@@ -34,8 +37,9 @@ export const categoryStructure = {
     ]
   },
   'Bouquet': {
-    width: 'w-[500px]',
+    width: 'w-[90vw] lg:w-[500px]',
     gridCols: 'grid-cols-2',
+    position: 'left-0 lg:left-1/2 lg:-translate-x-1/2 xl:-translate-x-1/4',
     image: '/bookey.png',
     sections: [
       { title: 'Floral', items: ['Rose Bouquets', 'Tulip Bouquets', 'Sunflower Bouquets', 'Lavender Bunches'] },
@@ -43,16 +47,18 @@ export const categoryStructure = {
     ]
   },
   'Laddu Gopal': {
-    width: 'w-[400px]',
-    gridCols: 'grid-cols-1',
+    width: 'w-[90vw] lg:w-[400px]',
+    gridCols: 'grid-cols-1 lg:grid-cols-1',
+    position: 'right-0',
     image: '/item4.png',
     sections: [
       { title: 'Collection', items: ['Handmade Dresses', 'Mukut & Shringar', 'Bedding & Pillows'] }
     ]
   },
   'Yarn': {
-    width: 'w-[400px]',
-    gridCols: 'grid-cols-1',
+    width: 'w-[90vw] lg:w-[400px]',
+    gridCols: 'grid-cols-1 lg:grid-cols-1',
+    position: 'right-0',
     image: '/yarn.png',
     sections: [
       { title: 'Collection', items: ['Organic Woolen Yarn', 'Cotton Yarn', 'Milk Cotton Yarn'] }
