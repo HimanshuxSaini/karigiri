@@ -4,10 +4,19 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, Minus, X, Tag, Loader2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders } from '../services/api';
+import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders, createRazorpayOrder } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
-import { WHATSAPP } from '../config/constants';
+
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
 
@@ -243,64 +252,86 @@ const Checkout = () => {
     }
 
     setIsProcessing(true);
-    
-    const orderId = `KG-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    const orderData = {
-      orderItems: items.map(item => ({
-        name: item.name,
-        quantity: item.quantity,
-        image: item.image,
-        price: item.price,
-        size: item.size || 'One Size',
-        product: item._id || item.id // Ensure we pass the database ID if available
-      })),
-      shippingAddress: {
-        address: addr.street,
-        city: addr.city,
-        postalCode: addr.pincode,
-        state: addr.state,
-        phone: addr.phone
-      },
-      paymentMethod: "WhatsApp / QR Code",
-      subtotal: cartTotal,
-      couponCode: appliedCoupon?.code || null,
-      couponDiscount: couponDiscount,
-      deliveryCharges: actualDeliveryCharges,
-      totalPrice: finalTotal,
-      user: user.uid,
-      email: user.email.toLowerCase()
-    };
+    const res = await loadRazorpayScript();
+    if (!res) {
+      showToast("Razorpay SDK failed to load. Are you online?", "error");
+      setIsProcessing(false);
+      return;
+    }
 
     try {
-      const createdOrder = await createOrder(orderData);
-      addOrder(createdOrder);
-      
-      // Redirect to WhatsApp
-      const whatsappNumber = WHATSAPP.number;
-      // NOTE: Coupon increment usage is now handled automatically by createOrder server-side for bulletproof security
+      const rpOrderRes = await createRazorpayOrder(finalTotal);
+      if (!rpOrderRes.success) {
+        showToast("Failed to initiate payment", "error");
+        setIsProcessing(false);
+        return;
+      }
 
-      let message = `*Hello PrathamKarigiri, I would like to complete my payment!*\n\n`;
-      message += `*Order ID:* ${createdOrder._id || orderId}\n\n`;
-      message += `*Items Ordered:*\n`;
-      items.forEach(item => {
-          message += `- ${item.name} x${item.quantity} (${formatCurrency(item.price)})${item.size && item.size !== 'One Size' ? ` [Size: ${item.size}]` : ''}\n\n`;
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'dummy_key',
+        amount: rpOrderRes.order.amount,
+        currency: rpOrderRes.order.currency,
+        name: "PrathamKarigiri",
+        description: "Secure Payment",
+        order_id: rpOrderRes.order.id,
+        handler: async function (response) {
+          try {
+            const orderData = {
+              orderItems: items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                image: item.image,
+                price: item.price,
+                size: item.size || 'One Size',
+                product: item._id || item.id
+              })),
+              shippingAddress: {
+                address: addr.street,
+                city: addr.city,
+                postalCode: addr.pincode,
+                state: addr.state,
+                phone: addr.phone
+              },
+              paymentMethod: "Razorpay",
+              subtotal: cartTotal,
+              couponCode: appliedCoupon?.code || null,
+              couponDiscount: couponDiscount,
+              deliveryCharges: actualDeliveryCharges,
+              totalPrice: finalTotal,
+              user: user.uid,
+              email: user.email.toLowerCase(),
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            };
+
+            const createdOrder = await createOrder(orderData);
+            addOrder(createdOrder);
+            
+            setIsOrdered(true);
+            clearCart();
+          } catch (err) {
+            console.error("Order failed:", err);
+            showToast("Payment successful but order creation failed. Contact support.", "error");
+          }
+        },
+        prefill: {
+          name: user.displayName || 'Customer',
+          email: user.email,
+          contact: addr.phone
+        },
+        theme: {
+          color: "#5C4033"
+        }
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.on('payment.failed', function (response){
+        console.error(response.error);
+        showToast(response.error.description || "Payment failed", "error");
       });
-      if (couponDiscount > 0) {
-        message += `*Coupon:* ${appliedCoupon?.code} (-${formatCurrency(couponDiscount)})\n`;
-      }
-      if (actualDeliveryCharges > 0) {
-        message += `*Delivery Charges:* ${formatCurrency(actualDeliveryCharges)}\n`;
-      } else if (isFirstOrder) {
-        message += `*Delivery Charges:* Free (First Order Offer)\n`;
-      }
-      message += `*Total Amount:* ${formatCurrency(finalTotal)}\n\n`;
-      message += `*(Note: The admin will verify these details against the securely saved Order ID in the system before providing the QR code.)*`;
-      
-      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
-
-      setIsOrdered(true);
-      clearCart();
+      rzp1.open();
     } catch (err) {
       console.error("Order failed:", err);
       showToast(getFriendlyErrorMessage('FAILED TO PLACE ORDER'), "error");
@@ -588,12 +619,12 @@ const Checkout = () => {
 
               <div className="bg-emerald-50/50 p-4 md:p-6 rounded-2xl border border-emerald-100/50">
                 <p className="text-xs md:text-sm text-emerald-800 font-medium leading-relaxed">
-                  Your order will be processed directly with our artisan team via WhatsApp. 
-                  We will confirm your order details, share final product images, and coordinate delivery directly with you for a truly handcrafted experience.
+                  Your order will be securely processed via Razorpay.
+                  We accept UPI, Credit/Debit Cards, Netbanking, and Wallets.
                 </p>
                 <div className="mt-4 flex items-center space-x-3 text-emerald-700">
                   <ShieldCheck size={18} />
-                  <span className="font-bold text-[10px] uppercase tracking-widest">Handcrafted & Authenticated via WhatsApp</span>
+                  <span className="font-bold text-[10px] uppercase tracking-widest">100% Secure Payments</span>
                 </div>
               </div>
             </section>
@@ -675,13 +706,13 @@ const Checkout = () => {
                 <button 
                   onClick={handleOrder}
                   disabled={isProcessing || !selectedAddress}
-                  className="btn-primary w-full py-4 mt-8 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed group !bg-[#25D366] hover:!bg-[#128C7E] !border-[#25D366] !text-white"
+                  className="btn-primary w-full py-4 mt-8 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
                   {isProcessing ? (
                     <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
                     <>
-                      <span className="font-bold">Place Order on WhatsApp</span>
+                      <span className="font-bold">Pay & Place Order</span>
                       <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
@@ -706,13 +737,13 @@ const Checkout = () => {
               <button 
                 onClick={handleOrder}
                 disabled={isProcessing || !selectedAddress}
-                className="bg-[#25D366] text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg disabled:opacity-50"
+                className="btn-primary px-6 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg disabled:opacity-50"
               >
                 {isProcessing ? (
                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <span>Order Now</span>
+                    <span>Pay Now</span>
                     <ChevronRight size={16} />
                   </>
                 )}

@@ -245,6 +245,24 @@ export const uploadProductImage = async (file) => {
 };
 
 // Orders — Server-side validated
+export const createRazorpayOrder = async (amount) => {
+  try {
+    const response = await fetch(`${API_URL}/payment/create-razorpay-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create payment order');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating razorpay order:', error);
+    throw error;
+  }
+};
+
 export const createOrder = async (orderData) => {
   try {
     const response = await fetch(`${API_URL}/orders`, {

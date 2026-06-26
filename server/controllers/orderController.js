@@ -1,10 +1,11 @@
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 const { sendEmail } = require('../utils/emailService');
 
 // Create a new order (server-side validated)
 const createOrder = async (req, res) => {
   try {
-    const { orderItems, shippingAddress, paymentMethod, couponCode, couponDiscount, user: userId, email } = req.body;
+    const { orderItems, shippingAddress, paymentMethod, couponCode, couponDiscount, user: userId, email, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
     // Validate required fields
     if (!orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
@@ -91,6 +92,23 @@ const createOrder = async (req, res) => {
 
     const totalPrice = Math.max(0, calculatedSubtotal - validatedCouponDiscount + finalDelivery);
 
+    // Verify Razorpay signature if payment method is Razorpay
+    if (paymentMethod === 'Razorpay') {
+      if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+        return res.status(400).json({ message: 'Missing Razorpay payment details' });
+      }
+      
+      const body = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret')
+        .update(body.toString())
+        .digest('hex');
+        
+      if (expectedSignature !== razorpay_signature) {
+        return res.status(400).json({ message: 'Invalid payment signature' });
+      }
+    }
+
     // Create the order document
     const orderData = {
       orderItems: validatedItems,
@@ -109,7 +127,9 @@ const createOrder = async (req, res) => {
       totalPrice,
       user: userId,
       email: email.toLowerCase(),
-      status: 'Processing',
+      status: paymentMethod === 'Razorpay' ? 'Paid' : 'Processing',
+      razorpay_payment_id: razorpay_payment_id || null,
+      razorpay_order_id: razorpay_order_id || null,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
@@ -240,7 +260,7 @@ const createOrder = async (req, res) => {
       _id: docRef.id,
       id: docRef.id,
       ...orderData,
-      status: 'Processing'
+      status: paymentMethod === 'Razorpay' ? 'Paid' : 'Processing'
     });
   } catch (error) {
     console.error('Order creation error:', error);

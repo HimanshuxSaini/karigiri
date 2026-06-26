@@ -108,6 +108,7 @@ app.use('/api/coupons', generalLimiter, couponRoutes);
 app.use('/api/products', generalLimiter, productRoutes);
 app.use('/api/sale', generalLimiter, saleRoutes);
 app.use('/api/orders', generalLimiter, require('./routes/orderRoutes'));
+app.use('/api/payment', generalLimiter, require('./routes/paymentRoutes'));
 app.use('/api/settings', generalLimiter, settingsRoutes);
 
 
