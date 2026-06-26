@@ -52,7 +52,7 @@ const sendEmail = async (mailOptions) => {
       body: JSON.stringify({
         sender: {
           name: 'PrathamKarigiri',
-          email: process.env.SMTP_FROM_EMAIL || 'hello@prathamkarigiri.com'
+          email: process.env.SMTP_FROM_EMAIL || 'hello@prathamkarigiri.in'
         },
         to: [{ email: mailOptions.to }],
         subject: mailOptions.subject,

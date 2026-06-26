@@ -6,7 +6,7 @@
 // Admin emails authorized for admin panel access
 export const ADMIN_EMAILS = [
   'himanshu0481@gmail.com',
-  'admin@prathamkarigiri.com'
+  'admin@prathamkarigiri.in'
 ];
 
 // Check if a given email is an admin
@@ -28,7 +28,7 @@ export const BRAND = {
   tagline: 'Artisanal Woolens & Yarn',
   fullName: 'pratham ai gurukul (Pratham Guru Education and Welfare Society)',
   email: 'prathamkarigiri@gmail.com',
-  salesEmail: 'sales@prathamkarigiri.com',
+  salesEmail: 'sales@prathamkarigiri.in',
   phone: '+91 70273 11213',
   address: {
     line1: '573, behind Holy Child School',

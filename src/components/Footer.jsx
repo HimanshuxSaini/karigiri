@@ -62,7 +62,7 @@ const Footer = () => {
                    <p className="text-sm font-bold text-slate-900 italic">
                      <span className="font-black">100% ORIGINAL</span> guarantee
                    </p>
-                   <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">for all products at prathamkarigiri.com</p>
+                   <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">for all products at prathamkarigiri.in</p>
                 </div>
              </div>
 

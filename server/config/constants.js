@@ -5,7 +5,7 @@
 
 const ADMIN_EMAILS = [
   'himanshu0481@gmail.com',
-  'admin@prathamkarigiri.com'
+  'admin@prathamkarigiri.in'
 ];
 
 const isAdminEmail = (email) => {
