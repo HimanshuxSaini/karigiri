@@ -46,7 +46,7 @@ const ProductCard = ({ product, priority = false }) => {
             loading={priority ? undefined : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             onLoad={() => setImageLoaded(true)}
-            className={`max-w-full max-h-full object-contain drop-shadow-lg transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             onError={(e) => {
               e.target.src = '/placeholder.png';
               setImageLoaded(true);
