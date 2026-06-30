@@ -1,6 +1,6 @@
 export const categoryStructure = {
   'Women': {
-    width: 'w-[90vw] lg:w-[85vw] xl:w-[1000px]',
+    width: 'w-[90vw] lg:w-max max-w-[90vw]',
     gridCols: 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-5',
     position: 'left-0',
     image: '/shawl.png',
@@ -13,7 +13,7 @@ export const categoryStructure = {
     ]
   },
   'Kids': {
-    width: 'w-[90vw] lg:w-[85vw] xl:w-[800px]',
+    width: 'w-[90vw] lg:w-max max-w-[90vw]',
     gridCols: 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
     position: 'left-0 lg:-left-10 xl:left-0',
     image: '/item4.png',
@@ -25,7 +25,7 @@ export const categoryStructure = {
     ]
   },
   'Men': {
-    width: 'w-[90vw] lg:w-[85vw] xl:w-[900px]',
+    width: 'w-[90vw] lg:w-max max-w-[90vw]',
     gridCols: 'grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
     position: 'left-0 lg:left-1/2 lg:-translate-x-1/2',
     image: '/item4.png', // Placeholder or use a real one if available
@@ -37,7 +37,7 @@ export const categoryStructure = {
     ]
   },
   'Bouquet': {
-    width: 'w-[90vw] lg:w-[500px]',
+    width: 'w-[90vw] lg:w-max max-w-[90vw]',
     gridCols: 'grid-cols-2',
     position: 'left-0 lg:left-1/2 lg:-translate-x-1/2 xl:-translate-x-1/4',
     image: '/bookey.png',
@@ -47,7 +47,7 @@ export const categoryStructure = {
     ]
   },
   'Laddu Gopal': {
-    width: 'w-[90vw] lg:w-[400px]',
+    width: 'w-[90vw] lg:w-max max-w-[90vw]',
     gridCols: 'grid-cols-1 lg:grid-cols-1',
     position: 'right-0',
     image: '/item4.png',
@@ -56,7 +56,7 @@ export const categoryStructure = {
     ]
   },
   'Yarn': {
-    width: 'w-[90vw] lg:w-[400px]',
+    width: 'w-[90vw] lg:w-max max-w-[90vw]',
     gridCols: 'grid-cols-1 lg:grid-cols-1',
     position: 'right-0',
     image: '/yarn.png',
