@@ -103,17 +103,6 @@ const Navbar = () => {
 
 
           <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-6 xl:space-x-10">
-            {/* WhatsApp Chat Button (Mobile only, next to Profile icon) */}
-            <a
-              href={WHATSAPP.chatUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="md:hidden flex items-center justify-center p-2 bg-[#25D366] text-white rounded-full shadow-md hover:scale-105 active:scale-95 transition-all"
-              title="Chat with us"
-            >
-              <MessageCircle size={18} fill="currentColor" />
-            </a>
-
             <div
               className="flex flex-col items-center cursor-pointer group p-2"
               onClick={() => user ? navigate('/profile') : setIsLoginModalOpen(true)}
