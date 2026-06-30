@@ -20,6 +20,7 @@ const Navbar = () => {
   const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [placeholderText, setPlaceholderText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [loopNum, setLoopNum] = useState(0);
@@ -56,6 +57,8 @@ const Navbar = () => {
       if (searchQuery.trim()) {
         navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
         setIsMobileMenuOpen(false);
+        setIsSearchExpanded(false);
+        setIsSearchFocused(false);
       }
     }
   };
@@ -142,31 +145,47 @@ const Navbar = () => {
 
           <div className="hidden md:flex items-center justify-end w-full xl:w-auto xl:flex-grow xl:max-w-lg mx-0 xl:mx-6 order-last xl:order-none pb-2 xl:pb-0">
             <div 
-              className="relative flex items-center justify-end"
+              className="relative flex items-center justify-end py-2"
               onMouseEnter={() => setIsSearchExpanded(true)}
               onMouseLeave={() => setIsSearchExpanded(false)}
             >
-              <motion.div
-                initial={false}
-                animate={{ width: isSearchExpanded || searchQuery ? 300 : 40 }}
-                className={`relative flex items-center rounded-full overflow-hidden transition-colors duration-300 ${isSearchExpanded || searchQuery ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              {/* Search Icon */}
+              <div 
+                className={`w-10 h-10 flex items-center justify-center flex-shrink-0 cursor-pointer rounded-full transition-colors ${isSearchExpanded || isSearchFocused || searchQuery ? 'bg-gray-100 text-[var(--primary)]' : 'text-gray-500 hover:text-[var(--primary)] hover:bg-gray-50'}`}
+                onClick={() => setIsSearchExpanded(true)}
               >
-                <div 
-                  className="w-10 h-10 flex items-center justify-center flex-shrink-0 cursor-pointer text-gray-500 hover:text-[var(--primary)] transition-colors"
-                  onClick={handleSearch}
-                >
-                  <Search size={20} />
-                </div>
-                <input
-                  type="text"
-                  placeholder={`Search for ${placeholderText}`}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleSearch}
-                  className={`w-full bg-transparent border-none py-2 pr-4 text-sm outline-none placeholder:text-gray-400 transition-opacity duration-300 ${isSearchExpanded || searchQuery ? 'opacity-100' : 'opacity-0'}`}
-                  style={{ pointerEvents: isSearchExpanded || searchQuery ? 'auto' : 'none' }}
-                />
-              </motion.div>
+                <Search size={20} />
+              </div>
+
+              {/* Dropdown Search Bar */}
+              <AnimatePresence>
+                {(isSearchExpanded || isSearchFocused || searchQuery) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full right-0 mt-2 w-[320px] bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-2 z-50"
+                  >
+                    <div className="relative flex items-center bg-gray-50 rounded-xl overflow-hidden border border-gray-100 focus-within:border-[var(--primary)] focus-within:bg-white transition-colors">
+                      <div className="pl-4 text-gray-400" onClick={handleSearch}>
+                        <Search size={16} className="cursor-pointer hover:text-[var(--primary)]" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder={`Search for ${placeholderText}`}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={handleSearch}
+                        onFocus={() => setIsSearchFocused(true)}
+                        onBlur={() => setIsSearchFocused(false)}
+                        className="w-full bg-transparent border-none py-3 pl-3 pr-4 text-sm outline-none placeholder:text-gray-400"
+                        autoFocus={isSearchExpanded && !searchQuery}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
