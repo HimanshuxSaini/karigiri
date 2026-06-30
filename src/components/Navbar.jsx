@@ -22,9 +22,9 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 md:top-9 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 md:px-12 py-1.5 md:py-2.5 transition-all">
-        <div className="max-w-[1440px] mx-auto flex flex-wrap xl:flex-nowrap justify-between items-center min-h-[3rem] md:h-14 gap-y-3 xl:gap-y-0 pb-2 xl:pb-0">
-          <div className="flex items-center space-x-4 md:space-x-8 xl:space-x-12">
+      <nav className="fixed top-0 md:top-9 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 lg:px-8 xl:px-12 py-1.5 md:py-2.5 transition-all">
+        <div className="max-w-[1440px] mx-auto flex justify-between items-center min-h-[3rem] md:h-14">
+          <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-8 xl:space-x-12">
             <button
               className="lg:hidden text-gray-800 p-2 hover:bg-gray-100 rounded-full transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -32,15 +32,15 @@ const Navbar = () => {
               <Menu size={22} />
             </button>
             <Link to="/" className="flex flex-col items-start justify-center group">
-              <div className="text-xl md:text-2xl font-black tracking-tighter text-black flex items-center leading-none">
+              <div className="text-xl lg:text-2xl font-black tracking-tighter text-black flex items-center leading-none">
                 PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
               </div>
-              <span className="text-[8px] md:text-[9px] uppercase font-bold tracking-[0.2em] text-gray-500 mt-1 ml-0.5 group-hover:text-[var(--primary)] transition-colors">
+              <span className="text-[7px] md:text-[8px] xl:text-[9px] uppercase font-bold tracking-[0.2em] text-gray-500 mt-1 ml-0.5 group-hover:text-[var(--primary)] transition-colors">
                 Pratham Guru Enterprises
               </span>
             </Link>
 
-            <div className="hidden lg:flex space-x-6 xl:space-x-10 text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
+            <div className="hidden lg:flex space-x-4 xl:space-x-8 text-[11px] xl:text-[13px] font-bold uppercase tracking-wider text-gray-800 pt-1">
               {navLinks.map((link) => (
                 <div
                   key={link.name}
@@ -102,7 +102,7 @@ const Navbar = () => {
 
 
 
-          <div className="flex items-center space-x-4 md:space-x-10">
+          <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-6 xl:space-x-10">
             {/* WhatsApp Chat Button (Mobile only, next to Profile icon) */}
             <a
               href={WHATSAPP.chatUrl}
