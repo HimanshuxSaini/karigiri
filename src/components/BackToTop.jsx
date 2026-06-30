@@ -10,7 +10,8 @@ const BackToTop = () => {
   // Determine if we are on a page with a sticky bottom bar on mobile
   const isCartPage = location.pathname === '/cart';
   const isProductPage = location.pathname.startsWith('/product/');
-  const hasMobileStickyBar = isCartPage || isProductPage;
+  const isCheckoutPage = location.pathname === '/checkout';
+  const hasMobileStickyBar = isCartPage || isProductPage || isCheckoutPage;
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY > 300);
