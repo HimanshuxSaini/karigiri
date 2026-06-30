@@ -25,6 +25,8 @@ const settingsRoutes = require('./routes/settingsRoutes');
 
 const app = express();
 
+// Trust proxy to allow express-rate-limit to work behind Render/Vercel
+app.set('trust proxy', 1);
 // Security & Performance Middlewares
 const helmet = require('helmet');
 const compression = require('compression');
