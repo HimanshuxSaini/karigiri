@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore';
 import { auth as firebaseAuth } from '../firebase/config';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LoginModal from './LoginModal';
 import { categoryStructure, navLinks } from '../data/categories';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
+
+const searchTerms = ['sarees...', 'kurtis...', 'lehengas...', 'dresses...', 'jewellery...', 'products...'];
 
 const Navbar = () => {
   const { user } = useAuthStore();
@@ -17,7 +19,34 @@ const Navbar = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [placeholderText, setPlaceholderText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [loopNum, setLoopNum] = useState(0);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    const i = loopNum % searchTerms.length;
+    const fullText = searchTerms[i];
+
+    if (!isDeleting && placeholderText === fullText) {
+      timer = setTimeout(() => setIsDeleting(true), 2000);
+    } else if (isDeleting && placeholderText === '') {
+      setIsDeleting(false);
+      setLoopNum((prev) => prev + 1);
+    } else {
+      timer = setTimeout(() => {
+        setPlaceholderText(
+          isDeleting
+            ? fullText.substring(0, placeholderText.length - 1)
+            : fullText.substring(0, placeholderText.length + 1)
+        );
+      }, isDeleting ? 40 : 100);
+    }
+
+    return () => clearTimeout(timer);
+  }, [placeholderText, isDeleting, loopNum]);
 
   const isAdmin = isAdminEmail(user?.email);
 
@@ -111,21 +140,33 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="hidden md:block w-full xl:w-auto xl:flex-grow xl:max-w-lg mx-0 xl:mx-6 order-last xl:order-none pb-2 xl:pb-0">
-            <div className="relative">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-[var(--primary)]"
-                size={16}
-                onClick={handleSearch}
-              />
-              <input
-                type="text"
-                placeholder="Search for products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearch}
-                className="w-full bg-gray-100 border-none rounded py-2.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-gray-200 outline-none"
-              />
+          <div className="hidden md:flex items-center justify-end w-full xl:w-auto xl:flex-grow xl:max-w-lg mx-0 xl:mx-6 order-last xl:order-none pb-2 xl:pb-0">
+            <div 
+              className="relative flex items-center justify-end"
+              onMouseEnter={() => setIsSearchExpanded(true)}
+              onMouseLeave={() => setIsSearchExpanded(false)}
+            >
+              <motion.div
+                initial={false}
+                animate={{ width: isSearchExpanded || searchQuery ? 300 : 40 }}
+                className={`relative flex items-center rounded-full overflow-hidden transition-colors duration-300 ${isSearchExpanded || searchQuery ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+              >
+                <div 
+                  className="w-10 h-10 flex items-center justify-center flex-shrink-0 cursor-pointer text-gray-500 hover:text-[var(--primary)] transition-colors"
+                  onClick={handleSearch}
+                >
+                  <Search size={20} />
+                </div>
+                <input
+                  type="text"
+                  placeholder={`Search for ${placeholderText}`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearch}
+                  className={`w-full bg-transparent border-none py-2 pr-4 text-sm outline-none placeholder:text-gray-400 transition-opacity duration-300 ${isSearchExpanded || searchQuery ? 'opacity-100' : 'opacity-0'}`}
+                  style={{ pointerEvents: isSearchExpanded || searchQuery ? 'auto' : 'none' }}
+                />
+              </motion.div>
             </div>
           </div>
 
@@ -213,7 +254,7 @@ const Navbar = () => {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search for pure wool..."
+                    placeholder={`Search for ${placeholderText}`}
                     className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-medium shadow-sm outline-none focus:border-[var(--primary)] transition-all"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
