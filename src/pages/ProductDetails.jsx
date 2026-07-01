@@ -198,8 +198,51 @@ const ProductDetails = () => {
     return url;
   };
 
+  const seoTitle = `${product.name} | Pratham Karigiri`;
+  const seoDescription = product.description ? product.description.slice(0, 160) : `Buy ${product.name} online at Pratham Karigiri. Authentic handcrafted woolen products.`;
+  const schemaImage = optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[0] : 'https://prathamkarigiri.in/og-image.png');
+  
+  const schemaData = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": schemaImage,
+    "description": product.description || seoDescription,
+    "sku": product._id || product.id,
+    "offers": {
+      "@type": "Offer",
+      "url": window.location.href,
+      "priceCurrency": "INR",
+      "price": product.price || 0,
+      "availability": isOutOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    }
+  };
+
+  if (avgRating && reviews.length > 0) {
+    schemaData.aggregateRating = {
+      "@type": "AggregateRating",
+      "ratingValue": avgRating,
+      "reviewCount": reviews.length
+    };
+  }
+
+
   return (
     <div className="min-h-screen bg-white">
+      <title>{seoTitle}</title>
+      <meta name="description" content={seoDescription} />
+      <meta property="og:title" content={seoTitle} />
+      <meta property="og:description" content={seoDescription} />
+      <meta property="og:image" content={schemaImage} />
+      <meta property="og:url" content={window.location.href} />
+      <meta name="twitter:title" content={seoTitle} />
+      <meta name="twitter:description" content={seoDescription} />
+      <meta name="twitter:image" content={schemaImage} />
+      <script type="application/ld+json">
+        {JSON.stringify(schemaData)}
+      </script>
+
       <Navbar />
 
 
