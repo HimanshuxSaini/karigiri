@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { clearAllStores } from './utils/clearStores';
 import { lazy, Suspense, useState, useEffect } from 'react';
 import AmbientBackground from './components/AmbientBackground';
@@ -122,11 +123,13 @@ const AppInner = () => {
 
 function App() {
   return (
-    <Router>
-      <ErrorBoundary>
-        <AppInner />
-      </ErrorBoundary>
-    </Router>
+    <HelmetProvider>
+      <Router>
+        <ErrorBoundary>
+          <AppInner />
+        </ErrorBoundary>
+      </Router>
+    </HelmetProvider>
   );
 }
 

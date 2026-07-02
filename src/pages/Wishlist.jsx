@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { trackPageView } from '../utils/analytics';
+import SEO from '../components/SEO';
 
 const Wishlist = () => {
   const { wishlist } = useWishlistStore();
@@ -29,6 +30,11 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
+      <SEO 
+        title="Your Wishlist"
+        description="View your saved favorites at PrathamKarigiri."
+        noindex={true}
+      />
       <Navbar />
       
       <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

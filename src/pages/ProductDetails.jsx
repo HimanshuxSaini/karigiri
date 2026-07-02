@@ -9,6 +9,7 @@ import RecommendedProducts from '../components/RecommendedProducts';
 import SimilarProducts from '../components/SimilarProducts';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
 import { trackViewItem, trackAddToCart, trackAddToWishlist } from '../utils/analytics';
+import SEO from '../components/SEO';
 
 
 const FREE_DELIVERY_THRESHOLD = 1000;
@@ -244,25 +245,48 @@ const ProductDetails = () => {
     };
   }
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://prathamkarigiri.in/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Shop",
+        "item": "https://prathamkarigiri.in/shop"
+      },
+      ...(product.category ? [{
+        "@type": "ListItem",
+        "position": 3,
+        "name": product.category,
+        "item": `https://prathamkarigiri.in/shop?category=${encodeURIComponent(product.category)}`
+      }] : []),
+      {
+        "@type": "ListItem",
+        "position": product.category ? 4 : 3,
+        "name": product.name,
+        "item": `https://prathamkarigiri.in/product/${product._id || product.id}`
+      }
+    ]
+  };
 
   return (
     <div className="min-h-screen bg-white">
-      <title>{seoTitle}</title>
-      <meta name="description" content={seoDescription} />
-      <meta property="og:title" content={seoTitle} />
-      <meta property="og:description" content={seoDescription} />
-      <meta property="og:image" content={schemaImage} />
-      <meta property="og:url" content={window.location.href} />
-      <meta name="twitter:title" content={seoTitle} />
-      <meta name="twitter:description" content={seoDescription} />
-      <meta name="twitter:image" content={schemaImage} />
-      <script type="application/ld+json">
-        {JSON.stringify(schemaData)}
-      </script>
-
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        canonicalUrl={`https://prathamkarigiri.in/product/${product._id || product.id}`}
+        image={schemaImage}
+        type="product"
+        schema={[breadcrumbSchema, schemaData]}
+      />
       <Navbar />
-
-
 
       <div className="pt-32 pb-44 md:pb-24 max-w-[1440px] mx-auto px-4 md:px-12">
         {/* Breadcrumb */}

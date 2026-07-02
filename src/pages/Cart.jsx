@@ -1,7 +1,7 @@
 import Navbar from '../components/Navbar';
 import { useCartStore, useAuthStore } from '../store/useStore';
 import { Trash2, Plus, Minus, ArrowRight, Tag, X, Loader2, ChevronRight, Truck } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { fetchCoupons, getCouponEligibility } from '../services/api';
@@ -9,6 +9,7 @@ import LoginModal from '../components/LoginModal';
 import RecommendedProducts from '../components/RecommendedProducts';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackViewCart, trackRemoveFromCart } from '../utils/analytics';
+import SEO from '../components/SEO';
 
 const formatCurrency = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
@@ -100,7 +101,12 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0">
+      <SEO 
+        title="Your Shopping Cart"
+        description="Review items in your PrathamKarigiri shopping cart."
+        noindex={true}
+      />
       <Navbar />
       
       <div className="pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

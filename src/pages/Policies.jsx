@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { BRAND, WHATSAPP } from '../config/constants';
@@ -167,6 +168,10 @@ const Policies = () => {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
+      <SEO 
+        title={`${policyData.title} | PrathamKarigiri`}
+        description={`Read the ${policyData.title} for PrathamKarigiri.`}
+      />
       <Navbar />
       <div className="pt-28 md:pt-36 pb-24 max-w-3xl mx-auto px-4 md:px-6">
         <motion.div

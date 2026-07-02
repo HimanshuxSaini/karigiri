@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 
 const NotFound = () => {
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+      <SEO 
+        title="404 - Page Not Found"
+        description="The page you are looking for does not exist."
+        noindex={true}
+      />
       <Navbar />
       <div className="pt-32 pb-24 flex items-center justify-center px-4">
         <motion.div

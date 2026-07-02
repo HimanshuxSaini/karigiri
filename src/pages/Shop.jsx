@@ -10,6 +10,7 @@ import { categoryStructure } from '../data/categories';
 import { useActivityStore } from '../store/useStore';
 import { WHATSAPP } from '../config/constants';
 import { trackPageView, trackViewItemList, trackSearch as trackGaSearch } from '../utils/analytics';
+import SEO from '../components/SEO';
 
 const ProductSkeleton = () => (
   <div className="animate-pulse flex flex-col h-full">
@@ -234,8 +235,42 @@ const Shop = () => {
     }
   }, [filteredProducts, visibleCount]);
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://prathamkarigiri.in/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Shop",
+        "item": "https://prathamkarigiri.in/shop"
+      },
+      ...(categoryFilter !== 'All' ? [{
+        "@type": "ListItem",
+        "position": 3,
+        "name": categoryFilter,
+        "item": `https://prathamkarigiri.in/shop?category=${encodeURIComponent(categoryFilter)}`
+      }] : [])
+    ]
+  };
+
+  const title = categoryFilter !== 'All' ? `Shop ${categoryFilter} | PrathamKarigiri` : 'Shop All Products | PrathamKarigiri';
+  const description = `Browse our extensive collection of ${categoryFilter !== 'All' ? categoryFilter.toLowerCase() : 'premium woolen products'} at PrathamKarigiri. Handcrafted with love and care.`;
+
   return (
     <div className="min-h-screen bg-white font-sans">
+      <SEO 
+        title={title}
+        description={description}
+        canonicalUrl={`https://prathamkarigiri.in/shop${categoryFilter !== 'All' ? `?category=${encodeURIComponent(categoryFilter)}` : ''}`}
+        schema={breadcrumbSchema}
+      />
       <Navbar />
       
       <div className="pt-16 md:pt-28 max-w-[1440px] mx-auto">

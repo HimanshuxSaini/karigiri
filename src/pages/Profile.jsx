@@ -1,6 +1,7 @@
 import Navbar from '../components/Navbar';
 import { useAuthStore, useWishlistStore, useUserStore, useCartStore, useToastStore } from '../store/useStore';
 import { isAdminEmail } from '../config/constants';
+import SEO from '../components/SEO';
 import { fetchUserOrders, fetchUserProfile, saveUserProfile } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -171,7 +172,12 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-[var(--background)] pt-24 pb-20">
+      <SEO 
+        title="My Account"
+        description="Manage your PrathamKarigiri account and view your orders."
+        noindex={true}
+      />
       <Navbar />
       
       <div className="pt-28 pb-28 max-w-7xl mx-auto px-4 sm:px-6 md:pt-32 md:pb-24 relative z-10">

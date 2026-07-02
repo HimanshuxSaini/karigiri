@@ -8,6 +8,7 @@ import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchO
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackPurchase } from '../utils/analytics';
+import SEO from '../components/SEO';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -415,6 +416,11 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
+      <SEO 
+        title="Secure Checkout"
+        description="Complete your order securely at PrathamKarigiri."
+        noindex={true}
+      />
       <Navbar />
       
       {/* Background Decor */}
