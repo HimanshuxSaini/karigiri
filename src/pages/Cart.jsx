@@ -8,6 +8,7 @@ import { fetchCoupons, getCouponEligibility } from '../services/api';
 import LoginModal from '../components/LoginModal';
 import RecommendedProducts from '../components/RecommendedProducts';
 import { getOptimizedImage } from '../utils/imageHelpers';
+import { trackPageView, trackViewCart, trackRemoveFromCart } from '../utils/analytics';
 
 const formatCurrency = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
@@ -55,6 +56,14 @@ const Cart = () => {
       }
     };
     loadCoupons();
+    
+    // GA4 Tracking
+    trackPageView('Cart');
+    trackViewCart({
+      value: getTotal(),
+      cartItems: items
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleApplyCoupon = (coupon) => {
@@ -66,6 +75,15 @@ const Cart = () => {
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
+  };
+
+  const handleRemoveItem = (item) => {
+    trackRemoveFromCart({
+      value: item.price * item.quantity,
+      product: item,
+      quantity: item.quantity
+    });
+    removeItem(item.cartItemId || item.id);
   };
 
   if (items.length === 0) {
@@ -171,7 +189,7 @@ const Cart = () => {
                   <span className="font-bold w-24 text-right">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                 </div>
 
-                <button onClick={() => removeItem(item.cartItemId || item.id)} className="text-red-400 hover:text-red-500 transition-colors p-2">
+                <button onClick={() => handleRemoveItem(item)} className="text-red-400 hover:text-red-500 transition-colors p-2">
                   <Trash2 size={18} />
                 </button>
               </motion.div>

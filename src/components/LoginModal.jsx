@@ -20,12 +20,14 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
-  signInWithCustomToken
+  signInWithCustomToken,
+  getAdditionalUserInfo
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { sendOtp, verifyOtp, requestPasswordReset } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
+import { trackLogin, trackSignup } from '../utils/analytics';
 
 const LoginModal = ({ isOpen, onClose }) => {
   const [view, setView] = useState('login'); // 'otp', 'login', 'signup', 'forgot'
@@ -122,6 +124,10 @@ const LoginModal = ({ isOpen, onClose }) => {
       };
       
       setUser(userData);
+
+      // GA4 Track Login
+      trackLogin({ method: 'OTP' });
+
       onClose();
       navigate('/profile');
     } catch (err) {
@@ -145,6 +151,14 @@ const LoginModal = ({ isOpen, onClose }) => {
       }
       
       setUser(userCredential.user);
+
+      // GA4 Track Login / Signup
+      if (view === 'login') {
+        trackLogin({ method: 'Email' });
+      } else {
+        trackSignup({ method: 'Email' });
+      }
+
       onClose();
       navigate('/profile');
     } catch (error) {
@@ -190,6 +204,15 @@ const LoginModal = ({ isOpen, onClose }) => {
       };
 
       setUser(userData);
+
+      // GA4 Track Login / Signup
+      const additionalInfo = getAdditionalUserInfo(result);
+      if (additionalInfo?.isNewUser) {
+        trackSignup({ method: 'Google' });
+      } else {
+        trackLogin({ method: 'Google' });
+      }
+
       onClose();
       navigate('/profile');
     } catch (error) {

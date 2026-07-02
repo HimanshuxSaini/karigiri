@@ -10,6 +10,7 @@ import { fetchProducts, fetchReels, fetchFlashSale, fetchReelsConfig } from '../
 import { categoryStructure } from '../data/categories';
 import CustomizationSection from '../components/CustomizationSection';
 import { getOptimizedImage } from '../utils/imageHelpers';
+import { trackPageView, trackViewItemList } from '../utils/analytics';
 
 
 const Home = () => {
@@ -24,6 +25,8 @@ const Home = () => {
 
 
   useEffect(() => {
+    trackPageView('Home');
+    
     const getFeaturedProducts = async () => {
       try {
         const data = await fetchProducts();
@@ -62,8 +65,20 @@ const Home = () => {
           ];
           
           // Fill if total items chosen are still low
-          const remainingFeatured = shuffledData.filter(p => !featured.find(f => f._id === p._id)).slice(0, 8 - featured.length);
-          setProducts([...featured, ...remainingFeatured]);
+          const finalProducts = [...featured, ...remainingFeatured];
+          setProducts(finalProducts);
+
+          // Track item lists for GA4 Ecommerce
+          trackViewItemList({
+            item_list_id: 'home_deals',
+            item_list_name: 'Deals Under 999',
+            items: filledDeals
+          });
+          trackViewItemList({
+            item_list_id: 'home_featured',
+            item_list_name: 'Featured Products',
+            items: finalProducts
+          });
 
         } else {
           setProducts([]);

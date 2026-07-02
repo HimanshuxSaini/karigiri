@@ -8,6 +8,8 @@ import { fetchProductById, fetchReviews, addReview } from '../services/api';
 import RecommendedProducts from '../components/RecommendedProducts';
 import SimilarProducts from '../components/SimilarProducts';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
+import { trackViewItem, trackAddToCart, trackAddToWishlist } from '../utils/analytics';
+
 
 const FREE_DELIVERY_THRESHOLD = 1000;
 
@@ -77,6 +79,7 @@ const ProductDetails = () => {
         const data = await fetchProductById(id);
         if (data) {
           setProduct(data);
+          trackViewItem({ product: data });
         } else {
           setProduct(null);
         }
@@ -148,6 +151,20 @@ const ProductDetails = () => {
   const isOutOfStock = product.inStock === false;
   const isAdmin = isAdminEmail(user?.email);
   const productId = product._id || product.id;
+
+  const handleAddToCart = () => {
+    if (!isOutOfStock) {
+      addItem({ ...product, size: selectedSize });
+      trackAddToCart({ product, quantity: 1 });
+    }
+  };
+
+  const handleToggleWishlist = () => {
+    toggleWishlist(product);
+    if (!isWishlisted) {
+      trackAddToWishlist({ product });
+    }
+  };
 
 
   const handleShare = async () => {
@@ -417,7 +434,7 @@ const ProductDetails = () => {
                 whileHover={!isOutOfStock ? { scale: 1.02 } : {}}
                 whileTap={!isOutOfStock ? { scale: 0.97 } : {}}
                 disabled={isOutOfStock}
-                onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
+                onClick={handleAddToCart}
                 className={`flex-1 h-14 rounded-xl font-black text-[11px] uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 transition-all duration-200 ${
                   isOutOfStock
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
@@ -443,7 +460,7 @@ const ProductDetails = () => {
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => toggleWishlist(product)}
+                onClick={handleToggleWishlist}
                 className={`h-14 px-6 rounded-xl border-2 font-black text-[11px] uppercase tracking-[0.18em] flex items-center gap-2.5 transition-all duration-200 ${
                   isWishlisted
                     ? 'border-rose-400 text-rose-500 bg-rose-50 shadow-md shadow-rose-200'

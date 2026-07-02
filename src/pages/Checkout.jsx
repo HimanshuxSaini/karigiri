@@ -2,11 +2,12 @@ import Navbar from '../components/Navbar';
 import { useCartStore, useOrderStore, useUserStore, useAuthStore, useToastStore } from '../store/useStore';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, Minus, X, Tag, Loader2, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders, createRazorpayOrder } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
+import { trackPageView, trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackPurchase } from '../utils/analytics';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -62,6 +63,7 @@ const Checkout = () => {
   // User orders state for first delivery coupon validation
   const [userOrders, setUserOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const hasTrackedBeginCheckout = useRef(false);
 
   useEffect(() => {
     const loadUserOrders = async () => {
@@ -87,6 +89,14 @@ const Checkout = () => {
   const isFirstOrder = !loadingOrders && userOrders.length === 0;
   const actualDeliveryCharges = isFirstOrder ? 0 : deliveryCharges;
   const finalTotal = Math.max(0, cartTotal - couponDiscount + actualDeliveryCharges);
+
+  useEffect(() => {
+    if (!hasTrackedBeginCheckout.current && items.length > 0) {
+      trackPageView('Checkout');
+      trackBeginCheckout({ value: cartTotal, cartItems: items });
+      hasTrackedBeginCheckout.current = true;
+    }
+  }, [items, cartTotal]);
 
   const appliedCouponId = appliedCoupon?._id || appliedCoupon?.id;
   
@@ -251,6 +261,13 @@ const Checkout = () => {
       return;
     }
 
+    // GA4 Track Shipping Info
+    trackAddShippingInfo({
+      value: finalTotal,
+      cartItems: items,
+      shipping_tier: actualDeliveryCharges > 0 ? 'Standard' : 'Free'
+    });
+
     setIsProcessing(true);
 
     const res = await loadRazorpayScript();
@@ -267,6 +284,13 @@ const Checkout = () => {
         setIsProcessing(false);
         return;
       }
+
+      // GA4 Track Payment Info
+      trackAddPaymentInfo({
+        value: finalTotal,
+        cartItems: items,
+        payment_type: 'Razorpay'
+      });
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'dummy_key',
@@ -308,6 +332,15 @@ const Checkout = () => {
 
             const createdOrder = await createOrder(orderData);
             addOrder(createdOrder);
+            
+            // GA4 Track Purchase
+            trackPurchase({
+              transaction_id: createdOrder._id || createdOrder.id || response.razorpay_payment_id,
+              value: finalTotal,
+              shipping: actualDeliveryCharges,
+              coupon: appliedCoupon?.code || '',
+              cartItems: items
+            });
             
             setIsOrdered(true);
             clearCart();

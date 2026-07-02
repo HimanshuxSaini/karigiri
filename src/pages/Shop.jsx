@@ -9,6 +9,7 @@ import RecommendedProducts from '../components/RecommendedProducts';
 import { categoryStructure } from '../data/categories';
 import { useActivityStore } from '../store/useStore';
 import { WHATSAPP } from '../config/constants';
+import { trackPageView, trackViewItemList, trackSearch as trackGaSearch } from '../utils/analytics';
 
 const ProductSkeleton = () => (
   <div className="animate-pulse flex flex-col h-full">
@@ -83,6 +84,7 @@ const Shop = () => {
     setSearchInput(rawSearchQuery);
     if (searchQuery) {
       trackSearch(searchQuery);
+      trackGaSearch({ search_term: searchQuery });
     }
   }, [rawSearchQuery, searchQuery, trackSearch]);
 
@@ -106,7 +108,23 @@ const Shop = () => {
       }
     };
     getProducts();
+    trackPageView('Shop');
   }, []);
+
+  // Track item list view when filtered products change and aren't empty
+  useEffect(() => {
+    if (filteredProducts && filteredProducts.length > 0) {
+      // Debounce slightly to avoid firing on every keystroke during search
+      const timeoutId = setTimeout(() => {
+        trackViewItemList({
+          item_list_id: 'shop_list',
+          item_list_name: 'Shop All Products',
+          items: filteredProducts.slice(0, visibleCount)
+        });
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [filteredProducts, visibleCount]);
 
   const handleCategoryChange = (cat) => {
     const params = new URLSearchParams(searchParams);

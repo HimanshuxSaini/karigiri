@@ -3,9 +3,15 @@ import { useWishlistStore } from '../store/useStore';
 import ProductCard from '../components/ProductCard';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { trackPageView } from '../utils/analytics';
 
 const Wishlist = () => {
   const { wishlist } = useWishlistStore();
+
+  useEffect(() => {
+    trackPageView('Wishlist');
+  }, []);
 
   if (wishlist.length === 0) {
     return (
