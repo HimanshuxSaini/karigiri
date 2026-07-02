@@ -489,7 +489,7 @@ const Shop = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: (index % 12) * 0.04 }}
                     >
-                      <ProductCard product={product} />
+                      <ProductCard product={product} priority={index < 4} />
                     </motion.div>
                   ))
                 ) : (

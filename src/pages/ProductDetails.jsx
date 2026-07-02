@@ -315,11 +315,8 @@ const ProductDetails = () => {
             <div
               className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group"
             >
-              <motion.img
+              <img
                 key={activeImageIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
                 src={optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[activeImageIndex] : '')}
                 className={`max-w-full max-h-full object-contain ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
                 alt={product.name}

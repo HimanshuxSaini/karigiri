@@ -9,7 +9,6 @@ import QuickViewModal from './QuickViewModal';
 const ProductCard = ({ product, priority = false }) => {
   const addItem = useCartStore((state) => state.addItem);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
 
   if (!product) return null;
@@ -35,21 +34,14 @@ const ProductCard = ({ product, priority = false }) => {
       >
         {/* Image container */}
         <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
-          {/* Blur shimmer placeholder */}
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gray-100 animate-pulse" />
-          )}
-
           <img
             src={getOptimizedImage(product.image, { width: 400, quality: 'auto:eco' })}
             alt={product.name}
             loading={priority ? undefined : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
-            onLoad={() => setImageLoaded(true)}
-            className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className="max-w-full max-h-full object-contain"
             onError={(e) => {
               e.target.src = '/placeholder.png';
-              setImageLoaded(true);
             }}
           />
 
