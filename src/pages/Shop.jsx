@@ -111,20 +111,7 @@ const Shop = () => {
     trackPageView('Shop');
   }, []);
 
-  // Track item list view when filtered products change and aren't empty
-  useEffect(() => {
-    if (filteredProducts && filteredProducts.length > 0) {
-      // Debounce slightly to avoid firing on every keystroke during search
-      const timeoutId = setTimeout(() => {
-        trackViewItemList({
-          item_list_id: 'shop_list',
-          item_list_name: 'Shop All Products',
-          items: filteredProducts.slice(0, visibleCount)
-        });
-      }, 500);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [filteredProducts, visibleCount]);
+
 
   const handleCategoryChange = (cat) => {
     const params = new URLSearchParams(searchParams);
@@ -231,6 +218,21 @@ const Shop = () => {
 
     return result;
   }, [categoryFilter, urlSubCategory, priceRange, searchInput, products, inStockOnly, selectedBrands, sortBy]);
+
+  // Track item list view when filtered products change and aren't empty
+  useEffect(() => {
+    if (filteredProducts && filteredProducts.length > 0) {
+      // Debounce slightly to avoid firing on every keystroke during search
+      const timeoutId = setTimeout(() => {
+        trackViewItemList({
+          item_list_id: 'shop_list',
+          item_list_name: 'Shop All Products',
+          items: filteredProducts.slice(0, visibleCount)
+        });
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [filteredProducts, visibleCount]);
 
   return (
     <div className="min-h-screen bg-white font-sans">
