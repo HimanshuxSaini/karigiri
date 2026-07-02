@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const IntroVideo = ({ onComplete }) => {
-  const videoRef = useRef(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     // Lock scroll while intro is playing
@@ -14,22 +13,12 @@ const IntroVideo = ({ onComplete }) => {
   }, []);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const timer = setTimeout(() => {
+      if (onComplete) onComplete();
+    }, 2000);
 
-    const handleCanPlay = () => {
-      setVideoLoaded(true);
-      video.play().catch(err => {
-        console.warn('Autoplay failed or was interrupted:', err);
-      });
-    };
-
-    video.addEventListener('canplay', handleCanPlay);
-
-    return () => {
-      video.removeEventListener('canplay', handleCanPlay);
-    };
-  }, []);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
 
   return (
     <motion.div
@@ -59,28 +48,26 @@ const IntroVideo = ({ onComplete }) => {
         </p>
       </motion.div>
 
-      {/* Video Container - Seamless White BG with Natural Dimensions */}
+      {/* Image Container - Seamless White BG with Natural Dimensions */}
       <div 
         className="relative w-full flex-1 flex items-center justify-center bg-white z-10 overflow-hidden"
         style={{ backgroundColor: '#ffffff', background: '#ffffff' }}
       >
-        <video
-          ref={videoRef}
-          src="/Video Project 6.mp4"
-          muted
-          playsInline
-          autoPlay
-          onEnded={onComplete}
+        <img
+          src="/pratham karigiri.png"
+          alt="Pratham Karigiri"
+          onLoad={() => setImageLoaded(true)}
           className={`max-w-full max-h-[70vh] w-auto h-auto transition-opacity duration-700 ${
-            videoLoaded ? 'opacity-100' : 'opacity-0'
+            imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           style={{ 
             backgroundColor: '#ffffff', 
             background: '#ffffff',
             outline: 'none',
             border: 'none',
-            boxShadow: '0 0 0 4px #ffffff', // Overwrites browser subpixel rendering black boundary line
-            transform: 'translate3d(0,0,0)', // Triggers hardware acceleration cleanly
+            boxShadow: '0 0 0 4px #ffffff',
+            transform: 'translate3d(0,0,0)',
+            objectFit: 'contain'
           }}
         />
       </div>
