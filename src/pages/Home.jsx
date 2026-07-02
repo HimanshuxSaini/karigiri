@@ -65,6 +65,7 @@ const Home = () => {
           ];
           
           // Fill if total items chosen are still low
+          const remainingFeatured = shuffledData.filter(p => !featured.find(f => f._id === p._id)).slice(0, Math.max(0, 8 - featured.length));
           const finalProducts = [...featured, ...remainingFeatured];
           setProducts(finalProducts);
 
