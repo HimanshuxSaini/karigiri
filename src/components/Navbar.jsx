@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore';
 import { auth as firebaseAuth } from '../firebase/config';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import LoginModal from './LoginModal';
 import { categoryStructure, navLinks } from '../data/categories';
 import { isAdminEmail, WHATSAPP } from '../config/constants';

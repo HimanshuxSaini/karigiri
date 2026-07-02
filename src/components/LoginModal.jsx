@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,

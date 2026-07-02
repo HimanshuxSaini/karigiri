@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import { useCartStore, useWishlistStore, useAuthStore, useActivityStore } from '../store/useStore';
 import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle, Share2, Copy, Check, Star, ChevronRight, ShieldCheck, Scissors } from 'lucide-react';
@@ -173,7 +173,9 @@ const ProductDetails = () => {
     if (navigator.share) {
       try {
         await navigator.share({ title: product.name, url });
-      } catch (_) {}
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
     } else {
       navigator.clipboard.writeText(url);
       setCopied(true);
@@ -200,7 +202,9 @@ const ProductDetails = () => {
       setReviewRating(5);
       setReviewSubmitted(true);
       setTimeout(() => setReviewSubmitted(false), 3000);
-    } catch (_) {}
+    } catch (err) {
+      console.error('Error submitting review:', err);
+    }
     setSubmittingReview(false);
   };
 

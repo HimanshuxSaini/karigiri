@@ -169,8 +169,8 @@ const Policies = () => {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <SEO 
-        title={`${policyData.title} | PrathamKarigiri`}
-        description={`Read the ${policyData.title} for PrathamKarigiri.`}
+        title={`${data.title} | PrathamKarigiri`}
+        description={`Read the ${data.title} for PrathamKarigiri.`}
       />
       <Navbar />
       <div className="pt-28 md:pt-36 pb-24 max-w-3xl mx-auto px-4 md:px-6">

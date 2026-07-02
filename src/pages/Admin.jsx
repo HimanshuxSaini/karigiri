@@ -78,6 +78,7 @@ const formatDate = (dateObj) => {
 
 const Admin = () => {
   const { user } = useAuthStore();
+  const addToast = useToastStore(state => state.addToast);
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
   const tabsContainerRef = useRef(null);
