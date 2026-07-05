@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 const { sendEmail } = require('../utils/emailService');
 
 exports.sendOtp = async (req, res) => {
@@ -9,13 +10,14 @@ exports.sendOtp = async (req, res) => {
     console.log(`Starting OTP process for: ${email}`);
     const db = admin.firestore();
     
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate 6-digit OTP securely
+    const otp = crypto.randomInt(100000, 999999).toString();
 
     // Save to Firestore with a timeout
     console.log(`Step 1: Saving OTP to Firestore for ${email}`);
     const savePromise = db.collection('otps').doc(email).set({
       otp,
+      attempts: 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -79,7 +81,17 @@ exports.verifyOtp = async (req, res) => {
     
     // Check if OTP matches
     if (data.otp !== otp) {
-      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+      const attempts = (data.attempts || 0) + 1;
+      
+      if (attempts >= 3) {
+        // Lockout: Delete the OTP document after 3 failed attempts
+        await db.collection('otps').doc(email).delete();
+        return res.status(400).json({ success: false, message: 'Too many failed attempts. Please request a new OTP.' });
+      } else {
+        // Increment attempts counter
+        await db.collection('otps').doc(email).update({ attempts });
+        return res.status(400).json({ success: false, message: 'Invalid OTP' });
+      }
     }
 
     // Check expiry (5 minutes)

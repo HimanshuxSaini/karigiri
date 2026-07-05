@@ -14,9 +14,8 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Orders collection: Anyone can create (checkout), users read own, admins manage all
+    // Orders collection: Created securely via backend. Users read own, admins manage all
     match /orders/{orderId} {
-      allow create: if true;
       // Allow users to read their own orders securely
       allow read: if request.auth != null && (
         (resource != null && resource.data.user == request.auth.uid) ||
