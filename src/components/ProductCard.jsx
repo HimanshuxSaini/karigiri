@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { ShoppingCart, Heart, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -144,4 +144,4 @@ const ProductCard = ({ product, priority = false }) => {
   );
 };
 
-export default ProductCard;
+export default memo(ProductCard);

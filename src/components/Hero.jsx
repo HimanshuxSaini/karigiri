@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import yarnImg from '../assets/yarn.png';
 
 const slides = [
@@ -124,4 +124,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default memo(Hero);

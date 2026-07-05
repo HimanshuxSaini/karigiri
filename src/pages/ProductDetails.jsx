@@ -10,7 +10,7 @@ import SimilarProducts from '../components/SimilarProducts';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
 import { trackViewItem, trackAddToCart, trackAddToWishlist } from '../utils/analytics';
 import SEO from '../components/SEO';
-
+import { getOptimizedImage } from '../utils/imageHelpers';
 
 const FREE_DELIVERY_THRESHOLD = 1000;
 
@@ -212,17 +212,11 @@ const ProductDetails = () => {
     ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1)
     : null;
 
-  const optimizeImage = (url) => {
-    if (!url || typeof url !== 'string') return url;
-    if (url.includes('cloudinary.com')) {
-      return url.replace('/upload/', '/upload/w_800,q_auto:eco,f_auto/');
-    }
-    return url;
-  };
+
 
   const seoTitle = `${product.name} | Pratham Karigiri`;
   const seoDescription = product.description ? product.description.slice(0, 160) : `Buy ${product.name} online at Pratham Karigiri. Authentic handcrafted woolen products.`;
-  const schemaImage = optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[0] : 'https://prathamkarigiri.in/og-image.png');
+  const schemaImage = getOptimizedImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[0] : 'https://prathamkarigiri.in/og-image.png', { width: 800, quality: 'auto:eco' });
   
   const schemaData = {
     "@context": "https://schema.org/",
@@ -317,7 +311,7 @@ const ProductDetails = () => {
             >
               <img
                 key={activeImageIndex}
-                src={optimizeImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[activeImageIndex] : '')}
+                src={getOptimizedImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[activeImageIndex] : '', { width: 800, quality: 'auto:eco' })}
                 className={`max-w-full max-h-full object-contain ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}`}
                 alt={product.name}
                 loading="eager"
@@ -350,7 +344,7 @@ const ProductDetails = () => {
                     }`}
                   >
                     <img
-                      src={optimizeImage(img)}
+                      src={getOptimizedImage(img, { width: 200, quality: 'auto:eco' })}
                       className="max-w-full max-h-full object-contain p-1"
                       alt={`Thumbnail ${idx + 1}`}
                       onError={(e) => {
