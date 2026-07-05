@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { getSettings, updateSettings } = require('../controllers/settingsController');
+const { protectAdmin } = require('../middleware/authMiddleware');
 
 // Define routes
 router.route('/')
   .get(getSettings)
-  .post(updateSettings); // Assuming the admin panel uses POST (or PUT) to update settings
+  .post(protectAdmin, updateSettings);
 
 module.exports = router;

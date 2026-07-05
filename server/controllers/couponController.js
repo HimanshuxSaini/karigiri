@@ -130,7 +130,18 @@ const getAllCoupons = async (req, res) => {
   try {
     const snapshot = await couponsCollection().get();
     const now = new Date();
-    const isAdmin = req.query.admin === 'true';
+    let isAdmin = false;
+
+    if (req.query.admin === 'true' && req.headers.authorization?.startsWith('Bearer')) {
+      try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const { isAdminEmail } = require('../config/constants');
+        isAdmin = isAdminEmail(decodedToken.email);
+      } catch (err) {
+        console.error('Failed to verify admin token for coupons:', err.message);
+      }
+    }
 
     const coupons = snapshot.docs
       .map((doc) => ({
