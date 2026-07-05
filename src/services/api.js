@@ -62,11 +62,21 @@ const fetchAdminCouponApi = async (path, options = {}) => {
 // Products
 export const fetchProducts = async () => {
   try {
-    const response = await fetch(`${API_URL}/products`);
-    if (!response.ok) throw new Error('Failed to fetch products');
-    return await response.json();
+    const productsCol = collection(db, 'products');
+    const snapshot = await getDocs(productsCol);
+    const products = snapshot.docs.map(doc => ({
+      _id: doc.id,
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    return products.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB - dateA;
+    });
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error("Error fetching products from Firestore:", error);
     return [];
   }
 };
@@ -74,11 +84,14 @@ export const fetchProducts = async () => {
 
 export const fetchProductById = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/products/${id}`);
-    if (!response.ok) throw new Error('Product not found');
-    return await response.json();
+    const productDoc = doc(db, 'products', id);
+    const snapshot = await getDoc(productDoc);
+    if (snapshot.exists()) {
+      return { _id: snapshot.id, id: snapshot.id, ...snapshot.data() };
+    }
+    throw new Error('Product not found');
   } catch (error) {
-    console.error("Error fetching product by ID:", error);
+    console.error("Error fetching product by ID from Firestore:", error);
     throw error;
   }
 };
