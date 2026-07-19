@@ -76,11 +76,9 @@ export const usePushNotifications = () => {
         await subscribeTokenToBackend(currentToken);
       } else {
         console.log('No registration token available. Request permission to generate one.');
-        alert('Failed to generate token. Please check browser console.');
       }
     } catch (err) {
       console.error('An error occurred while retrieving token. ', err);
-      alert(`Token Error: ${err.message}`);
     }
   };
 
