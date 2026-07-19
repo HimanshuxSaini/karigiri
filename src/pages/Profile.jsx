@@ -30,6 +30,7 @@ import { Navigate, Link } from 'react-router-dom';
 import { auth as firebaseAuth } from '../firebase/config';
 import { useState, useEffect, useMemo } from 'react';
 import { updateProfile } from 'firebase/auth';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const Profile = () => {
   const { user, logout, setUser } = useAuthStore();
@@ -37,6 +38,7 @@ const Profile = () => {
   const { addItem } = useCartStore();
   const { addresses, addAddress, removeAddress } = useUserStore();
   const { showToast } = useToastStore();
+  const { requestPermission, permission } = usePushNotifications();
   
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -715,29 +717,34 @@ const Profile = () => {
                         </div>
                       </section>
 
-
-
                       <section>
-                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6">Preferences</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-6 rounded-2xl border border-gray-100 flex flex-col hover:border-[var(--primary)] transition-all cursor-pointer bg-white shadow-sm">
-                              <Bell size={24} className="text-[var(--primary)] mb-4" />
-                              <p className="text-sm font-bold text-[var(--text-main)] mb-1">Order Notifications</p>
-                              <p className="text-xs text-[var(--text-muted)]">Receive updates on your order status and shipping details directly to your email.</p>
-                              <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-50">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Status</span>
-                                <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-black uppercase tracking-widest">Active</span>
-                              </div>
-                            </div>
-                            <div className="p-6 rounded-2xl border border-gray-100 flex flex-col hover:border-[var(--primary)] transition-all cursor-pointer bg-white shadow-sm">
-                              <Star size={24} className="text-[var(--primary)] mb-4" />
-                              <p className="text-sm font-bold text-[var(--text-main)] mb-1">Artisan Updates</p>
-                              <p className="text-xs text-[var(--text-muted)]">Get notified when we add new traditional handicrafts or artisan collections.</p>
-                               <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-50">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Status</span>
-                                <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-black uppercase tracking-widest">Subscribed</span>
-                              </div>
-                            </div>
+                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6">Notifications</h4>
+                        <div className="p-6 rounded-2xl border border-gray-100 flex items-center justify-between bg-white shadow-sm">
+                          <div>
+                            <p className="text-sm font-bold text-[var(--text-main)] mb-1">Push Notifications</p>
+                            <p className="text-xs text-[var(--text-muted)]">Enable to get real-time order updates.</p>
+                          </div>
+                          {permission === 'granted' ? (
+                            <span className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100">Enabled</span>
+                          ) : (
+                            <button 
+                              onClick={async () => {
+                                try {
+                                  await requestPermission();
+                                  if (Notification.permission === 'granted') {
+                                    showToast('Notifications Enabled Successfully!', 'success');
+                                  } else {
+                                    showToast('Notification permission denied.', 'error');
+                                  }
+                                } catch (err) {
+                                  showToast('Error enabling notifications.', 'error');
+                                }
+                              }}
+                              className="px-6 py-2 bg-[var(--primary)] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90"
+                            >
+                              Enable
+                            </button>
+                          )}
                         </div>
                       </section>
 
