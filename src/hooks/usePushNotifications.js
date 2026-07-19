@@ -58,11 +58,11 @@ export const usePushNotifications = () => {
         await subscribeTokenToBackend(currentToken);
       } else {
         console.log('No registration token available. Request permission to generate one.');
-        useToastStore.getState().showToast('Failed to generate token. Check browser console.', 'error');
+        alert('Failed to generate token. Please check browser console.');
       }
     } catch (err) {
       console.error('An error occurred while retrieving token. ', err);
-      useToastStore.getState().showToast(`Token Error: ${err.message}`, 'error');
+      alert(`Token Error: ${err.message}`);
     }
   };
 
