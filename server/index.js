@@ -22,6 +22,7 @@ const couponRoutes = require('./routes/couponRoutes');
 const productRoutes = require('./routes/productRoutes');
 const saleRoutes = require('./routes/saleRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const seoRoutes = require('./routes/seoRoutes');
 
 const app = express();
 
@@ -114,6 +115,7 @@ app.use('/api/sale', generalLimiter, saleRoutes);
 app.use('/api/orders', generalLimiter, require('./routes/orderRoutes'));
 app.use('/api/payment', generalLimiter, require('./routes/paymentRoutes'));
 app.use('/api/settings', generalLimiter, settingsRoutes);
+app.use('/api', generalLimiter, seoRoutes);
 
 
 // Health Check

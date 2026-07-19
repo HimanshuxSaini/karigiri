@@ -11,6 +11,7 @@ import { useActivityStore } from '../store/useStore';
 import { WHATSAPP } from '../config/constants';
 import { trackPageView, trackViewItemList, trackSearch as trackGaSearch } from '../utils/analytics';
 import SEO from '../components/SEO';
+import Fuse from 'fuse.js';
 
 const ProductSkeleton = () => (
   <div className="animate-pulse flex flex-col h-full">
@@ -178,8 +179,6 @@ const Shop = () => {
     let result = products.filter(p => {
       const pCategory = String(p?.category || '').trim().toLowerCase();
       const pSubCategory = String(p?.subCategory || p?.subcategory || '').trim().toLowerCase();
-      const pName = String(p?.name || '').trim().toLowerCase();
-      const pBrand = String(p?.brand || 'PrathamKarigiri').trim().toLowerCase();
       
       const filterCat = categoryFilter.trim().toLowerCase();
       const filterSub = (urlSubCategory || '').trim().toLowerCase();
@@ -189,20 +188,38 @@ const Shop = () => {
       
       const matchesPrice = (Number(p?.price) || 0) >= priceRange[0] && (Number(p?.price) || 0) <= priceRange[1];
       
-      const searchTerm = searchInput.trim().toLowerCase();
-      const matchesSearch = !searchTerm || 
-        pName.includes(searchTerm) || 
-        pBrand.includes(searchTerm) || 
-        pCategory.includes(searchTerm) ||
-        pSubCategory.includes(searchTerm);
-
       const matchesStock = !inStockOnly || p.inStock !== false;
       const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(p.brand || 'PrathamKarigiri');
       
-      return matchesCategory && matchesSubCategory && matchesPrice && matchesSearch && matchesStock && matchesBrand;
+      return matchesCategory && matchesSubCategory && matchesPrice && matchesStock && matchesBrand;
     });
 
-    // Sorting
+    const searchTerm = searchInput.trim();
+    if (searchTerm) {
+      const fuse = new Fuse(result, {
+        keys: [
+          { name: 'name', weight: 0.5 },
+          { name: 'brand', weight: 0.2 },
+          { name: 'category', weight: 0.15 },
+          { name: 'subCategory', weight: 0.15 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true
+      });
+      
+      const fuseResults = fuse.search(searchTerm);
+      result = fuseResults.map(res => res.item);
+      
+      // If a search term is present, we skip sorting if default newest is selected so relevance is kept
+      if (sortBy !== 'newest') {
+        if (sortBy === 'price-low') result.sort((a, b) => a.price - b.price);
+        if (sortBy === 'price-high') result.sort((a, b) => b.price - a.price);
+      }
+      return result;
+    }
+
+    // Default Sorting when no search term is present
     switch (sortBy) {
       case 'price-low':
         result.sort((a, b) => a.price - b.price);
