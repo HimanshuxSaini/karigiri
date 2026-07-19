@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['favicon.png', 'og-image.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'Pratham Karigiri',
-        short_name: 'Karigiri',
+        short_name: 'Pratham Karigiri',
         description: 'Authentic handcrafted woolen products and crochet bouquets.',
         theme_color: '#5C4033',
         background_color: '#ffffff',
