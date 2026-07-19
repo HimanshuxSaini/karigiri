@@ -18,6 +18,7 @@ import { auth } from './firebase/config';
 import { useAuthStore } from './store/useStore';
 import { useCartSync } from './hooks/useCartSync';
 import { useWishlistSync } from './hooks/useWishlistSync';
+import { usePushNotifications } from './hooks/usePushNotifications';
 import { isAdminEmail } from './config/constants';
 
 // Lazy-loaded pages for code splitting
@@ -63,9 +64,15 @@ const AppInner = () => {
   const location = useLocation();
   const [showIntro, setShowIntro] = useState(() => !sessionStorage.getItem('hasSeenIntro'));
   const setUser = useAuthStore((state) => state.setUser);
+  const { requestPermission } = usePushNotifications();
 
   useCartSync();
   useWishlistSync();
+
+  useEffect(() => {
+    // Request push notification permissions
+    requestPermission();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {

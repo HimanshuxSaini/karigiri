@@ -23,6 +23,7 @@ const productRoutes = require('./routes/productRoutes');
 const saleRoutes = require('./routes/saleRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const seoRoutes = require('./routes/seoRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -116,6 +117,7 @@ app.use('/api/orders', generalLimiter, require('./routes/orderRoutes'));
 app.use('/api/payment', generalLimiter, require('./routes/paymentRoutes'));
 app.use('/api/settings', generalLimiter, settingsRoutes);
 app.use('/api', generalLimiter, seoRoutes);
+app.use('/api/notifications', generalLimiter, notificationRoutes);
 app.use('/', generalLimiter, seoRoutes);
 
 

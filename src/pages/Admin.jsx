@@ -145,6 +145,41 @@ const Admin = () => {
   const [newAnnouncement, setNewAnnouncement] = useState('');
   const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
+  const [pushData, setPushData] = useState({ title: '', body: '', image: '', url: '' });
+  const [isSendingPush, setIsSendingPush] = useState(false);
+
+  const handleSendPush = async (e) => {
+    e.preventDefault();
+    if (!pushData.title || !pushData.body) {
+      showNotification('Title and body are required', 'error');
+      return;
+    }
+    setIsSendingPush(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+      const res = await fetch(`${API_URL}/notifications/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pushData)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.successCount !== undefined) {
+          showNotification(`Push sent successfully! Success: ${data.successCount}, Failed: ${data.failureCount}`);
+        } else {
+          showNotification(data.message || 'Push sent successfully!');
+        }
+        setPushData({ title: '', body: '', image: '', url: '' });
+      } else {
+        showNotification(data.error || 'Failed to send push notification', 'error');
+      }
+    } catch (err) {
+      showNotification('Failed to send push notification', 'error');
+    } finally {
+      setIsSendingPush(false);
+    }
+  };
+
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products', label: 'Inventory', icon: Package },
@@ -155,6 +190,7 @@ const Admin = () => {
     { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'sale', label: 'Flash Sale', icon: Clock },
     { id: 'announcements', label: 'Banner Offers', icon: Megaphone },
+    { id: 'push', label: 'Push Notifications', icon: Smartphone },
   ];
 
   // Form State
@@ -1953,6 +1989,78 @@ const Admin = () => {
                         Add Offer
                       </button>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'push' && (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-gray-900">Push Notifications</h2>
+                      <p className="text-gray-500 mt-2">Send instant push notifications to all subscribed users</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
+                    <form onSubmit={handleSendPush} className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Notification Title</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. New Handmade Collection!"
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={pushData.title}
+                          onChange={(e) => setPushData(prev => ({ ...prev, title: e.target.value }))}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Message Body</label>
+                        <textarea
+                          required
+                          rows={3}
+                          placeholder="e.g. Check out our latest arrivals and get 20% off today."
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 resize-none"
+                          value={pushData.body}
+                          onChange={(e) => setPushData(prev => ({ ...prev, body: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Image URL (Optional)</label>
+                        <input
+                          type="text"
+                          placeholder="https://example.com/image.png"
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={pushData.image}
+                          onChange={(e) => setPushData(prev => ({ ...prev, image: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Target URL (Optional)</label>
+                        <input
+                          type="text"
+                          placeholder="/shop"
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={pushData.url}
+                          onChange={(e) => setPushData(prev => ({ ...prev, url: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="pt-4">
+                        <button
+                          type="submit"
+                          disabled={isSendingPush}
+                          className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2"
+                        >
+                          <Smartphone size={20} />
+                          <span>{isSendingPush ? 'Sending...' : 'Send Push Notification'}</span>
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               )}
