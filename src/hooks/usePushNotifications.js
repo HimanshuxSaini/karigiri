@@ -39,11 +39,29 @@ export const usePushNotifications = () => {
         return;
       }
 
-      // Explicitly register the service worker to prevent VitePWA conflicts
+      // Explicitly register the service worker
       let registration = null;
       try {
         registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        console.log('Service worker registered specifically for Firebase', registration.scope);
+        
+        // Wait for the service worker to be ready/active
+        if (registration.installing) {
+          await new Promise((resolve) => {
+            registration.installing.addEventListener('statechange', (e) => {
+              if (e.target.state === 'activated') resolve();
+            });
+          });
+        } else if (registration.waiting) {
+          await new Promise((resolve) => {
+            registration.waiting.addEventListener('statechange', (e) => {
+              if (e.target.state === 'activated') resolve();
+            });
+          });
+        }
+        
+        // Also wait for the generic ready state just in case
+        await navigator.serviceWorker.ready;
+        
       } catch (swError) {
         console.error('Failed to register service worker for Firebase:', swError);
       }
