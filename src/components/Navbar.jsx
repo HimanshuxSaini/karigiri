@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore';
 import { auth as firebaseAuth } from '../firebase/config';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import LoginModal from './LoginModal';
 import { categoryStructure, navLinks } from '../data/categories';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
@@ -19,6 +19,19 @@ const Navbar = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchModalOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const isAdmin = isAdminEmail(user?.email);
 
@@ -105,7 +118,7 @@ const Navbar = () => {
 
 
           <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-6 xl:space-x-10">
-            <div className="relative">
+            <div className="relative" ref={searchRef}>
               <div
                 className="flex flex-col items-center cursor-pointer group p-2"
                 onClick={() => setIsSearchModalOpen(!isSearchModalOpen)}
