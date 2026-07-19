@@ -61,23 +61,46 @@ const Hero = () => {
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.5 }}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
+                exit: { opacity: 0, x: -20, transition: { duration: 0.3 } }
+              }}
             >
-              <h2 className="text-[10px] md:text-sm font-black uppercase tracking-[0.3em] text-[var(--primary)] mb-2 md:mb-4">
-                {slides[current].title}
-              </h2>
-              <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-4 md:mb-8 whitespace-pre-line">
-                {slides[current].head}
-              </h1>
-              <Link 
-                to="/shop" 
-                className="inline-block px-10 py-4 bg-slate-900 text-white text-xs md:text-sm font-bold uppercase tracking-widest hover:bg-[var(--primary)] transition-all transform hover:-translate-y-1 w-fit"
+              <motion.h2 
+                variants={{
+                  hidden: { opacity: 0, y: 10 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+                }}
+                className="text-[10px] md:text-sm font-black uppercase tracking-[0.3em] text-[var(--primary)] mb-2 md:mb-4"
               >
-                Shop Now
-              </Link>
+                {slides[current].title}
+              </motion.h2>
+              <motion.h1 
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] } }
+                }}
+                className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-4 md:mb-8 whitespace-pre-line"
+              >
+                {slides[current].head}
+              </motion.h1>
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 15 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+                }}
+              >
+                <Link 
+                  to="/shop" 
+                  className="inline-block px-10 py-4 bg-slate-900 text-white text-xs md:text-sm font-bold uppercase tracking-widest hover:bg-[var(--primary)] hover:shadow-lg transition-all transform hover:-translate-y-1 w-fit"
+                >
+                  Shop Now
+                </Link>
+              </motion.div>
             </motion.div>
           </AnimatePresence>
         </div>

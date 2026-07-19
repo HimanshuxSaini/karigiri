@@ -243,24 +243,33 @@ const Home = () => {
               ))
             ) : dealsProducts.length > 0 ? (
               dealsProducts.map((deal, i) => (
-                <Link key={deal._id} to={`/product/${deal._id}`} className="group min-w-[170px] md:min-w-0 snap-center bg-white p-3 rounded-3xl border border-gray-50 shadow-sm md:shadow-none md:border-none md:bg-transparent">
-                  <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4 relative">
-                     <img 
-                       src={getOptimizedImage(deal.image, { width: 300, quality: 'auto:eco' })} 
-                       loading={i < 2 ? undefined : "lazy"}
-                       fetchPriority={i < 2 ? "high" : "auto"}
-                       className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-lg" 
-                       alt={deal.name} 
-                     />
-                     <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-full text-[8px] font-black text-[var(--primary)] uppercase">
-                        {deal.category}
-                     </div>
-                  </div>
-                  <div className="px-1 text-center sm:text-left">
-                    <h4 className="text-[10px] md:text-xs font-bold text-[var(--text-main)] truncate mb-1">{deal.name}</h4>
-                    <p className="text-xs md:text-sm font-black text-[var(--primary)]">₹{deal.price.toLocaleString('en-IN')}</p>
-                  </div>
-                </Link>
+                <motion.div 
+                  key={deal._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="min-w-[170px] md:min-w-0 snap-center"
+                >
+                  <Link to={`/product/${deal._id}`} className="group block bg-white p-3 rounded-3xl border border-gray-50 shadow-sm md:shadow-none md:border-none md:bg-transparent h-full">
+                    <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4 relative">
+                       <img 
+                         src={getOptimizedImage(deal.image, { width: 300, quality: 'auto:eco' })} 
+                         loading={i < 2 ? undefined : "lazy"}
+                         fetchPriority={i < 2 ? "high" : "auto"}
+                         className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-lg" 
+                         alt={deal.name} 
+                       />
+                       <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-full text-[8px] font-black text-[var(--primary)] uppercase">
+                          {deal.category}
+                       </div>
+                    </div>
+                    <div className="px-1 text-center sm:text-left">
+                      <h4 className="text-[10px] md:text-xs font-bold text-[var(--text-main)] truncate mb-1">{deal.name}</h4>
+                      <p className="text-xs md:text-sm font-black text-[var(--primary)]">₹{deal.price.toLocaleString('en-IN')}</p>
+                    </div>
+                  </Link>
+                </motion.div>
               ))
             ) : (
               <div className="col-span-4 text-center py-10 text-gray-400 text-sm">

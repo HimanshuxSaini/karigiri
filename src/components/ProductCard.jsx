@@ -29,17 +29,23 @@ const ProductCard = ({ product, priority = false }) => {
   return (
     <>
       <motion.div
-        whileHover={{ y: -4 }}
-        className={`bg-white overflow-hidden group h-full flex flex-col relative rounded-sm border border-transparent hover:border-gray-100 transition-all ${isOutOfStock ? 'opacity-80' : ''}`}
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        whileHover={{ y: -6, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.1)" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className={`bg-white overflow-hidden group h-full flex flex-col relative rounded-xl border border-transparent hover:border-gray-100 transition-all ${isOutOfStock ? 'opacity-80' : ''}`}
       >
         {/* Image container */}
         <Link to={`/product/${productId}`} className="relative aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
-          <img
+          <motion.img
+            whileHover={{ scale: 1.08 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             src={getOptimizedImage(product.image, { width: 400, quality: 'auto:eco' })}
             alt={product.name}
             loading={priority ? undefined : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
-            className="max-w-full max-h-full object-contain"
+            className="max-w-full max-h-full object-contain drop-shadow-sm"
             onError={(e) => {
               e.target.src = '/placeholder.png';
             }}
@@ -72,12 +78,14 @@ const ProductCard = ({ product, priority = false }) => {
           </div>
 
           {/* Wishlist button */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
             onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-            className={`absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 bg-white rounded-full shadow-sm transition-all duration-300 ${isWishlisted ? 'text-red-500' : 'text-gray-400'}`}
+            className={`absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:shadow-md transition-all duration-300 z-20 ${isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}
           >
             <Heart size={16} fill={isWishlisted ? 'currentColor' : 'none'} className="md:w-[18px] md:h-[18px]" />
-          </button>
+          </motion.button>
 
           {/* Quick View button — visible on hover (desktop) */}
           <button
@@ -105,12 +113,14 @@ const ProductCard = ({ product, priority = false }) => {
 
           {/* Mobile Quick Add */}
           {!isOutOfStock && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
               onClick={(e) => { e.preventDefault(); addItem(product); }}
-              className="lg:hidden absolute bottom-2 right-2 p-2 bg-[var(--primary)] text-white rounded-full shadow-lg"
+              className="lg:hidden absolute bottom-2 right-2 p-2 bg-[var(--primary)] text-white rounded-full shadow-lg z-20"
             >
               <ShoppingCart size={16} />
-            </button>
+            </motion.button>
           )}
         </Link>
 
