@@ -116,6 +116,7 @@ app.use('/api/orders', generalLimiter, require('./routes/orderRoutes'));
 app.use('/api/payment', generalLimiter, require('./routes/paymentRoutes'));
 app.use('/api/settings', generalLimiter, settingsRoutes);
 app.use('/api', generalLimiter, seoRoutes);
+app.use('/', generalLimiter, seoRoutes);
 
 
 // Health Check
