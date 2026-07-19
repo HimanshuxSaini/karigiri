@@ -105,12 +105,48 @@ const Navbar = () => {
 
 
           <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-6 xl:space-x-10">
-            <div
-              className="flex flex-col items-center cursor-pointer group p-2"
-              onClick={() => setIsSearchModalOpen(true)}
-            >
-              <Search size={20} className="group-hover:text-[var(--primary)]" />
-              <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">Search</span>
+            <div className="relative">
+              <div
+                className="flex flex-col items-center cursor-pointer group p-2"
+                onClick={() => setIsSearchModalOpen(!isSearchModalOpen)}
+              >
+                <Search size={20} className="group-hover:text-[var(--primary)]" />
+                <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">Search</span>
+              </div>
+              
+              <AnimatePresence>
+                {isSearchModalOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full right-0 mt-2 w-[300px] bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-2 z-50"
+                  >
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (globalSearchQuery.trim()) {
+                          navigate(`/shop?search=${encodeURIComponent(globalSearchQuery.trim())}`);
+                          setIsSearchModalOpen(false);
+                          setGlobalSearchQuery('');
+                        }
+                      }}
+                      className="relative flex items-center"
+                    >
+                      <Search size={18} className="absolute left-3 text-gray-400" />
+                      <input 
+                        type="text"
+                        autoFocus
+                        value={globalSearchQuery}
+                        onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                        placeholder="Search products..."
+                        className="w-full bg-gray-50 text-sm py-3 pl-10 pr-4 rounded-xl outline-none focus:ring-1 focus:ring-[var(--primary)] border-none"
+                      />
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div
@@ -315,47 +351,6 @@ const Navbar = () => {
         onClose={() => setIsLoginModalOpen(false)}
       />
 
-      {/* Global Search Modal */}
-      <AnimatePresence>
-        {isSearchModalOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[110] bg-white/95 backdrop-blur-md flex items-start justify-center pt-32 px-4"
-          >
-            <div className="w-full max-w-2xl relative">
-              <button 
-                onClick={() => setIsSearchModalOpen(false)}
-                className="absolute -top-12 right-0 p-2 text-gray-500 hover:text-black"
-              >
-                <X size={24} />
-              </button>
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (globalSearchQuery.trim()) {
-                    navigate(`/shop?search=${encodeURIComponent(globalSearchQuery.trim())}`);
-                    setIsSearchModalOpen(false);
-                    setGlobalSearchQuery('');
-                  }
-                }}
-                className="relative"
-              >
-                <Search size={24} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  type="text"
-                  autoFocus
-                  value={globalSearchQuery}
-                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                  placeholder="Search products, categories..."
-                  className="w-full bg-gray-50 text-xl md:text-2xl py-6 pl-16 pr-6 rounded-3xl outline-none focus:ring-2 focus:ring-black border-none"
-                />
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 };
