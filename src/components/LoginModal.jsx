@@ -70,6 +70,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
+    if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     if (!identifier) return showToast('Email is required', 'error');
     if (!identifier.includes('@')) return showToast('Please enter a valid email', 'error');
     
@@ -100,6 +101,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   };
 
   const handleVerifyOtp = async () => {
+    if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     if (otp.length !== 6) return showToast('Enter 6-digit code', 'error');
     
     setLoading(true);
@@ -138,6 +140,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();
+    if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     setLoading(true);
 
     try {
@@ -169,6 +172,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
+    if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     if (!email) return showToast('Please enter your email address', 'error');
     
     setLoading(true);
@@ -185,6 +189,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   };
 
   const handleGoogleLogin = async () => {
+    if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
