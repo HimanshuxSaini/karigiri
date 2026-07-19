@@ -243,19 +243,19 @@ const Shop = () => {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://prathamkarigiri.in/"
+        "item": "https://www.prathamkarigiri.in/"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Shop",
-        "item": "https://prathamkarigiri.in/shop"
+        "item": "https://www.prathamkarigiri.in/shop"
       },
       ...(categoryFilter !== 'All' ? [{
         "@type": "ListItem",
         "position": 3,
         "name": categoryFilter,
-        "item": `https://prathamkarigiri.in/shop?category=${encodeURIComponent(categoryFilter)}`
+        "item": `https://www.prathamkarigiri.in/shop?category=${encodeURIComponent(categoryFilter)}`
       }] : [])
     ]
   };
@@ -268,7 +268,7 @@ const Shop = () => {
       <SEO 
         title={title}
         description={description}
-        canonicalUrl={`https://prathamkarigiri.in/shop${categoryFilter !== 'All' ? `?category=${encodeURIComponent(categoryFilter)}` : ''}`}
+        canonicalUrl={`https://www.prathamkarigiri.in/shop${categoryFilter !== 'All' ? `?category=${encodeURIComponent(categoryFilter)}` : ''}`}
         schema={breadcrumbSchema}
       />
       <Navbar />

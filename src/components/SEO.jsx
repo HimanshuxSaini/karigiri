@@ -5,7 +5,7 @@ const SEO = ({
   description, 
   canonicalUrl, 
   type = 'website',
-  image = 'https://prathamkarigiri.in/logo.png',
+  image = 'https://www.prathamkarigiri.in/logo.png',
   schema,
   noindex = false
 }) => {

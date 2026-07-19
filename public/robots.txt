@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /profile
 Disallow: /checkout
-Sitemap: https://prathamkarigiri.in/sitemap.xml
+Sitemap: https://www.prathamkarigiri.in/sitemap.xml

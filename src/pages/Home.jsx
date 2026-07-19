@@ -142,8 +142,8 @@ const Home = () => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "PrathamKarigiri",
-    "url": "https://prathamkarigiri.in",
-    "logo": "https://prathamkarigiri.in/logo.png",
+    "url": "https://www.prathamkarigiri.in",
+    "logo": "https://www.prathamkarigiri.in/logo.png",
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+91-9999999999", // Replace with real if available
@@ -155,10 +155,10 @@ const Home = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "PrathamKarigiri",
-    "url": "https://prathamkarigiri.in",
+    "url": "https://www.prathamkarigiri.in",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://prathamkarigiri.in/shop?search={search_term_string}",
+      "target": "https://www.prathamkarigiri.in/shop?search={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };
@@ -168,7 +168,7 @@ const Home = () => {
       <SEO 
         title="Premium Handcrafted Woolen Masterpieces"
         description="Discover PrathamKarigiri's premium handcrafted woolen masterpieces. Ethically sourced, traditionally knitted, and delivered directly to you."
-        canonicalUrl="https://prathamkarigiri.in/"
+        canonicalUrl="https://www.prathamkarigiri.in/"
         schema={[organizationSchema, websiteSchema]}
       />
       <Navbar />

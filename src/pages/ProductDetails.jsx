@@ -216,7 +216,7 @@ const ProductDetails = () => {
 
   const seoTitle = `${product.name} | Pratham Karigiri`;
   const seoDescription = product.description ? product.description.slice(0, 160) : `Buy ${product.name} online at Pratham Karigiri. Authentic handcrafted woolen products.`;
-  const schemaImage = getOptimizedImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[0] : 'https://prathamkarigiri.in/og-image.png', { width: 800, quality: 'auto:eco' });
+  const schemaImage = getOptimizedImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[0] : 'https://www.prathamkarigiri.in/og-image.png', { width: 800, quality: 'auto:eco' });
   
   const schemaData = {
     "@context": "https://schema.org/",
@@ -251,25 +251,25 @@ const ProductDetails = () => {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://prathamkarigiri.in/"
+        "item": "https://www.prathamkarigiri.in/"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Shop",
-        "item": "https://prathamkarigiri.in/shop"
+        "item": "https://www.prathamkarigiri.in/shop"
       },
       ...(product.category ? [{
         "@type": "ListItem",
         "position": 3,
         "name": product.category,
-        "item": `https://prathamkarigiri.in/shop?category=${encodeURIComponent(product.category)}`
+        "item": `https://www.prathamkarigiri.in/shop?category=${encodeURIComponent(product.category)}`
       }] : []),
       {
         "@type": "ListItem",
         "position": product.category ? 4 : 3,
         "name": product.name,
-        "item": `https://prathamkarigiri.in/product/${product._id || product.id}`
+        "item": `https://www.prathamkarigiri.in/product/${product._id || product.id}`
       }
     ]
   };
@@ -279,7 +279,7 @@ const ProductDetails = () => {
       <SEO 
         title={seoTitle}
         description={seoDescription}
-        canonicalUrl={`https://prathamkarigiri.in/product/${product._id || product.id}`}
+        canonicalUrl={`https://www.prathamkarigiri.in/product/${product._id || product.id}`}
         image={schemaImage}
         type="product"
         schema={[breadcrumbSchema, schemaData]}
