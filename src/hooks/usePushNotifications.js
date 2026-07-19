@@ -39,7 +39,19 @@ export const usePushNotifications = () => {
         return;
       }
 
-      const currentToken = await getToken(messaging, { vapidKey });
+      // Explicitly register the service worker to prevent VitePWA conflicts
+      let registration = null;
+      try {
+        registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log('Service worker registered specifically for Firebase', registration.scope);
+      } catch (swError) {
+        console.error('Failed to register service worker for Firebase:', swError);
+      }
+
+      const currentToken = await getToken(messaging, { 
+        vapidKey,
+        serviceWorkerRegistration: registration
+      });
       
       if (currentToken) {
         setFcmToken(currentToken);
