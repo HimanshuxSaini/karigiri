@@ -174,6 +174,7 @@ const Admin = () => {
         showNotification(data.error || 'Failed to send push notification', 'error');
       }
     } catch (err) {
+      console.error('Push notification error:', err);
       showNotification('Failed to send push notification', 'error');
     } finally {
       setIsSendingPush(false);

@@ -72,6 +72,7 @@ const AppInner = () => {
   useEffect(() => {
     // Request push notification permissions
     requestPermission();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

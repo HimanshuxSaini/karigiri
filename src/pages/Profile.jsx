@@ -737,6 +737,7 @@ const Profile = () => {
                                     showToast('Notification permission denied.', 'error');
                                   }
                                 } catch (err) {
+                                  console.error('Error enabling notifications:', err);
                                   showToast('Error enabling notifications.', 'error');
                                 }
                               }}
