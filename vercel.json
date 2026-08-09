@@ -1,11 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/sitemap.xml",
-      "destination": "https://karigiri.onrender.com/api/sitemap.xml",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
