@@ -1,4 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <!-- Static placeholder. To add products, you must manually edit this file or use a script. -->
+  <url>
+    <loc>https://www.prathamkarigiri.in/product/bag</loc>
+    <lastmod>2026-08-09T00:00:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/bag.png</image:loc>
+      <image:title>Bag</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.prathamkarigiri.in/product/blanket</loc>
+    <lastmod>2026-08-09T00:00:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/blanket.png</image:loc>
+      <image:title>Blanket</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.prathamkarigiri.in/product/bouquet</loc>
+    <lastmod>2026-08-09T00:00:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/bookey.png</image:loc>
+      <image:title>Bouquet</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.prathamkarigiri.in/product/bracelet</loc>
+    <lastmod>2026-08-09T00:00:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/bracelet.png</image:loc>
+      <image:title>Bracelet</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.prathamkarigiri.in/product/shawl</loc>
+    <lastmod>2026-08-09T00:00:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/shawl.png</image:loc>
+      <image:title>Shawl</image:title>
+    </image:image>
+  </url>
 </urlset>

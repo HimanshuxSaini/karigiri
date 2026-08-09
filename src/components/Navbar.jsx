@@ -1,9 +1,10 @@
-import { ShoppingCart, User, Search, Menu, LogOut, Heart, X, ChevronRight, MessageCircle } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, LogOut, Heart, X, ChevronRight, MessageCircle, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore, useCartStore, useWishlistStore } from '../store/useStore';
 import { auth as firebaseAuth } from '../firebase/config';
 import { useState, useEffect, useRef } from 'react';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import LoginModal from './LoginModal';
 import { categoryStructure, navLinks } from '../data/categories';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
@@ -20,6 +21,7 @@ const Navbar = () => {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const searchRef = useRef(null);
+  const { isInstallable, promptInstall } = useInstallPrompt();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -172,6 +174,16 @@ const Navbar = () => {
               </span>
             </div>
 
+            {isInstallable && (
+              <div
+                className="flex flex-col items-center cursor-pointer group p-2"
+                onClick={promptInstall}
+              >
+                <Download size={20} className="group-hover:text-[var(--primary)]" />
+                <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">App</span>
+              </div>
+            )}
+
             <Link to="/wishlist" className="hidden md:flex flex-col items-center relative group">
               <Heart size={20} className="group-hover:text-[var(--primary)]" />
               <span className="hidden md:block text-[10px] font-bold mt-1 uppercase group-hover:text-[var(--primary)]">Wishlist</span>
@@ -319,6 +331,21 @@ const Navbar = () => {
                       </div>
                       <span className="font-bold text-gray-800">{user ? 'My Profile' : 'Login / Sign Up'}</span>
                     </button>
+
+                    {isInstallable && (
+                      <button
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          promptInstall();
+                        }}
+                        className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-500">
+                          <Download size={20} />
+                        </div>
+                        <span className="font-bold text-gray-800">Install App (APK)</span>
+                      </button>
+                    )}
 
                     <button
                       onClick={() => {

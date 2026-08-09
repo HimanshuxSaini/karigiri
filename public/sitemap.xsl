@@ -51,6 +51,7 @@
               <thead>
                 <tr>
                   <th>URL</th>
+                  <th>Images</th>
                   <th>Priority</th>
                   <th>Change Frequency</th>
                 </tr>
@@ -59,6 +60,7 @@
                 <xsl:for-each select="sitemap:urlset/sitemap:url">
                   <tr>
                     <td><a href="{sitemap:loc}"><xsl:value-of select="sitemap:loc"/></a></td>
+                    <td><xsl:value-of select="count(image:image)"/></td>
                     <td><xsl:value-of select="sitemap:priority"/></td>
                     <td><xsl:value-of select="sitemap:changefreq"/></td>
                   </tr>

@@ -9,7 +9,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        importScripts: ['/firebase-messaging-sw.js']
+        importScripts: ['/firebase-messaging-sw.js'],
+        navigateFallbackDenylist: [/^\/sitemap\.xml$/, /^\/sitemap\//, /\.xml$/]
       },
       includeAssets: ['favicon.png', 'og-image.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
