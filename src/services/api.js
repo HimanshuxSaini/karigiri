@@ -683,6 +683,35 @@ export const updateReelsConfig = async (config) => {
   }
 };
 
+// Hero Slides
+export const fetchHeroSlides = async () => {
+  try {
+    const docRef = doc(db, 'config', 'heroSlides');
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return snapshot.data().slides || [];
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching hero slides:", error);
+    return [];
+  }
+};
+
+export const updateHeroSlides = async (slides) => {
+  try {
+    const docRef = doc(db, 'config', 'heroSlides');
+    await setDoc(docRef, { 
+      slides, 
+      updatedAt: serverTimestamp() 
+    }, { merge: true });
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating hero slides:", error);
+    throw error;
+  }
+};
+
 // Coupons
 export const fetchCoupons = async () => {
   try {

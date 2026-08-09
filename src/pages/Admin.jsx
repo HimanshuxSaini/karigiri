@@ -30,7 +30,9 @@ import {
   Tag,
   Megaphone,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  Presentation,
+  Image as ImageIcon
 } from 'lucide-react';
 
 import {
@@ -55,7 +57,9 @@ import {
   fetchFlashSale,
   updateFlashSale,
   fetchSettings,
-  updateSettings
+  updateSettings,
+  fetchHeroSlides,
+  updateHeroSlides
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
@@ -145,6 +149,12 @@ const Admin = () => {
   const [newAnnouncement, setNewAnnouncement] = useState('');
   const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
+  const [heroSlides, setHeroSlides] = useState([]);
+  const [showHeroModal, setShowHeroModal] = useState(false);
+  const [editingHeroIndex, setEditingHeroIndex] = useState(null);
+  const [heroFormData, setHeroFormData] = useState({ title: '', head: '', img: '', link: '/shop' });
+  const [isUpdatingHero, setIsUpdatingHero] = useState(false);
+
   const [pushData, setPushData] = useState({ title: '', body: '', image: '', url: '' });
   const [isSendingPush, setIsSendingPush] = useState(false);
 
@@ -191,6 +201,7 @@ const Admin = () => {
     { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'sale', label: 'Flash Sale', icon: Clock },
     { id: 'announcements', label: 'Banner Offers', icon: Megaphone },
+    { id: 'hero', label: 'Hero Slides', icon: Presentation },
     { id: 'push', label: 'Push Notifications', icon: Smartphone },
   ];
 
@@ -253,19 +264,48 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
         fetchAdminCoupons(),
         fetchFlashSale(),
         fetchReelsConfig(),
-        fetchSettings()
+        fetchSettings(),
+        fetchHeroSlides()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
       setReels(reelRes || []);
       setCoupons(couponRes || []);
+      
+      const defaultHeroSlides = [
+        { 
+          title: "Floral Collection", 
+          head: "Artisanal\nCrochet Bouquet.", 
+          img: "/bookey.png", 
+          link: "/shop"
+        },
+        { 
+          title: "Kids Collection", 
+          head: "Warmth for\nSmall Wonders.", 
+          img: "/item4.png", 
+          link: "/shop"
+        },
+        { 
+          title: "Women's Luxe", 
+          head: "Handcrafted\nBracelets & Bags.", 
+          img: "/bracelet.png", 
+          link: "/shop"
+        },
+        { 
+          title: "Artisanal Comfort", 
+          head: "Premium\nWoolen Blankets.", 
+          img: "/blanket.png", 
+          link: "/shop"
+        }
+      ];
+      setHeroSlides((heroRes && heroRes.length > 0) ? heroRes : defaultHeroSlides);
       
       const defaultAnnouncements = [
         "It's 14°C in your area – try our Heavy Knit Cardigans!",
@@ -1993,6 +2033,121 @@ const Admin = () => {
                   </div>
                 </div>
               )}
+              {activeTab === 'hero' && (
+                <div className="space-y-8">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-gray-900">Hero Slides</h2>
+                      <p className="text-gray-500 mt-2">Manage the homepage hero section images and text</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingHeroIndex(null);
+                        setHeroFormData({ title: '', head: '', img: '', link: '/shop' });
+                        setShowHeroModal(true);
+                      }}
+                      className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-gray-800 transition-colors shadow-lg"
+                    >
+                      <Plus size={20} />
+                      <span>Add Slide</span>
+                    </button>
+                  </div>
+
+                  <div className="bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    {heroSlides.length === 0 ? (
+                      <div className="text-center py-12 text-gray-400">
+                        <Presentation size={48} className="mx-auto mb-4 opacity-50" />
+                        <p>No hero slides configured. Homepage is using defaults.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {heroSlides.map((slide, index) => (
+                          <div key={index} className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 border border-gray-100 rounded-2xl hover:border-gray-300 transition-colors bg-gray-50/50">
+                            <div className="w-full md:w-24 h-40 md:h-24 bg-white rounded-xl border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
+                              {slide.img ? (
+                                <img src={slide.img} alt={slide.title} className="max-w-full max-h-full object-contain" />
+                              ) : (
+                                <ImageIcon className="text-gray-300" size={32} />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 w-full">
+                              <h3 className="font-bold text-lg text-gray-900 truncate">{slide.title || 'No Title'}</h3>
+                              <p className="text-sm text-gray-500 whitespace-pre-line line-clamp-2 mt-1">{slide.head || 'No Heading'}</p>
+                              <div className="flex items-center text-xs text-gray-400 mt-2">
+                                <span className="bg-white px-2 py-1 rounded border border-gray-200 truncate">Link: {slide.link || '/shop'}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 w-full md:w-auto justify-end md:mt-0 mt-2">
+                              <button
+                                onClick={() => {
+                                  const newSlides = [...heroSlides];
+                                  if (index > 0) {
+                                    [newSlides[index - 1], newSlides[index]] = [newSlides[index], newSlides[index - 1]];
+                                    setHeroSlides(newSlides);
+                                    setIsUpdatingHero(true);
+                                    updateHeroSlides(newSlides).then(() => {
+                                      setIsUpdatingHero(false);
+                                      showNotification('Order updated');
+                                    });
+                                  }
+                                }}
+                                disabled={index === 0}
+                                className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30"
+                              >
+                                ↑
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const newSlides = [...heroSlides];
+                                  if (index < newSlides.length - 1) {
+                                    [newSlides[index + 1], newSlides[index]] = [newSlides[index], newSlides[index + 1]];
+                                    setHeroSlides(newSlides);
+                                    setIsUpdatingHero(true);
+                                    updateHeroSlides(newSlides).then(() => {
+                                      setIsUpdatingHero(false);
+                                      showNotification('Order updated');
+                                    });
+                                  }
+                                }}
+                                disabled={index === heroSlides.length - 1}
+                                className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30"
+                              >
+                                ↓
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingHeroIndex(index);
+                                  setHeroFormData(slide);
+                                  setShowHeroModal(true);
+                                }}
+                                className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors ml-2"
+                              >
+                                <Edit3 size={18} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (window.confirm('Delete this slide?')) {
+                                    const newSlides = heroSlides.filter((_, i) => i !== index);
+                                    setHeroSlides(newSlides);
+                                    setIsUpdatingHero(true);
+                                    updateHeroSlides(newSlides).then(() => {
+                                      setIsUpdatingHero(false);
+                                      showNotification('Slide deleted');
+                                    });
+                                  }
+                                }}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {activeTab === 'push' && (
                 <div className="space-y-8">
@@ -2069,6 +2224,162 @@ const Admin = () => {
           )}
         </Motion.div>
       </div>
+
+      {/* Hero Slide Modal */}
+      <AnimatePresence>
+        {showHeroModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <Motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowHeroModal(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            ></Motion.div>
+
+            <Motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            >
+              <div className="p-8 overflow-y-auto">
+                <h2 className="text-2xl font-serif font-bold mb-6">{editingHeroIndex !== null ? 'Edit Slide' : 'Add New Slide'}</h2>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsUpdatingHero(true);
+                  const newSlides = [...heroSlides];
+                  if (editingHeroIndex !== null) {
+                    newSlides[editingHeroIndex] = heroFormData;
+                  } else {
+                    newSlides.push(heroFormData);
+                  }
+                  
+                  try {
+                    await updateHeroSlides(newSlides);
+                    setHeroSlides(newSlides);
+                    setShowHeroModal(false);
+                    showNotification(editingHeroIndex !== null ? 'Slide updated' : 'Slide added');
+                  } catch (err) {
+                    showNotification('Failed to save slide', 'error');
+                  } finally {
+                    setIsUpdatingHero(false);
+                  }
+                }} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Small Title</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Floral Collection"
+                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      value={heroFormData.title}
+                      onChange={(e) => setHeroFormData({ ...heroFormData, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Main Heading</label>
+                    <textarea
+                      required
+                      rows="2"
+                      placeholder={"e.g. Artisanal\nCrochet Bouquet."}
+                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 resize-none"
+                      value={heroFormData.head}
+                      onChange={(e) => setHeroFormData({ ...heroFormData, head: e.target.value })}
+                    />
+                    <p className="text-xs text-gray-400 ml-1">Use Enter to create new lines.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Button Link</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. /shop or /category/kids"
+                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      value={heroFormData.link}
+                      onChange={(e) => setHeroFormData({ ...heroFormData, link: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Slide Image</label>
+                    <div className="flex items-center gap-4">
+                      {heroFormData.img && (
+                        <div className="relative group w-24 h-24 rounded-2xl bg-gray-50 border-2 border-gray-100 flex items-center justify-center overflow-hidden">
+                          <img src={heroFormData.img} alt="Preview" className="max-w-full max-h-full object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => setHeroFormData({ ...heroFormData, img: '' })}
+                            className="absolute -top-1 -right-1 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 transition-colors"
+                          >
+                            <XCircle size={16} />
+                          </button>
+                        </div>
+                      )}
+                      {!heroFormData.img && (
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              setUploadingImage(true);
+                              try {
+                                const url = await uploadProductImage(file);
+                                setHeroFormData({ ...heroFormData, img: url });
+                                showNotification('Image uploaded');
+                              } catch (err) {
+                                showNotification('Failed to upload image', 'error');
+                              } finally {
+                                setUploadingImage(false);
+                                e.target.value = '';
+                              }
+                            }}
+                            className="hidden"
+                            id="hero-image-upload"
+                          />
+                          <label
+                            htmlFor="hero-image-upload"
+                            className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all bg-gray-50/50 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
+                          >
+                            {uploadingImage ? (
+                              <div className="flex flex-col items-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--primary)] mb-2"></div>
+                                <p className="text-[10px] font-bold text-[var(--primary)] uppercase">Uploading...</p>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center text-gray-400">
+                                <Plus size={24} />
+                                <p className="text-[10px] font-bold uppercase mt-1">Upload Image</p>
+                              </div>
+                            )}
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="pt-4 flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowHeroModal(false)}
+                      className="flex-1 bg-gray-100 text-gray-900 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isUpdatingHero || !heroFormData.img}
+                      className="flex-1 bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50"
+                    >
+                      {isUpdatingHero ? 'Saving...' : 'Save Slide'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </Motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Product Modal */}
       <AnimatePresence>

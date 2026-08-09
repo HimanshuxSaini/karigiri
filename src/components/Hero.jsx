@@ -2,12 +2,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect, memo } from 'react';
 import yarnImg from '../assets/yarn.png';
+import { fetchHeroSlides } from '../services/api';
 
-const slides = [
+const defaultSlides = [
   { 
     title: "Floral Collection", 
     head: "Artisanal\nCrochet Bouquet.", 
     img: "/bookey.png", 
+    link: "/shop",
     pos: "object-center",
     fit: "contain"
   },
@@ -15,6 +17,7 @@ const slides = [
     title: "Kids Collection", 
     head: "Warmth for\nSmall Wonders.", 
     img: "/item4.png", 
+    link: "/shop",
     pos: "object-center",
     fit: "contain" 
   },
@@ -22,6 +25,7 @@ const slides = [
     title: "Women's Luxe", 
     head: "Handcrafted\nBracelets & Bags.", 
     img: "/bracelet.png", 
+    link: "/shop",
     pos: "object-center",
     fit: "contain"
   },
@@ -29,6 +33,7 @@ const slides = [
     title: "Artisanal Comfort", 
     head: "Premium\nWoolen Blankets.", 
     img: "/blanket.png", 
+    link: "/shop",
     pos: "object-center",
     fit: "contain"
   },
@@ -36,6 +41,7 @@ const slides = [
     title: "Heritage Yarn", 
     head: "Pure Organic\nWool Yarn.", 
     img: yarnImg, 
+    link: "/shop",
     pos: "object-center",
     fit: "contain"
   }
@@ -43,14 +49,36 @@ const slides = [
 
 const Hero = () => {
   const [current, setCurrent] = useState(0);
-
+  const [slides, setSlides] = useState(defaultSlides);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadSlides = async () => {
+      try {
+        const fetchedSlides = await fetchHeroSlides();
+        if (fetchedSlides && fetchedSlides.length > 0) {
+          setSlides(fetchedSlides);
+        }
+      } catch (error) {
+        console.error("Failed to fetch hero slides:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadSlides();
+  }, []);
+
+  useEffect(() => {
+    if (slides.length === 0) return;
     const next = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(next);
-  }, []);
+  }, [slides]);
+
+  if (loading) {
+    return <div className="h-[calc(100dvh-4.5rem)] md:h-[80vh] md:h-auto pt-14 md:pt-24 bg-white border-b border-gray-100 flex items-center justify-center"></div>;
+  }
 
   return (
     <div className="h-[calc(100dvh-4.5rem)] md:h-auto pt-14 md:pt-24 bg-white border-b border-gray-100 flex flex-col">
@@ -95,7 +123,7 @@ const Hero = () => {
                 }}
               >
                 <Link 
-                  to="/shop" 
+                  to={slides[current].link || "/shop"} 
                   className="inline-block px-10 py-4 bg-slate-900 text-white text-xs md:text-sm font-bold uppercase tracking-widest hover:bg-[var(--primary)] hover:shadow-lg transition-all transform hover:-translate-y-1 w-fit"
                 >
                   Shop Now
