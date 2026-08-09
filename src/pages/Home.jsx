@@ -375,7 +375,7 @@ const Home = () => {
         <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-6 md:gap-12 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x">
           {[
             { name: "Nisha Devi", region: "Sonipat, Haryana", craft: "Master Knitter", story: "Nisha leads our local knitting circle in Sonipat, specializing in intricate geometric patterns passed down through generations of her family." },
-            { name: "Ajay Kumar Pandey", region: "Sonipat, Haryana", craft: "Premium Weaver", story: "Ajay transforms raw ethically sourced wool into gossamer-thin wraps using traditional looms preserved in our Sonipat studio." }
+            { name: "Himanshu", region: "Sonipat, Haryana", craft: "Premium Weaver", story: "Himanshu transforms raw ethically sourced wool into gossamer-thin wraps using traditional looms preserved in our Sonipat studio.", phone: "7988790345" }
           ].map((artisan, i) => (
             <motion.div
               key={i}
@@ -391,7 +391,9 @@ const Home = () => {
               <div className="flex-1">
                 <span className="bg-[var(--primary)] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-3 inline-block">{artisan.craft}</span>
                 <h4 className="text-xl md:text-2xl font-bold text-[var(--primary)] mb-2">{artisan.name}</h4>
-                <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-4">{artisan.region}</p>
+                <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-4">
+                  {artisan.region} {artisan.phone && <span className="ml-2 font-bold text-[var(--primary)]">📞 {artisan.phone}</span>}
+                </p>
                 <p className="text-xs md:text-base text-[var(--text-muted)] leading-relaxed italic opacity-80">"{artisan.story}"</p>
               </div>
             </motion.div>
