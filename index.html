@@ -49,6 +49,7 @@
   <meta property="twitter:image" content="https://www.prathamkarigiri.in/og-image.png" />
 
   <link rel="canonical" href="https://www.prathamkarigiri.in/" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
   <title>Pratham Karigiri — Handmade Woolen Products & Crochet Bouquets</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,21 +59,36 @@
 
   <!-- JSON-LD Structured Data for Search Engines -->
   <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Store",
-      "name": "Pratham Karigiri",
-      "url": "https://www.prathamkarigiri.in/",
-      "logo": "https://www.prathamkarigiri.in/favicon.png",
-      "description": "Authentic handcrafted woolen products, crochet bouquets, and artisanal yarn from master artisans.",
-      "keywords": "Pratham Karigiri, woolen products, crochet",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Sonipat",
-        "addressRegion": "Haryana",
-        "addressCountry": "IN"
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "Pratham Karigiri",
+        "url": "https://www.prathamkarigiri.in/",
+        "logo": "https://www.prathamkarigiri.in/favicon.png",
+        "description": "Authentic handcrafted woolen products, crochet bouquets, and artisanal yarn from master artisans.",
+        "keywords": "Pratham Karigiri, woolen products, crochet",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Sonipat",
+          "addressRegion": "Haryana",
+          "addressCountry": "IN"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://www.prathamkarigiri.in/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.prathamkarigiri.in/shop?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
       }
-    }
+    ]
     </script>
 </head>
 

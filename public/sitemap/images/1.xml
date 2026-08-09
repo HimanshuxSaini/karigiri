@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://www.prathamkarigiri.in/about-us</loc>
+    <lastmod>2026-08-09T10:00:00.000Z</lastmod>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/pratham%20karigiri.png</image:loc>
+      <image:title>Pratham Karigiri Workshop</image:title>
+      <image:caption>Inside the Pratham Karigiri workshop where magic happens</image:caption>
+      <image:license>https://www.prathamkarigiri.in/terms</image:license>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.prathamkarigiri.in/our-story</loc>
+    <lastmod>2026-08-09T10:00:00.000Z</lastmod>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/placeholder.png</image:loc>
+      <image:title>The Artisans Behind The Brand</image:title>
+      <image:caption>Meet the skilled artisans crafting your favorite products</image:caption>
+    </image:image>
+  </url>
+</urlset>

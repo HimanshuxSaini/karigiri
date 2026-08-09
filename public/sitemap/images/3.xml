@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://www.prathamkarigiri.in/portfolio/weddings</loc>
+    <lastmod>2026-08-09T10:00:00.000Z</lastmod>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/bookey.png</image:loc>
+      <image:title>Wedding Bouquets Showcase</image:title>
+      <image:caption>Stunning handmade bouquets for weddings and events</image:caption>
+      <image:license>https://www.prathamkarigiri.in/terms</image:license>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.prathamkarigiri.in/portfolio/gifts</loc>
+    <lastmod>2026-08-09T10:00:00.000Z</lastmod>
+    <image:image>
+      <image:loc>https://www.prathamkarigiri.in/item4.png</image:loc>
+      <image:title>Special Gift Items</image:title>
+      <image:caption>Unique handcrafted gift items for your loved ones</image:caption>
+    </image:image>
+  </url>
+</urlset>
