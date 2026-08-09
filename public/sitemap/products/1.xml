@@ -8,7 +8,8 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.prathamkarigiri.in/bag.png</image:loc>
-      <image:title>Bag</image:title>
+      <image:title>Handcrafted Bag</image:title>
+      <image:caption>Beautiful handcrafted bag for everyday use</image:caption>
     </image:image>
   </url>
   <url>
@@ -18,7 +19,8 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.prathamkarigiri.in/blanket.png</image:loc>
-      <image:title>Blanket</image:title>
+      <image:title>Cozy Blanket</image:title>
+      <image:caption>Warm and cozy handcrafted blanket</image:caption>
     </image:image>
   </url>
   <url>
@@ -28,7 +30,8 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.prathamkarigiri.in/bookey.png</image:loc>
-      <image:title>Bouquet</image:title>
+      <image:title>Decorative Bouquet</image:title>
+      <image:caption>Stunning handmade decorative bouquet</image:caption>
     </image:image>
   </url>
   <url>
@@ -38,7 +41,8 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.prathamkarigiri.in/bracelet.png</image:loc>
-      <image:title>Bracelet</image:title>
+      <image:title>Artisan Bracelet</image:title>
+      <image:caption>Unique artisan crafted bracelet</image:caption>
     </image:image>
   </url>
   <url>
@@ -48,7 +52,8 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.prathamkarigiri.in/shawl.png</image:loc>
-      <image:title>Shawl</image:title>
+      <image:title>Elegant Shawl</image:title>
+      <image:caption>Elegant handmade shawl for any occasion</image:caption>
     </image:image>
   </url>
 </urlset>
