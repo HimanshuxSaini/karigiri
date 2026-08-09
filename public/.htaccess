@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Redirect the main sitemap index
+  RewriteRule ^sitemap\.xml$ https://karigiri.onrender.com/api/sitemap.xml [R=301,L]
+
+  # Redirect all sub-sitemaps (e.g. /sitemap/pages.xml)
+  RewriteRule ^sitemap/(.*)\.xml$ https://karigiri.onrender.com/api/sitemap/$1.xml [R=301,L]
+
+  # React Router fallback
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [QSA,L]
+</IfModule>
