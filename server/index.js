@@ -58,8 +58,8 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 app.use(compression());
-const xss = require('xss-clean');
-app.use(xss());
+// xss-clean is incompatible with Express 5+ because it tries to mutate read-only request properties.
+// Validation and sanitization should be handled by express-validator on specific routes.
 
 // Explicit CORS configuration - Restrictive for production
 const allowedOrigins = [
