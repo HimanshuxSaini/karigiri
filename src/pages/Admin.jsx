@@ -2559,7 +2559,7 @@ const Admin = () => {
                       >
                         <option value="">Select Sub-Category</option>
                         <optgroup label="Winterwear">
-                          {['Sweaters', 'Cardigans', 'Vests', 'Hoodies', 'Jackets', 'Coats'].map(s => (
+                          {['Sweaters'].map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </optgroup>

@@ -131,17 +131,20 @@ const ProductCard = ({ product, priority = false }) => {
           </Link>
           <div className="flex flex-wrap items-center gap-1 md:gap-2">
             <span className="font-bold text-xs md:text-sm text-gray-900">₹{(product.price || 0).toLocaleString('en-IN')}</span>
-            {hasDiscount && (
-              <span className="text-[8px] md:text-[10px] text-gray-400 line-through">
-                ₹{product.originalPrice.toLocaleString('en-IN')}
-              </span>
-            )}
-            {hasDiscount && (
-              <span className="text-[8px] md:text-[10px] text-emerald-500 font-bold">({discountPct}% OFF)</span>
-            )}
-            {!hasDiscount && (
-              <span className="text-[8px] md:text-[10px] text-gray-400 line-through">₹{((product.price || 0) + 500).toLocaleString('en-IN')}</span>
-            )}
+            {(() => {
+              const displayOriginalPrice = hasDiscount ? product.originalPrice : Math.round((product.price || 0) / 0.6);
+              const pct = hasDiscount ? discountPct : 40;
+              return displayOriginalPrice > (product.price || 0) ? (
+                <>
+                  <span className="text-[8px] md:text-[10px] text-red-500 line-through font-semibold decoration-2">
+                    ₹{displayOriginalPrice.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-[8px] md:text-[10px] text-[#03342E] font-black uppercase bg-[#03342E]/10 px-1 py-0.5 rounded">
+                    ({pct}% OFF)
+                  </span>
+                </>
+              ) : null;
+            })()}
           </div>
         </div>
       </motion.div>

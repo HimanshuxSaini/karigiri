@@ -30,7 +30,7 @@ export const categoryStructure = {
     position: 'left-0 lg:left-1/2 lg:-translate-x-1/2',
     image: '/item4.png', // Placeholder or use a real one if available
     sections: [
-      { title: 'Winterwear', items: ['Sweaters', 'Cardigans', 'Vests', 'Hoodies', 'Jackets', 'Coats'] },
+      { title: 'Winterwear', items: ['Sweaters'] },
       { title: 'Topwear', items: ['Handmade Shirts', 'Pullovers', 'Knitted Tees'] },
       { title: 'Accessories', items: ['Mufflers', 'Caps & Beanies', 'Handmade Gloves', 'Woolen Socks', 'Neck Warmers', 'Belts'] },
       { title: 'Gifting', items: ['Gift Sets', 'Winter Combos'] }

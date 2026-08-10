@@ -391,14 +391,22 @@ const ProductDetails = () => {
 
             <hr className="mb-6" />
 
-            <div className="flex items-baseline space-x-4 mb-8">
+            <div className="flex items-center space-x-3 mb-6">
               <span className="text-3xl font-black text-slate-900">₹{currentPrice.toLocaleString('en-IN')}</span>
-              {product.originalPrice && product.originalPrice > currentPrice && (
-                <>
-                  <span className="text-xl text-slate-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
-                  <span className="text-xl text-[var(--primary)] font-bold">({Math.round(((product.originalPrice - currentPrice) / product.originalPrice) * 100)}% OFF)</span>
-                </>
-              )}
+              {(() => {
+                const displayOriginalPrice = (product.originalPrice && product.originalPrice > currentPrice) 
+                  ? product.originalPrice 
+                  : Math.round(currentPrice / 0.6); // Simulate 40% off by default
+                
+                const discountPercent = Math.round(((displayOriginalPrice - currentPrice) / displayOriginalPrice) * 100);
+                
+                return displayOriginalPrice > currentPrice ? (
+                  <>
+                    <span className="text-xl text-red-500 line-through font-semibold decoration-2">₹{displayOriginalPrice.toLocaleString('en-IN')}</span>
+                    <span className="text-lg text-[#03342E] font-black uppercase bg-[#03342E]/10 px-2 py-1 rounded-md">{discountPercent}% OFF</span>
+                  </>
+                ) : null;
+              })()}
             </div>
 
             <p className="text-[var(--accent)] font-black text-sm uppercase tracking-wider">inclusive of all taxes</p>
