@@ -20,6 +20,7 @@ import { useCartSync } from './hooks/useCartSync';
 import { useWishlistSync } from './hooks/useWishlistSync';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { isAdminEmail } from './config/constants';
+import SmoothScroll from './components/SmoothScroll';
 
 // Lazy-loaded pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -90,7 +91,7 @@ const AppInner = () => {
   }, [setUser]);
 
   return (
-    <>
+    <SmoothScroll>
       <ScrollToTop />
       <AnimatePresence>
         {showIntro && (
@@ -125,7 +126,7 @@ const AppInner = () => {
         <Footer />
         <BottomNav />
       </div>
-    </>
+    </SmoothScroll>
   );
 };
 
@@ -142,3 +143,4 @@ function App() {
 }
 
 export default App;
+
