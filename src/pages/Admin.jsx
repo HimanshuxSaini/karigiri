@@ -226,6 +226,18 @@ const Admin = () => {
   // Admin Check
   const isAdmin = isAdminEmail(user?.email);
 
+  // Lock body scroll when any modal is open
+  useEffect(() => {
+    if (showProductModal || showReelModal || showCouponModal || showHeroModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showProductModal, showReelModal, showCouponModal, showHeroModal]);
+
   useEffect(() => {
     if (isAdmin) {
       loadData();
@@ -2228,7 +2240,7 @@ const Admin = () => {
       {/* Hero Slide Modal */}
       <AnimatePresence>
         {showHeroModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2243,7 +2255,7 @@ const Admin = () => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+              <div className="p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar" data-lenis-prevent="true">
                 <h2 className="text-2xl font-serif font-bold mb-6">{editingHeroIndex !== null ? 'Edit Slide' : 'Add New Slide'}</h2>
                 <form onSubmit={async (e) => {
                   e.preventDefault();
@@ -2384,7 +2396,7 @@ const Admin = () => {
       {/* Product Modal */}
       <AnimatePresence>
         {showProductModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2399,7 +2411,7 @@ const Admin = () => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+              <div className="p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar" data-lenis-prevent="true">
                 <h2 className="text-2xl font-serif font-bold mb-6">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
                 <form onSubmit={handleSubmitProduct} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -2874,15 +2886,15 @@ const Admin = () => {
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl relative z-10"
+              className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
             >
-              <div className="bg-black p-5 flex justify-between items-center">
+              <div className="bg-black p-5 flex justify-between items-center flex-shrink-0">
                 <h3 className="text-white font-serif text-xl">{editingReel ? 'Edit Reel' : 'Add New Reel'}</h3>
                 <button onClick={() => setShowReelModal(false)} className="text-white hover:opacity-70">
                   <XCircle size={24} />
                 </button>
               </div>
-              <div className="p-6">
+              <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar" data-lenis-prevent="true">
                 <form onSubmit={handleSubmitReel} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Reel Preview / Image</label>
@@ -2974,12 +2986,13 @@ const Admin = () => {
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCouponModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
             <Motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-lg relative z-10">
-              <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden">
-                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-5 flex items-center justify-between">
+              <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-5 flex items-center justify-between flex-shrink-0">
                   <h3 className="text-white font-serif text-xl">{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h3>
                   <button onClick={() => setShowCouponModal(false)} className="text-white hover:opacity-70"><X size={24} /></button>
                 </div>
-                <form onSubmit={handleSubmitCoupon} className="p-6 space-y-4">
+                <div className="overflow-y-auto flex-1 min-h-0 custom-scrollbar" data-lenis-prevent="true">
+                  <form onSubmit={handleSubmitCoupon} className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-black uppercase tracking-widest text-gray-400">Code *</label>
@@ -3069,6 +3082,7 @@ const Admin = () => {
                     <button type="button" onClick={() => setShowCouponModal(false)} className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
                   </div>
                 </form>
+                </div>
               </div>
             </Motion.div>
           </div>
@@ -3120,7 +3134,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onDeleteOrder, onPri
           </button>
         </div>
 
-        <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar" data-lenis-prevent="true">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 pb-8 border-b border-gray-100">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-gray-50 rounded-xl text-[var(--primary)]"><Clock size={18} /></div>
