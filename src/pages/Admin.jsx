@@ -2243,7 +2243,7 @@ const Admin = () => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="p-8 overflow-y-auto">
+              <div className="p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
                 <h2 className="text-2xl font-serif font-bold mb-6">{editingHeroIndex !== null ? 'Edit Slide' : 'Add New Slide'}</h2>
                 <form onSubmit={async (e) => {
                   e.preventDefault();
@@ -2399,7 +2399,7 @@ const Admin = () => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="p-8 overflow-y-auto">
+              <div className="p-8 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
                 <h2 className="text-2xl font-serif font-bold mb-6">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
                 <form onSubmit={handleSubmitProduct} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
