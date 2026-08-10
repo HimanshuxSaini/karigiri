@@ -17,7 +17,7 @@ const FREE_DELIVERY_THRESHOLD = 1000;
 // Star rating component
 const StarRating = ({ value, onChange, size = 20 }) => (
   <div className="flex gap-1">
-    {[1,2,3,4,5].map(star => (
+    {[1, 2, 3, 4, 5].map(star => (
       <button
         key={star}
         type="button"
@@ -217,7 +217,7 @@ const ProductDetails = () => {
   const seoTitle = `${product.name} | Pratham Karigiri`;
   const seoDescription = product.description ? product.description.slice(0, 160) : `Buy ${product.name} online at Pratham Karigiri. Authentic handcrafted woolen products.`;
   const schemaImage = getOptimizedImage(product.image ? [product.image, ...(product.images || [])].filter(Boolean)[0] : 'https://www.prathamkarigiri.in/og-image.png', { width: 800, quality: 'auto:eco' });
-  
+
   const schemaData = {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -276,7 +276,7 @@ const ProductDetails = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
+      <SEO
         title={seoTitle}
         description={seoDescription}
         canonicalUrl={`https://www.prathamkarigiri.in/product/${product._id || product.id}`}
@@ -337,11 +337,10 @@ const ProductDetails = () => {
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
                     onMouseEnter={() => setActiveImageIndex(idx)}
-                    className={`relative w-20 h-24 bg-gray-50 rounded-xl overflow-hidden border-2 transition-all flex items-center justify-center ${
-                      activeImageIndex === idx
+                    className={`relative w-20 h-24 bg-gray-50 rounded-xl overflow-hidden border-2 transition-all flex items-center justify-center ${activeImageIndex === idx
                         ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/10 scale-105 shadow-md'
                         : 'border-slate-200 hover:border-slate-400'
-                    }`}
+                      }`}
                   >
                     <img
                       src={getOptimizedImage(img, { width: 200, quality: 'auto:eco' })}
@@ -435,8 +434,8 @@ const ProductDetails = () => {
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={`min-w-12 h-12 px-4 rounded-full border-2 font-bold text-sm transition-all flex items-center justify-center ${selectedSize === size
-                          ? 'border-[var(--primary)] text-[var(--primary)] bg-[var(--secondary)]/20'
-                          : 'border-slate-200 text-slate-900 hover:border-slate-900'
+                        ? 'border-[var(--primary)] text-[var(--primary)] bg-[var(--secondary)]/20'
+                        : 'border-slate-200 text-slate-900 hover:border-slate-900'
                         }`}
                     >
                       {size}
@@ -454,11 +453,10 @@ const ProductDetails = () => {
                 whileTap={!isOutOfStock ? { scale: 0.97 } : {}}
                 disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className={`flex-1 h-14 rounded-xl font-black text-[11px] uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 transition-all duration-200 ${
-                  isOutOfStock
+                className={`flex-1 h-14 rounded-xl font-black text-[11px] uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 transition-all duration-200 ${isOutOfStock
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                     : 'bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/25 hover:shadow-xl hover:shadow-[var(--primary)]/30 hover:brightness-110'
-                }`}
+                  }`}
               >
                 <ShoppingBag size={17} strokeWidth={2.5} />
                 <span>{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
@@ -480,11 +478,10 @@ const ProductDetails = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleToggleWishlist}
-                className={`h-14 px-6 rounded-xl border-2 font-black text-[11px] uppercase tracking-[0.18em] flex items-center gap-2.5 transition-all duration-200 ${
-                  isWishlisted
+                className={`h-14 px-6 rounded-xl border-2 font-black text-[11px] uppercase tracking-[0.18em] flex items-center gap-2.5 transition-all duration-200 ${isWishlisted
                     ? 'border-rose-400 text-rose-500 bg-rose-50 shadow-md shadow-rose-200'
                     : 'border-slate-200 text-slate-700 hover:border-slate-400 hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 <Heart size={17} strokeWidth={2.5} fill={isWishlisted ? 'currentColor' : 'none'} />
                 <span>Wishlist</span>
@@ -506,8 +503,12 @@ const ProductDetails = () => {
               <div className="flex items-start space-x-4">
                 <RotateCcw className="text-slate-400" size={24} />
                 <div>
-                  <h5 className="font-bold text-sm">Easy 7-Day Returns & Exchange</h5>
-                  <p className="text-xs text-slate-400">Hassle-free return policy</p>
+                  <h5 className="font-bold text-sm">
+                    {product.isReturnable ? `Easy ${product.returnDays || 7}-Day Returns` : 'All Products are Genuine'}
+                  </h5>
+                  <p className="text-xs text-slate-400">
+                    {product.isReturnable ? 'Hassle-free return policy' : 'Products are not returnable'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -536,8 +537,8 @@ const ProductDetails = () => {
                 <div>
                   <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] mb-1">Availability</h4>
                   <p className={`text-sm font-bold ${product.inStock !== false ? (product.stockCount !== undefined && product.stockCount < 10 ? 'text-red-500' : 'text-emerald-600') : 'text-red-500'}`}>
-                    {product.inStock !== false 
-                      ? (product.stockCount !== undefined && product.stockCount < 10 && product.stockCount > 0 ? `Only ${product.stockCount} Left` : 'In Stock') 
+                    {product.inStock !== false
+                      ? (product.stockCount !== undefined && product.stockCount < 10 && product.stockCount > 0 ? `Only ${product.stockCount} Left` : 'In Stock')
                       : 'Out of Stock'}
                   </p>
                 </div>
@@ -625,7 +626,7 @@ const ProductDetails = () => {
         {/* Review list */}
         {reviewsLoading ? (
           <div className="space-y-4">
-            {[1,2].map(i => <div key={i} className="h-20 bg-slate-100 animate-pulse rounded-xl" />)}
+            {[1, 2].map(i => <div key={i} className="h-20 bg-slate-100 animate-pulse rounded-xl" />)}
           </div>
         ) : reviews.length === 0 ? (
           <p className="text-slate-400 text-sm text-center py-8">No reviews yet. Be the first to review!</p>
@@ -653,7 +654,7 @@ const ProductDetails = () => {
 
       {/* Recommended Products Section */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 pb-24 md:pb-32 pt-4">
-        <RecommendedProducts 
+        <RecommendedProducts
           title="You May Also Like"
           excludeProductIds={[product._id || product.id, ...similarIds]}
           limit={10}
@@ -691,11 +692,10 @@ const ProductDetails = () => {
           <button
             disabled={isOutOfStock}
             onClick={() => !isOutOfStock && addItem({ ...product, size: selectedSize })}
-            className={`flex-1 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all ${
-              isOutOfStock
+            className={`flex-1 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all ${isOutOfStock
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-[var(--primary)] text-white hover:brightness-110'
-            }`}
+              }`}
           >
             <ShoppingBag size={16} strokeWidth={2.5} />
             <span className="whitespace-nowrap">{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
@@ -706,13 +706,13 @@ const ProductDetails = () => {
       {/* Size Chart Modal */}
       {showSizeChart && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
           >
-            <button 
+            <button
               onClick={() => setShowSizeChart(false)}
               className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-400 hover:text-gray-900 transition-colors w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100"
             >
@@ -720,10 +720,10 @@ const ProductDetails = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            
+
             <h3 className="text-xl md:text-2xl font-black text-[var(--primary)] uppercase tracking-tight mb-2">Size Chart</h3>
             <p className="text-xs md:text-sm text-slate-500 mb-6">Standard size measurements for our exquisite hand-knitted & woolen apparel.</p>
-            
+
             <div className="overflow-x-auto border border-slate-100 rounded-2xl mb-8">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -768,7 +768,7 @@ const ProductDetails = () => {
                 </tbody>
               </table>
             </div>
-            
+
             <div className="bg-[var(--secondary)]/10 p-5 rounded-2xl border border-[var(--secondary)]/30">
               <h4 className="font-black text-xs uppercase tracking-widest text-[var(--primary)] mb-3">How to Measure</h4>
               <div className="space-y-3 text-xs text-slate-600">
@@ -777,9 +777,9 @@ const ProductDetails = () => {
                 <p><strong className="text-[var(--primary)] font-bold">3. Length:</strong> Measure from the highest point of the shoulder down to the hem.</p>
               </div>
             </div>
-            
+
             <div className="mt-8 flex justify-end">
-              <button 
+              <button
                 onClick={() => setShowSizeChart(false)}
                 className="bg-[var(--primary)] text-white px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg"
               >

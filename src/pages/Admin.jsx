@@ -220,7 +220,9 @@ const Admin = () => {
     sizeType: 'none',
     sizes: [],
     deliveryCharge: 0,
-    badge: 'none'
+    badge: 'none',
+    isReturnable: false,
+    returnDays: 7
   });
 
   // Admin Check
@@ -290,35 +292,35 @@ const Admin = () => {
       setOrders(orderRes || []);
       setReels(reelRes || []);
       setCoupons(couponRes || []);
-      
+
       const defaultHeroSlides = [
-        { 
-          title: "Floral Collection", 
-          head: "Artisanal\nCrochet Bouquet.", 
-          img: "/bookey.png", 
+        {
+          title: "Floral Collection",
+          head: "Artisanal\nCrochet Bouquet.",
+          img: "/bookey.png",
           link: "/shop"
         },
-        { 
-          title: "Kids Collection", 
-          head: "Warmth for\nSmall Wonders.", 
-          img: "/item4.png", 
+        {
+          title: "Kids Collection",
+          head: "Warmth for\nSmall Wonders.",
+          img: "/item4.png",
           link: "/shop"
         },
-        { 
-          title: "Women's Luxe", 
-          head: "Handcrafted\nBracelets & Bags.", 
-          img: "/bracelet.png", 
+        {
+          title: "Women's Luxe",
+          head: "Handcrafted\nBracelets & Bags.",
+          img: "/bracelet.png",
           link: "/shop"
         },
-        { 
-          title: "Artisanal Comfort", 
-          head: "Premium\nWoolen Blankets.", 
-          img: "/blanket.png", 
+        {
+          title: "Artisanal Comfort",
+          head: "Premium\nWoolen Blankets.",
+          img: "/blanket.png",
           link: "/shop"
         }
       ];
       setHeroSlides((heroRes && heroRes.length > 0) ? heroRes : defaultHeroSlides);
-      
+
       const defaultAnnouncements = [
         "It's 14°C in your area – try our Heavy Knit Cardigans!",
         "SHOP YOUR FIRST ORDER WITH FREE DELIVERY",
@@ -326,8 +328,8 @@ const Admin = () => {
         "EASY 7-DAY RETURNS & EXCHANGE",
       ];
       setAnnouncements(
-        settingsRes?.announcements && settingsRes.announcements.length > 0 
-          ? settingsRes.announcements 
+        settingsRes?.announcements && settingsRes.announcements.length > 0
+          ? settingsRes.announcements
           : defaultAnnouncements
       );
       if (saleRes) {
@@ -392,7 +394,7 @@ const Admin = () => {
       const idMatch = String(o?._id || o?.id || '').toLowerCase().includes(searchLower);
       const phoneMatch = String(o?.shippingAddress?.phone || '').includes(orderSearch);
       const emailMatch = String(o?.email || '').toLowerCase().includes(searchLower);
-      
+
       const isSuspicious = o.isDeletedByAdmin === true || o.status?.includes('Suspicious');
       let statusMatch = false;
 
@@ -415,7 +417,7 @@ const Admin = () => {
     // Clean active stats from fake/deleted orders
     const activeOrders = ordersArray.filter(o => !o.isDeletedByAdmin && !o.status?.includes('Suspicious'));
     const totalRevenue = activeOrders.reduce((acc, o) => acc + (Number(o?.totalPrice) || 0), 0);
-    
+
     return [
       { label: 'TOTAL REVENUE', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: <ShoppingBag className="text-emerald-500" />, color: "bg-emerald-50" },
       { label: 'TOTAL ORDERS', value: activeOrders.length, icon: <Package className="text-blue-500" />, color: "bg-blue-50" },
@@ -456,7 +458,9 @@ const Admin = () => {
       sizeType: product.sizeType || 'none',
       sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
       deliveryCharge: product.deliveryCharge || 0,
-      badge: product.badge || 'none'
+      badge: product.badge || 'none',
+      isReturnable: product.isReturnable || false,
+      returnDays: product.returnDays || 7
     });
     setShowProductModal(true);
   };
@@ -590,10 +594,10 @@ const Admin = () => {
         await deleteOrder(id);
         // Soft-update local state so it automatically shifts to the Fake Orders tab instantly
         setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, isDeletedByAdmin: true, status: 'Cancelled (Suspicious)' } : o));
-        
+
         // AUTOMATICALLY switch active view to Fake Orders so admin instantly sees the transition
         setOrderFilter('Suspicious');
-        
+
         showNotification('Order successfully moved to Fake Orders');
         if (selectedOrder && (selectedOrder._id === id || selectedOrder.id === id)) {
           setSelectedOrder(null);
@@ -945,7 +949,7 @@ const Admin = () => {
 
           {/* Horizontal Tab Navigation */}
           <div className="relative">
-            <div 
+            <div
               ref={tabsContainerRef}
               onScroll={checkScroll}
               className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto no-scrollbar"
@@ -956,8 +960,8 @@ const Admin = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${activeTab === tab.id
-                        ? 'bg-black text-white shadow-xl'
-                        : 'text-gray-400 hover:text-gray-900'
+                      ? 'bg-black text-white shadow-xl'
+                      : 'text-gray-400 hover:text-gray-900'
                       }`}
                   >
                     <tab.icon size={16} />
@@ -966,11 +970,11 @@ const Admin = () => {
                 ))}
               </div>
             </div>
-            
+
             {/* Scroll Indicator Gradient & Arrow */}
             <AnimatePresence>
               {canScrollLeft && (
-                <Motion.div 
+                <Motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -983,7 +987,7 @@ const Admin = () => {
               )}
 
               {canScrollRight && (
-                <Motion.div 
+                <Motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -1099,7 +1103,7 @@ const Admin = () => {
 
                     {/* Low Stock Alerts */}
                     {(() => {
-                      const lowStockProducts = Array.isArray(products) 
+                      const lowStockProducts = Array.isArray(products)
                         ? products.filter(p => p.stockCount !== undefined && p.stockCount <= 5).sort((a, b) => a.stockCount - b.stockCount)
                         : [];
                       return (
@@ -1123,9 +1127,9 @@ const Admin = () => {
                             <div className="space-y-3 flex-1">
                               {lowStockProducts.length > 0 ? (
                                 lowStockProducts.slice(0, 3).map((product, idx) => (
-                                  <div 
-                                    key={product._id || product.id || idx} 
-                                    className="flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-rose-100/50 hover:bg-white hover:shadow-md transition-all cursor-pointer group/item" 
+                                  <div
+                                    key={product._id || product.id || idx}
+                                    className="flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-rose-100/50 hover:bg-white hover:shadow-md transition-all cursor-pointer group/item"
                                     onClick={() => setActiveTab('stock')}
                                   >
                                     <div className="flex items-center space-x-4">
@@ -1152,9 +1156,9 @@ const Admin = () => {
                                 </div>
                               )}
                             </div>
-                            
+
                             {lowStockProducts.length > 3 && (
-                              <button 
+                              <button
                                 onClick={() => setActiveTab('stock')}
                                 className="mt-6 flex items-center justify-center space-x-2 text-xs font-black uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-100/50 py-3 rounded-xl transition-colors w-full"
                               >
@@ -1335,12 +1339,12 @@ const Admin = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
                                 <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
-                                    p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
-                                      p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
-                                        p?.category === 'Bouquet' ? 'bg-pink-50 text-pink-600' :
-                                          p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
-                                            p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
-                                              'bg-gray-100 text-gray-600'
+                                  p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
+                                    p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
+                                      p?.category === 'Bouquet' ? 'bg-pink-50 text-pink-600' :
+                                        p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
+                                          p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
+                                            'bg-gray-100 text-gray-600'
                                   }`}>
                                   {p?.category || 'Uncategorized'}
                                 </span>
@@ -1418,12 +1422,12 @@ const Admin = () => {
                                 <td className="px-6 py-4">
                                   <div className="flex flex-col space-y-1">
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${p?.category === 'Kids' ? 'bg-blue-50 text-blue-600' :
-                                        p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
-                                          p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
-                                            p?.category === 'Bouquet' ? 'bg-pink-50 text-pink-600' :
-                                              p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
-                                                p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
-                                                  'bg-gray-100 text-gray-600'
+                                      p?.category === 'Women' ? 'bg-rose-50 text-rose-600' :
+                                        p?.category === 'Men' ? 'bg-slate-100 text-slate-700' :
+                                          p?.category === 'Bouquet' ? 'bg-pink-50 text-pink-600' :
+                                            p?.category === 'Laddu Gopal' ? 'bg-orange-50 text-orange-600' :
+                                              p?.category === 'Yarn' ? 'bg-amber-50 text-amber-600' :
+                                                'bg-gray-100 text-gray-600'
                                       }`}>
                                       {p?.category || 'Uncategorized'}
                                     </span>
@@ -1474,12 +1478,12 @@ const Admin = () => {
                           key={status}
                           onClick={() => setOrderFilter(status)}
                           className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${orderFilter === status
-                              ? status === 'Suspicious' 
-                                ? 'bg-red-600 text-white shadow-lg shadow-red-100' 
-                                : 'bg-black text-white'
-                              : status === 'Suspicious'
-                                ? 'text-red-500 hover:bg-red-50 border border-dashed border-red-100'
-                                : 'text-gray-400 hover:text-gray-600'
+                            ? status === 'Suspicious'
+                              ? 'bg-red-600 text-white shadow-lg shadow-red-100'
+                              : 'bg-black text-white'
+                            : status === 'Suspicious'
+                              ? 'text-red-500 hover:bg-red-50 border border-dashed border-red-100'
+                              : 'text-gray-400 hover:text-gray-600'
                             }`}
                         >
                           {status === 'Suspicious' ? 'Fake Orders' : status}
@@ -1518,9 +1522,9 @@ const Admin = () => {
                               <h4 className="font-bold text-lg">#{String(order?._id || order?.id || '').slice(-8).toUpperCase() || 'NEW-ORDER'}</h4>
                             </div>
                             <span className={`px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider ${order?.status === 'Processing' ? 'bg-amber-100 text-amber-700' :
-                                order?.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
-                                  order?.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' :
-                                    'bg-gray-100 text-gray-700'
+                              order?.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
+                                order?.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' :
+                                  'bg-gray-100 text-gray-700'
                               }`}>
                               {order?.status || 'Pending'}
                             </span>
@@ -1623,8 +1627,8 @@ const Admin = () => {
                                 <p className="font-bold text-gray-900 font-mono">#{String(order?._id || order?.id || '').slice(-8).toUpperCase()}</p>
                               </div>
                               <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${order?.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' :
-                                  order?.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
-                                    'bg-amber-50 text-amber-600'
+                                order?.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
+                                  'bg-amber-50 text-amber-600'
                                 }`}>
                                 {order?.status || 'Processing'}
                               </span>
@@ -1706,8 +1710,8 @@ const Admin = () => {
                                 </td>
                                 <td className="px-6 py-4">
                                   <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${order?.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600' :
-                                      order?.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
-                                        'bg-amber-50 text-amber-600'
+                                    order?.status === 'Shipped' ? 'bg-blue-50 text-blue-600' :
+                                      'bg-amber-50 text-amber-600'
                                     }`}>
                                     {order?.status || 'Processing'}
                                   </span>
@@ -1950,7 +1954,7 @@ const Admin = () => {
                           type="datetime-local"
                           required
                           className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                          value={saleConfig.endTime ? new Date(new Date(saleConfig.endTime).getTime() - new Date(saleConfig.endTime).getTimezoneOffset()*60000).toISOString().slice(0,16) : ''}
+                          value={saleConfig.endTime ? new Date(new Date(saleConfig.endTime).getTime() - new Date(saleConfig.endTime).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
                           onChange={(e) => setSaleConfig(prev => ({ ...prev, endTime: e.target.value ? new Date(e.target.value).toISOString() : '' }))}
                         />
                         <p className="text-[10px] text-gray-400">Note: Ensure the end time is in the future to start the timer.</p>
@@ -1998,7 +2002,7 @@ const Admin = () => {
 
                   <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                     <h3 className="text-xl font-bold mb-6">Current Offers</h3>
-                    
+
                     <div className="space-y-4 mb-8">
                       {announcements.map((text, index) => (
                         <div key={index} className="flex justify-between items-center bg-gray-50 p-4 rounded-xl">
@@ -2183,7 +2187,7 @@ const Admin = () => {
                           onChange={(e) => setPushData(prev => ({ ...prev, title: e.target.value }))}
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Message Body</label>
                         <textarea
@@ -2266,7 +2270,7 @@ const Admin = () => {
                   } else {
                     newSlides.push(heroFormData);
                   }
-                  
+
                   try {
                     await updateHeroSlides(newSlides);
                     setHeroSlides(newSlides);
@@ -2791,11 +2795,10 @@ const Admin = () => {
                                     : [...currentSizes, sz];
                                   setFormData({ ...formData, sizes: newSizes });
                                 }}
-                                className={`px-4 py-2 rounded-xl text-xs font-black transition-all transform active:scale-95 border ${
-                                  isSelected
+                                className={`px-4 py-2 rounded-xl text-xs font-black transition-all transform active:scale-95 border ${isSelected
                                     ? 'bg-[var(--primary)] text-white border-[var(--primary)] shadow-md shadow-[var(--primary)]/10'
                                     : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
-                                }`}
+                                  }`}
                               >
                                 {sz}
                               </button>
@@ -2838,6 +2841,35 @@ const Admin = () => {
                       <label htmlFor="inStock" className="text-sm font-bold text-gray-700">Available in Stock</label>
                     </div>
                   </div>
+                  
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center space-x-3 pt-4">
+                      <input
+                        type="checkbox"
+                        id="isReturnable"
+                        checked={formData.isReturnable}
+                        onChange={(e) => setFormData({ ...formData, isReturnable: e.target.checked })}
+                        className="w-5 h-5 accent-[var(--primary)]"
+                      />
+                      <label htmlFor="isReturnable" className="text-sm font-bold text-gray-700">Is Returnable?</label>
+                    </div>
+                    {formData.isReturnable && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Return Days</label>
+                        <select
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={formData.returnDays || 7}
+                          onChange={(e) => setFormData({ ...formData, returnDays: Number(e.target.value) })}
+                        >
+                          <option value={7}>7 Days</option>
+                          <option value={10}>10 Days</option>
+                          <option value={15}>15 Days</option>
+                          <option value={30}>30 Days</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="md:col-span-2 flex space-x-4 mt-4">
                     <button
                       type="submit"
@@ -2993,95 +3025,95 @@ const Admin = () => {
                 </div>
                 <div className="overflow-y-auto flex-1 min-h-0 custom-scrollbar" data-lenis-prevent="true">
                   <form onSubmit={handleSubmitCoupon} className="p-6 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Code *</label>
-                      <input type="text" required value={couponFormData.code} onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })} placeholder="SUMMER20" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none font-bold uppercase tracking-wider" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Discount Type</label>
-                      <select value={couponFormData.discountType} onChange={(e) => setCouponFormData({ ...couponFormData, discountType: e.target.value })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 outline-none font-bold">
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="flat">Flat Amount (₹)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">Description</label>
-                    <input type="text" value={couponFormData.description} onChange={(e) => setCouponFormData({ ...couponFormData, description: e.target.value })} placeholder="Festival sale discount" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 outline-none" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {couponFormData.discountType === 'percentage' ? (
-                      <>
-                        <div className="space-y-1">
-                          <label className="text-xs font-black uppercase tracking-widest text-gray-400">Discount %</label>
-                          <input type="number" min="1" max="100" value={couponFormData.discountPercent} onChange={(e) => setCouponFormData({ ...couponFormData, discountPercent: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-black uppercase tracking-widest text-gray-400">Max Discount (₹)</label>
-                          <input type="number" min="0" value={couponFormData.maxDiscount} onChange={(e) => setCouponFormData({ ...couponFormData, maxDiscount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
-                        </div>
-                      </>
-                    ) : (
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Flat Discount (₹)</label>
-                        <input type="number" min="0" value={couponFormData.discountAmount} onChange={(e) => setCouponFormData({ ...couponFormData, discountAmount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Code *</label>
+                        <input type="text" required value={couponFormData.code} onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })} placeholder="SUMMER20" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none font-bold uppercase tracking-wider" />
                       </div>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Min Order (₹)</label>
-                      <input type="number" min="0" value={couponFormData.minOrderAmount} onChange={(e) => setCouponFormData({ ...couponFormData, minOrderAmount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Discount Type</label>
+                        <select value={couponFormData.discountType} onChange={(e) => setCouponFormData({ ...couponFormData, discountType: e.target.value })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 outline-none font-bold">
+                          <option value="percentage">Percentage (%)</option>
+                          <option value="flat">Flat Amount (₹)</option>
+                        </select>
+                      </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Usage Limit</label>
-                      <input type="number" min="0" value={couponFormData.usageLimit} onChange={(e) => setCouponFormData({ ...couponFormData, usageLimit: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Description</label>
+                      <input type="text" value={couponFormData.description} onChange={(e) => setCouponFormData({ ...couponFormData, description: e.target.value })} placeholder="Festival sale discount" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 outline-none" />
                     </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-400">Expiry Date & Time</label>
-                    <input 
-                      type="datetime-local" 
-                      value={couponFormData.expiryDate ? new Date(new Date(couponFormData.expiryDate).getTime() - new Date(couponFormData.expiryDate).getTimezoneOffset()*60000).toISOString().slice(0,16) : ''} 
-                      onChange={(e) => setCouponFormData({ ...couponFormData, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : null })} 
-                      className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold focus:ring-2 focus:ring-purple-500/20" 
-                    />
-                    <p className="text-[10px] text-gray-400">Optional. Coupon will automatically stop working after this point.</p>
-                  </div>
-                  {(() => {
-                    const isCouponExpired = couponFormData.expiryDate && new Date(couponFormData.expiryDate) < new Date();
-                    return (
-                      <div className={`flex items-center space-x-3 p-4 rounded-xl ${isCouponExpired ? 'bg-red-50' : 'bg-gray-50'}`}>
-                        <input 
-                          type="checkbox" 
-                          disabled={isCouponExpired}
-                          checked={isCouponExpired ? false : couponFormData.isActive} 
-                          onChange={(e) => setCouponFormData({ ...couponFormData, isActive: e.target.checked })} 
-                          className="w-5 h-5 rounded accent-purple-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed" 
-                        />
-                        <div className="flex flex-col">
-                          <label className={`text-sm font-bold ${isCouponExpired ? 'text-red-700' : 'text-gray-700'}`}>Coupon is Active</label>
-                          {isCouponExpired && <span className="text-[10px] text-red-600 mt-0.5 font-medium">Expired coupons cannot be activated. Extend the expiry date first.</span>}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  <div className="flex space-x-3 pt-2">
-                    <button
-                      type="submit"
-                      disabled={isSubmittingCoupon}
-                      className={`flex-grow bg-purple-600 text-white py-3.5 rounded-2xl font-bold hover:bg-purple-700 transition-all shadow-lg flex items-center justify-center ${isSubmittingCoupon ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    >
-                      {isSubmittingCoupon ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="grid grid-cols-2 gap-4">
+                      {couponFormData.discountType === 'percentage' ? (
+                        <>
+                          <div className="space-y-1">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Discount %</label>
+                            <input type="number" min="1" max="100" value={couponFormData.discountPercent} onChange={(e) => setCouponFormData({ ...couponFormData, discountPercent: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Max Discount (₹)</label>
+                            <input type="number" min="0" value={couponFormData.maxDiscount} onChange={(e) => setCouponFormData({ ...couponFormData, maxDiscount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                          </div>
+                        </>
                       ) : (
-                        editingCoupon ? 'Update Coupon' : 'Create Coupon'
+                        <div className="space-y-1">
+                          <label className="text-xs font-black uppercase tracking-widest text-gray-400">Flat Discount (₹)</label>
+                          <input type="number" min="0" value={couponFormData.discountAmount} onChange={(e) => setCouponFormData({ ...couponFormData, discountAmount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                        </div>
                       )}
-                    </button>
-                    <button type="button" onClick={() => setShowCouponModal(false)} className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
-                  </div>
-                </form>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Min Order (₹)</label>
+                        <input type="number" min="0" value={couponFormData.minOrderAmount} onChange={(e) => setCouponFormData({ ...couponFormData, minOrderAmount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Usage Limit</label>
+                        <input type="number" min="0" value={couponFormData.usageLimit} onChange={(e) => setCouponFormData({ ...couponFormData, usageLimit: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Expiry Date & Time</label>
+                      <input
+                        type="datetime-local"
+                        value={couponFormData.expiryDate ? new Date(new Date(couponFormData.expiryDate).getTime() - new Date(couponFormData.expiryDate).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => setCouponFormData({ ...couponFormData, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold focus:ring-2 focus:ring-purple-500/20"
+                      />
+                      <p className="text-[10px] text-gray-400">Optional. Coupon will automatically stop working after this point.</p>
+                    </div>
+                    {(() => {
+                      const isCouponExpired = couponFormData.expiryDate && new Date(couponFormData.expiryDate) < new Date();
+                      return (
+                        <div className={`flex items-center space-x-3 p-4 rounded-xl ${isCouponExpired ? 'bg-red-50' : 'bg-gray-50'}`}>
+                          <input
+                            type="checkbox"
+                            disabled={isCouponExpired}
+                            checked={isCouponExpired ? false : couponFormData.isActive}
+                            onChange={(e) => setCouponFormData({ ...couponFormData, isActive: e.target.checked })}
+                            className="w-5 h-5 rounded accent-purple-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                          />
+                          <div className="flex flex-col">
+                            <label className={`text-sm font-bold ${isCouponExpired ? 'text-red-700' : 'text-gray-700'}`}>Coupon is Active</label>
+                            {isCouponExpired && <span className="text-[10px] text-red-600 mt-0.5 font-medium">Expired coupons cannot be activated. Extend the expiry date first.</span>}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    <div className="flex space-x-3 pt-2">
+                      <button
+                        type="submit"
+                        disabled={isSubmittingCoupon}
+                        className={`flex-grow bg-purple-600 text-white py-3.5 rounded-2xl font-bold hover:bg-purple-700 transition-all shadow-lg flex items-center justify-center ${isSubmittingCoupon ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      >
+                        {isSubmittingCoupon ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          editingCoupon ? 'Update Coupon' : 'Create Coupon'
+                        )}
+                      </button>
+                      <button type="button" onClick={() => setShowCouponModal(false)} className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </Motion.div>
@@ -3213,8 +3245,8 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onDeleteOrder, onPri
                   key={status}
                   onClick={() => onUpdateStatus(order?._id || order?.id, status)}
                   className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${order?.status === status
-                      ? 'bg-emerald-600 text-white shadow-lg'
-                      : 'bg-white text-emerald-700 border border-emerald-100 hover:bg-emerald-100'
+                    ? 'bg-emerald-600 text-white shadow-lg'
+                    : 'bg-white text-emerald-700 border border-emerald-100 hover:bg-emerald-100'
                     }`}
                 >
                   {status}

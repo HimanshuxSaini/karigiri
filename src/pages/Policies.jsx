@@ -168,7 +168,7 @@ const Policies = () => {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <SEO 
+      <SEO
         title={`${data.title} | PrathamKarigiri`}
         description={`Read the ${data.title} for PrathamKarigiri.`}
       />

@@ -31,12 +31,12 @@ const AnnouncementBar = () => {
 
   return (
     <div className="hidden md:flex bg-slate-900 text-white py-2 overflow-hidden fixed top-0 w-full z-[60] h-9 items-center">
-      <motion.div 
+      <motion.div
         animate={{ x: [0, -1000] }}
-        transition={{ 
-          duration: 30, 
-          repeat: Infinity, 
-          ease: "linear" 
+        transition={{
+          duration: 30,
+          repeat: Infinity,
+          ease: "linear"
         }}
         className="flex whitespace-nowrap space-x-20 px-4"
       >
