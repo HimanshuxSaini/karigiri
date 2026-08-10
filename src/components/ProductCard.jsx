@@ -132,8 +132,26 @@ const ProductCard = ({ product, priority = false }) => {
           <div className="flex flex-wrap items-center gap-1 md:gap-2">
             <span className="font-bold text-xs md:text-sm text-gray-900">₹{(product.price || 0).toLocaleString('en-IN')}</span>
             {(() => {
-              const displayOriginalPrice = hasDiscount ? product.originalPrice : Math.round((product.price || 0) / 0.6);
-              const pct = hasDiscount ? discountPct : 40;
+              const getStableRandomDiscount = (id) => {
+                if (!id) return 40;
+                let hash = 0;
+                for (let i = 0; i < id.length; i++) {
+                  hash = id.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                return 15 + (Math.abs(hash) % 31); // 15% to 45%
+              };
+
+              let displayOriginalPrice;
+              let pct;
+              
+              if (hasDiscount) {
+                displayOriginalPrice = product.originalPrice;
+                pct = discountPct;
+              } else {
+                pct = getStableRandomDiscount(product.id || product._id);
+                displayOriginalPrice = Math.round((product.price || 0) / (1 - (pct / 100)));
+              }
+
               return displayOriginalPrice > (product.price || 0) ? (
                 <>
                   <span className="text-[8px] md:text-[10px] text-red-500 line-through font-semibold decoration-2">

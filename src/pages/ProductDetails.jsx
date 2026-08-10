@@ -394,11 +394,25 @@ const ProductDetails = () => {
             <div className="flex items-center space-x-3 mb-6">
               <span className="text-3xl font-black text-slate-900">₹{currentPrice.toLocaleString('en-IN')}</span>
               {(() => {
-                const displayOriginalPrice = (product.originalPrice && product.originalPrice > currentPrice) 
-                  ? product.originalPrice 
-                  : Math.round(currentPrice / 0.6); // Simulate 40% off by default
+                const getStableRandomDiscount = (id) => {
+                  if (!id) return 40;
+                  let hash = 0;
+                  for (let i = 0; i < id.length; i++) {
+                    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+                  }
+                  return 15 + (Math.abs(hash) % 31); // 15% to 45%
+                };
+
+                let displayOriginalPrice;
+                let discountPercent;
                 
-                const discountPercent = Math.round(((displayOriginalPrice - currentPrice) / displayOriginalPrice) * 100);
+                if (product.originalPrice && product.originalPrice > currentPrice) {
+                  displayOriginalPrice = product.originalPrice;
+                  discountPercent = Math.round(((displayOriginalPrice - currentPrice) / displayOriginalPrice) * 100);
+                } else {
+                  discountPercent = getStableRandomDiscount(product.id || product._id);
+                  displayOriginalPrice = Math.round(currentPrice / (1 - (discountPercent / 100)));
+                }
                 
                 return displayOriginalPrice > currentPrice ? (
                   <>
