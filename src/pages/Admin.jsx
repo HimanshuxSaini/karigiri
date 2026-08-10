@@ -2783,7 +2783,7 @@ const Admin = () => {
                         <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100">
                           {(formData.sizeType === 'standard'
                             ? ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
-                            : ['0-3M', '3-6M', '6-12M', '1-2Y', '2-3Y', '3-4Y', '4-5Y', '5-6Y', '7-8Y', '9-10Y', '10-12Y']
+                            : ['New Born', '0-3M', '3-6M', '6-12M', '1-2Y', '2-3Y', '3-4Y', '4-5Y', '5-6Y', '7-8Y', '9-10Y', '10-12Y']
                           ).map(sz => {
                             const currentSizes = Array.isArray(formData.sizes) ? formData.sizes : [];
                             const isSelected = currentSizes.includes(sz);
