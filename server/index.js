@@ -58,6 +58,8 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 app.use(compression());
+const xss = require('xss-clean');
+app.use(xss());
 
 // Explicit CORS configuration - Restrictive for production
 const allowedOrigins = [
