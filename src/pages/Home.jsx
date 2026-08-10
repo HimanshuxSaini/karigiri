@@ -374,7 +374,7 @@ const Home = () => {
 
         <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-6 md:gap-12 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x">
           {[
-            { name: "Nisha Devi", region: "Sonipat, Haryana", craft: "Product & Items Head", story: "Nisha expertly handles all product creation and item management, ensuring every handcrafted piece meets our highest quality standards." },
+            { name: "Nisha Devi", region: "Sonipat, Haryana", craft: "Product & Items Head", story: "Nisha expertly handles all product creation and item management, ensuring every handcrafted piece meets our highest quality standards.", phone: "70273 11213" },
             { name: "Himanshu", region: "Sonipat, Haryana", craft: "Service Operations", story: "Himanshu manages all our customer services, ensuring smooth operations, timely deliveries, and exceptional support for our community.", phone: "7988790345" }
           ].map((artisan, i) => (
             <motion.div
