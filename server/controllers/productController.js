@@ -80,7 +80,7 @@ const deleteProduct = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const db = admin.firestore();
-    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge, stockCount } = req.body;
+    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, sizePrices, deliveryCharge, badge, stockCount, isReturnable, returnDays } = req.body;
     
     let finalInStock = inStock !== undefined ? inStock : true;
     if (stockCount !== undefined) {
@@ -98,10 +98,13 @@ const createProduct = async (req, res) => {
       subCategory: subCategory || '',
       sizeType: sizeType || 'none',
       sizes: sizes || [],
+      sizePrices: sizePrices || {},
       deliveryCharge: deliveryCharge !== undefined ? Number(deliveryCharge) : 0,
       inStock: finalInStock,
       stockCount: stockCount !== undefined ? Number(stockCount) : 0,
       badge: badge || 'none',
+      isReturnable: isReturnable || false,
+      returnDays: returnDays ? Number(returnDays) : 7,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
@@ -127,7 +130,7 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const db = admin.firestore();
-    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, deliveryCharge, badge, stockCount } = req.body;
+    const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, sizePrices, deliveryCharge, badge, stockCount, isReturnable, returnDays } = req.body;
     
     const productRef = db.collection('products').doc(req.params.id);
     const doc = await productRef.get();
@@ -149,10 +152,13 @@ const updateProduct = async (req, res) => {
         subCategory: subCategory || doc.data().subCategory || '',
         sizeType: sizeType !== undefined ? sizeType : (doc.data().sizeType || 'none'),
         sizes: sizes !== undefined ? sizes : (doc.data().sizes || []),
+        sizePrices: sizePrices !== undefined ? sizePrices : (doc.data().sizePrices || {}),
         deliveryCharge: deliveryCharge !== undefined ? Number(deliveryCharge) : (doc.data().deliveryCharge || 0),
         inStock: finalInStock,
         ...(stockCount !== undefined && { stockCount: Number(stockCount) }),
         badge: badge !== undefined ? badge : (doc.data().badge || 'none'),
+        isReturnable: isReturnable !== undefined ? isReturnable : (doc.data().isReturnable || false),
+        returnDays: returnDays !== undefined ? Number(returnDays) : (doc.data().returnDays || 7),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       };
 

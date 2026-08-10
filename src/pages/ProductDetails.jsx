@@ -153,9 +153,13 @@ const ProductDetails = () => {
   const isAdmin = isAdminEmail(user?.email);
   const productId = product._id || product.id;
 
+  const currentPrice = (selectedSize && product?.sizePrices && product.sizePrices[selectedSize]) 
+    ? Number(product.sizePrices[selectedSize]) 
+    : (product?.price || 0);
+
   const handleAddToCart = () => {
     if (!isOutOfStock) {
-      addItem({ ...product, size: selectedSize });
+      addItem({ ...product, price: currentPrice, size: selectedSize });
       trackAddToCart({ product, quantity: 1 });
     }
   };
@@ -388,11 +392,11 @@ const ProductDetails = () => {
             <hr className="mb-6" />
 
             <div className="flex items-baseline space-x-4 mb-8">
-              <span className="text-3xl font-black text-slate-900">₹{(product.price || 0).toLocaleString('en-IN')}</span>
-              {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-3xl font-black text-slate-900">₹{currentPrice.toLocaleString('en-IN')}</span>
+              {product.originalPrice && product.originalPrice > currentPrice && (
                 <>
                   <span className="text-xl text-slate-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
-                  <span className="text-xl text-[var(--primary)] font-bold">({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)</span>
+                  <span className="text-xl text-[var(--primary)] font-bold">({Math.round(((product.originalPrice - currentPrice) / product.originalPrice) * 100)}% OFF)</span>
                 </>
               )}
             </div>

@@ -50,7 +50,11 @@ const createOrder = async (req, res) => {
       }
 
       const productData = productDoc.data();
-      const realPrice = Number(productData.price) || 0;
+      let realPrice = Number(productData.price) || 0;
+      if (item.size && productData.sizePrices && productData.sizePrices[item.size]) {
+        realPrice = Number(productData.sizePrices[item.size]);
+      }
+      
       const quantity = Math.max(1, Math.min(Number(item.quantity) || 1, 50)); // Cap at 50 per item
       const deliveryCharge = Number(productData.deliveryCharge) || 0;
 

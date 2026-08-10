@@ -219,6 +219,7 @@ const Admin = () => {
     stockCount: 0,
     sizeType: 'none',
     sizes: [],
+    sizePrices: {},
     deliveryCharge: 0,
     badge: 'none',
     isReturnable: false,
@@ -457,6 +458,7 @@ const Admin = () => {
       stockCount: product.stockCount !== undefined ? product.stockCount : 0,
       sizeType: product.sizeType || 'none',
       sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
+      sizePrices: product.sizePrices || {},
       deliveryCharge: product.deliveryCharge || 0,
       badge: product.badge || 'none',
       isReturnable: product.isReturnable || false,
@@ -2804,6 +2806,40 @@ const Admin = () => {
                               </button>
                             );
                           })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {Array.isArray(formData.sizes) && formData.sizes.length > 0 && formData.sizeType !== 'none' && (
+                      <div className="space-y-4 pt-4 border-t border-gray-100 mt-6">
+                        <div>
+                          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                            Size-Specific Pricing (Optional)
+                          </label>
+                          <p className="text-xs text-gray-500 ml-1 mt-1">Set a custom price for specific sizes. Leave empty to use the product's base price.</p>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {formData.sizes.map(sz => (
+                            <div key={`price-${sz}`} className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-black text-sm">{sz} - ₹</span>
+                              <input
+                                type="number"
+                                min="0"
+                                placeholder="Base"
+                                className="w-full pl-[4.5rem] pr-3 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 text-sm font-bold"
+                                value={formData.sizePrices?.[sz] || ''}
+                                onChange={(e) => {
+                                  setFormData({
+                                    ...formData,
+                                    sizePrices: {
+                                      ...formData.sizePrices,
+                                      [sz]: e.target.value ? Number(e.target.value) : ''
+                                    }
+                                  });
+                                }}
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
