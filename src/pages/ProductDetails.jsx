@@ -307,7 +307,7 @@ const ProductDetails = () => {
           <div className="lg:w-3/5">
             {/* Featured Image */}
             <div
-              className="w-full aspect-[3/4] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group"
+              className="w-full h-[60vh] lg:h-[70vh] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group"
             >
               <img
                 key={activeImageIndex}
@@ -504,10 +504,10 @@ const ProductDetails = () => {
                 <RotateCcw className="text-slate-400" size={24} />
                 <div>
                   <h5 className="font-bold text-sm">
-                    {product.isReturnable ? `Easy ${product.returnDays || 7}-Day Returns` : 'All Products are Genuine'}
+                    {product.isReturnable ? `Easy ${product.returnDays || 7}-Day Returns` : 'Non-Returnable'}
                   </h5>
                   <p className="text-xs text-slate-400">
-                    {product.isReturnable ? 'Hassle-free return policy' : 'Products are not returnable'}
+                    {product.isReturnable ? 'Hassle-free return policy' : 'This product cannot be returned'}
                   </p>
                 </div>
               </div>

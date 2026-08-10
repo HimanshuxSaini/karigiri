@@ -2843,15 +2843,16 @@ const Admin = () => {
                   </div>
                   
                   <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-center space-x-3 pt-4">
-                      <input
-                        type="checkbox"
-                        id="isReturnable"
-                        checked={formData.isReturnable}
-                        onChange={(e) => setFormData({ ...formData, isReturnable: e.target.checked })}
-                        className="w-5 h-5 accent-[var(--primary)]"
-                      />
-                      <label htmlFor="isReturnable" className="text-sm font-bold text-gray-700">Is Returnable?</label>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Return Policy</label>
+                      <select
+                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        value={formData.isReturnable ? 'yes' : 'no'}
+                        onChange={(e) => setFormData({ ...formData, isReturnable: e.target.value === 'yes' })}
+                      >
+                        <option value="no">Non-Returnable</option>
+                        <option value="yes">Returnable</option>
+                      </select>
                     </div>
                     {formData.isReturnable && (
                       <div className="space-y-2">
