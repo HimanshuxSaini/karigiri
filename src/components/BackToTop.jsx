@@ -6,6 +6,7 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 
 const BackToTop = () => {
   const [visible, setVisible] = useState(false);
+  const [showAppText, setShowAppText] = useState(false);
   const location = useLocation();
   const { isInstallable, promptInstall } = useInstallPrompt();
 
@@ -20,6 +21,27 @@ const BackToTop = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isInstallable) return;
+    let isMounted = true;
+    
+    const cycle = () => {
+      if (!isMounted) return;
+      setShowAppText(false);
+      setTimeout(() => {
+        if (!isMounted) return;
+        setShowAppText(true);
+        setTimeout(cycle, 1000);
+      }, 2000);
+    };
+    
+    cycle();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [isInstallable]);
 
   return (
     <div 
@@ -38,9 +60,38 @@ const BackToTop = () => {
             whileTap={{ scale: 0.9 }}
             onClick={promptInstall}
             aria-label="Install App"
-            className="w-11 h-11 bg-white text-[var(--primary)] border-2 border-[var(--primary)] rounded-full shadow-xl flex items-center justify-center transition-all duration-300"
+            className="w-11 h-11 bg-white text-[var(--primary)] border-2 border-[var(--primary)] rounded-full shadow-xl flex items-center justify-center transition-all duration-300 overflow-hidden"
           >
-            <Download size={18} strokeWidth={2.5} />
+            <AnimatePresence mode="wait">
+              {showAppText ? (
+                <motion.span
+                  key="text"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-[12px] font-black uppercase tracking-wider"
+                >
+                  App
+                </motion.span>
+              ) : (
+                <motion.div
+                  key="icon"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center"
+                >
+                  <motion.div
+                    animate={{ rotate: [0, -15, 15, -15, 15, 0] }}
+                    transition={{ duration: 0.5, repeat: Infinity }}
+                  >
+                    <Download size={18} strokeWidth={2.5} />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.button>
         )}
       </AnimatePresence>
