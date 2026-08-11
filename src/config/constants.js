@@ -39,7 +39,7 @@ export const BRAND = {
     country: 'India',
   },
   social: {
-    instagram: 'https://www.instagram.com/prathamkarigiri_official',
+    instagram: 'https://www.instagram.com/prathamkarigiri.in',
     facebook: 'https://www.facebook.com/prathamkarigiri',
     twitter: 'https://twitter.com/prathamkarigiri',
     youtube: 'https://www.youtube.com/@prathamkarigiri',

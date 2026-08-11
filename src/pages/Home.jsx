@@ -12,6 +12,7 @@ import CustomizationSection from '../components/CustomizationSection';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackViewItemList } from '../utils/analytics';
 import SEO from '../components/SEO';
+import { BRAND } from '../config/constants';
 
 
 const Home = () => {
@@ -342,22 +343,28 @@ const Home = () => {
             </div>
             <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory scroll-smooth">
               {(reels.length > 0 ? reels : [
-                { image: "/shawl.png", tag: "Handmade Shawls", handle: "@prathamkarigiri_official" },
-                { image: "/item4.png", tag: "Kids Collection", handle: "@prathamkarigiri_official" },
-                { image: "/bag.png", tag: "Crochet Bags", handle: "@prathamkarigiri_official" },
-                { image: "/bookey.png", tag: "Floral Bouquet", handle: "@prathamkarigiri_official" },
-                { image: "/blanket.png", tag: "Premium Blankets", handle: "@prathamkarigiri_official" }
+                { image: "/shawl.png", tag: "Handmade Shawls", handle: "@prathamkarigiri.in" },
+                { image: "/item4.png", tag: "Kids Collection", handle: "@prathamkarigiri.in" },
+                { image: "/bag.png", tag: "Crochet Bags", handle: "@prathamkarigiri.in" },
+                { image: "/bookey.png", tag: "Floral Bouquet", handle: "@prathamkarigiri.in" },
+                { image: "/blanket.png", tag: "Premium Blankets", handle: "@prathamkarigiri.in" }
               ]).map((reel, i) => (
-                <div key={i} className="min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg">
+                <a 
+                  key={i} 
+                  href={BRAND.social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg cursor-pointer"
+                >
                   <div className="absolute inset-0 aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
                     <img src={getOptimizedImage(reel.image || reel.img, { width: 300, quality: 'auto:eco' })} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} loading="lazy" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
                   <div className="absolute bottom-4 left-4 text-white">
                     <p className="text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">{reel.tag}</p>
-                    <p className="text-[8px] md:text-[10px] font-medium opacity-80">{reel.handle || '@prathamkarigiri_official'}</p>
+                    <p className="text-[8px] md:text-[10px] font-medium opacity-80">{reel.handle || '@prathamkarigiri.in'}</p>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           </div>
