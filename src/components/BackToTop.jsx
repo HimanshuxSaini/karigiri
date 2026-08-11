@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download } from 'lucide-react';
+import { Download, MessageCircle } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import { WHATSAPP } from '../config/constants';
 
 const BackToTop = () => {
   const [showAppText, setShowAppText] = useState(false);
@@ -98,6 +99,20 @@ const BackToTop = () => {
           </motion.button>
         )}
       </AnimatePresence>
+
+      <a
+        href={WHATSAPP.chatUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="h-11 px-0 min-w-[44px] hover:px-4 bg-[#25D366] text-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 overflow-hidden group self-end"
+      >
+        <div className="w-[44px] shrink-0 flex items-center justify-center">
+          <MessageCircle size={22} fill="currentColor" />
+        </div>
+        <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 whitespace-nowrap text-[12px] font-bold uppercase tracking-wider text-left">
+          Chat with Us
+        </span>
+      </a>
     </div>
   );
 };

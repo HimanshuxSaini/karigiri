@@ -5,7 +5,6 @@ import { lazy, Suspense, useState, useEffect } from 'react';
 import AmbientBackground from './components/AmbientBackground';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
-import WhatsAppButton from './components/WhatsAppButton';
 import ScrollToTop from './components/ScrollToTop';
 import ToastContainer from './components/Toast';
 import BottomNav from './components/BottomNav';
@@ -103,7 +102,6 @@ const AppInner = () => {
       </AnimatePresence>
       <div className="min-h-screen relative pb-16 md:pb-0">
         <ToastContainer />
-        <WhatsAppButton />
         <AnnouncementBar />
         <AmbientBackground />
         <BackToTop />
