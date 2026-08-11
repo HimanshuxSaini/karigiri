@@ -40,7 +40,7 @@ const Footer = () => {
                      </div>
                      <div className="text-left pt-0.5">
                         <p className="text-[11px] font-black text-slate-900 uppercase tracking-wider mb-0.5">App-Like Web</p>
-                        <p className="text-[10px] font-bold text-slate-500 leading-snug">Enjoy a seamless shopping experience directly in your mobile browser.</p>
+                        <p className="text-[10px] font-bold text-slate-500 leading-snug">Tap the download icon on your screen to install our app for a faster, seamless experience.</p>
                      </div>
                   </div>
 
