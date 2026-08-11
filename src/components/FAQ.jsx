@@ -18,7 +18,7 @@ const faqData = [
   },
   {
     question: "What is your return policy for handmade items?",
-    answer: "We offer a 14-day 'No Questions Asked' return policy. If you're not completely in love with the craftsmanship or fit, we'll arrange a free reverse pickup and provide a full refund or exchange."
+    answer: "We offer a 7-day return and exchange policy on selected products. If you're not completely in love with the craftsmanship or fit, we'll arrange a free reverse pickup and provide a full refund or exchange."
   }
 ];
 

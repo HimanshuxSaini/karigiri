@@ -72,7 +72,7 @@ const policyContent = {
     sections: [
       {
         heading: 'Return Window',
-        content: `We offer a hassle-free 7-day return and exchange policy from the date of delivery. Products must be unused, unwashed, and in their original packaging with all tags intact.`
+        content: `We offer a hassle-free 7-day return and exchange policy from the date of delivery on selected products. Products must be unused, unwashed, and in their original packaging with all tags intact.`
       },
       {
         heading: 'How to Initiate a Return',
@@ -88,7 +88,7 @@ const policyContent = {
       },
       {
         heading: 'Exchanges',
-        content: `We offer free exchanges for size-related issues on standard products. Exchanges are subject to product availability. If the desired item is unavailable, a full refund will be issued.`
+        content: `We offer free exchanges for size-related issues on selected standard products. Exchanges are subject to product availability. If the desired item is unavailable, a full refund will be issued.`
       }
     ]
   },

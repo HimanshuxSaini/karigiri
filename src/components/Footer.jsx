@@ -75,6 +75,7 @@ const Footer = () => {
                            <span className="font-black">Easy 7-Day Returns</span> &
                         </p>
                         <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">Exchange Policy</p>
+                        <p className="text-[10px] text-slate-400 mt-1 italic">*Available only on selected products</p>
                      </div>
                   </div>
                </div>
