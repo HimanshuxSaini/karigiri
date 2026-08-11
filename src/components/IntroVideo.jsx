@@ -15,7 +15,7 @@ const IntroVideo = ({ onComplete }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (onComplete) onComplete();
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
