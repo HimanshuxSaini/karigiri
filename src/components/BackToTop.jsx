@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUp, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 
 const BackToTop = () => {
-  const [visible, setVisible] = useState(false);
   const [showAppText, setShowAppText] = useState(false);
   const location = useLocation();
   const { isInstallable, promptInstall } = useInstallPrompt();
@@ -16,11 +15,7 @@ const BackToTop = () => {
   const isCheckoutPage = location.pathname === '/checkout';
   const hasMobileStickyBar = isCartPage || isProductPage || isCheckoutPage;
 
-  useEffect(() => {
-    const handleScroll = () => setVisible(window.scrollY > 300);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (!isInstallable) return;
@@ -56,60 +51,50 @@ const BackToTop = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.7 }}
             transition={{ duration: 0.2 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={promptInstall}
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
             aria-label="Install App"
-            className="w-11 h-11 bg-white text-[var(--primary)] border-2 border-[var(--primary)] rounded-full shadow-xl flex items-center justify-center transition-all duration-300 overflow-hidden"
+            className="h-11 px-0 min-w-[44px] hover:px-4 bg-white text-[var(--primary)] border-2 border-[var(--primary)] rounded-full shadow-xl flex items-center justify-center transition-all duration-300 overflow-hidden group"
           >
-            <AnimatePresence mode="wait">
-              {showAppText ? (
-                <motion.span
-                  key="text"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-[12px] font-black uppercase tracking-wider"
-                >
-                  App
-                </motion.span>
-              ) : (
-                <motion.div
-                  key="icon"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center justify-center"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, -15, 15, -15, 15, 0] }}
-                    transition={{ duration: 0.5, repeat: Infinity }}
+            <div className="w-[40px] shrink-0 flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                {(!isHovered && showAppText) ? (
+                  <motion.span
+                    key="text"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-[12px] font-black uppercase tracking-wider"
                   >
-                    <Download size={18} strokeWidth={2.5} />
+                    App
+                  </motion.span>
+                ) : (
+                  <motion.div
+                    key="icon"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center justify-center"
+                  >
+                    <motion.div
+                      animate={isHovered ? { rotate: 0 } : { rotate: [0, -15, 15, -15, 15, 0] }}
+                      transition={{ duration: 0.5, repeat: isHovered ? 0 : Infinity }}
+                    >
+                      <Download size={18} strokeWidth={2.5} />
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {visible && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.7 }}
-            transition={{ duration: 0.2 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            aria-label="Back to top"
-            className="w-11 h-11 bg-[var(--primary)] text-white rounded-full shadow-xl shadow-[var(--primary)]/30 flex items-center justify-center transition-all duration-300"
-          >
-            <ArrowUp size={18} strokeWidth={2.5} />
+                )}
+              </AnimatePresence>
+            </div>
+            
+            <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 whitespace-nowrap text-[12px] font-bold uppercase tracking-wider text-left">
+               Download App
+            </span>
           </motion.button>
         )}
       </AnimatePresence>
