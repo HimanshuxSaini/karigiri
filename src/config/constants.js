@@ -6,7 +6,7 @@
 // Admin emails authorized for admin panel access
 export const ADMIN_EMAILS = [
   'himanshu0481@gmail.com',
-  'admin@prathamkarigiri.in'
+  'artech2k10@gmail.com'
 ];
 
 // Check if a given email is an admin
