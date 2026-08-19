@@ -233,7 +233,7 @@ const Home = () => {
             </div>
             <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b border-[var(--primary)] pb-0.5 md:pb-1 text-[var(--primary)]">Shop The Collection</Link>
           </div>
-          <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
+          <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
             {loading ? (
               [...Array(4)].map((_, i) => (
                  <div key={i} className="min-w-[170px] md:min-w-0 bg-white p-3 rounded-3xl space-y-3">
@@ -250,9 +250,9 @@ const Home = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="min-w-[170px] md:min-w-0 snap-center"
+                  className="min-w-[170px] lg:min-w-0 snap-center"
                 >
-                  <Link to={`/product/${deal._id}`} className="group block bg-white p-3 rounded-3xl border border-gray-50 shadow-sm md:shadow-none md:border-none md:bg-transparent h-full">
+                  <Link to={`/product/${deal._id}`} className="group block bg-white p-3 rounded-3xl border border-gray-50 shadow-sm lg:shadow-none lg:border-none lg:bg-transparent h-full">
                     <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4 relative">
                        <img 
                          src={getOptimizedImage(deal.image, { width: 300, quality: 'auto:eco' })} 
@@ -316,7 +316,7 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="min-w-[220px] md:min-w-0 snap-center"
+                className="min-w-[220px] lg:min-w-0 snap-center"
               >
                 <ProductCard product={product} priority={index < 4} />
               </motion.div>
