@@ -46,10 +46,10 @@ const Footer = () => {
 
                   <h4 className="font-black uppercase text-xs tracking-widest mb-4 text-slate-900">Keep In Touch</h4>
                   <div className="flex justify-center sm:justify-start space-x-4">
-                     <a href={BRAND.social.facebook} target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Facebook size={16} /></a>
-                     <a href={BRAND.social.instagram} target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Instagram size={16} /></a>
-                     <a href={BRAND.social.twitter} target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Twitter size={16} /></a>
-                     <a href={BRAND.social.youtube} target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Youtube size={16} /></a>
+                     <a href={BRAND.social.facebook} aria-label="Visit our Facebook page" target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Facebook size={16} /></a>
+                     <a href={BRAND.social.instagram} aria-label="Visit our Instagram page" target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Instagram size={16} /></a>
+                     <a href={BRAND.social.twitter} aria-label="Visit our Twitter page" target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Twitter size={16} /></a>
+                     <a href={BRAND.social.youtube} aria-label="Visit our YouTube channel" target="_blank" rel="noopener noreferrer" className="p-2 border rounded-full hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer"><Youtube size={16} /></a>
                   </div>
                </div>
 

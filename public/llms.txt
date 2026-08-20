@@ -1,0 +1,15 @@
+# Pratham Karigiri
+
+Welcome to Pratham Karigiri, an artisanal studio dedicated to handcrafted crochet, winterwear, and unique floral bouquets. We support artisan communities and protect the heritage of hand-weaving.
+
+## Main Navigation
+- [Shop All Collections](https://www.prathamkarigiri.in/shop)
+- [Women's Collection](https://www.prathamkarigiri.in/shop?category=Women)
+- [Kids Collection](https://www.prathamkarigiri.in/shop?category=Kids)
+- [Men's Collection](https://www.prathamkarigiri.in/shop?category=Men)
+
+## Support & Policies
+- [Contact Us](https://www.prathamkarigiri.in/contact)
+- [Returns & Exchange](https://www.prathamkarigiri.in/returns)
+- [Terms & Conditions](https://www.prathamkarigiri.in/terms)
+- [Privacy Policy](https://www.prathamkarigiri.in/privacy-policy)

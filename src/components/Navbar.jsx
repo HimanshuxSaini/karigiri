@@ -43,6 +43,7 @@ const Navbar = () => {
         <div className="max-w-[1440px] mx-auto flex justify-between items-center min-h-[3rem] md:h-14">
           <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-8 xl:space-x-12">
             <button
+              aria-label="Open Navigation Menu"
               className="lg:hidden text-gray-800 p-2 hover:bg-gray-100 rounded-full transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
