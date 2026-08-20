@@ -97,12 +97,9 @@ const BackToTop = () => {
                       transition={{ duration: 0.2 }}
                       className="flex items-center justify-center"
                     >
-                      <motion.div
-                        animate={isHovered ? { rotate: 0 } : { rotate: [0, -15, 15, -15, 15, 0] }}
-                        transition={{ duration: 0.5, repeat: isHovered ? 0 : Infinity }}
-                      >
+                      <div className="flex items-center justify-center transition-transform group-hover:scale-110">
                         <Download size={18} strokeWidth={2.5} />
-                      </motion.div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

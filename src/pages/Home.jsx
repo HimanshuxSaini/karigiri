@@ -199,11 +199,7 @@ const Home = () => {
             exit={{ height: 0, opacity: 0 }}
             className="bg-[var(--primary)] text-white py-4 md:py-4 text-center overflow-hidden border-b border-white/10"
           >
-            <motion.div
-              animate={{ scale: [1, 1.01, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 px-4"
-            >
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6 px-4">
               <span className="text-[10px] md:text-sm font-black uppercase tracking-widest flex items-center">
                 <span className="w-2 h-2 bg-white rounded-full animate-pulse mr-2 hidden sm:inline-block"></span>
                 {saleConfig.text || 'Flash Sale Ends In'}:
