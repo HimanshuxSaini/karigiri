@@ -21,7 +21,7 @@ const Navbar = () => {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const searchRef = useRef(null);
-  const { isInstallable, promptInstall } = useInstallPrompt();
+  useInstallPrompt();
 
   useEffect(() => {
     const handleClickOutside = (event) => {

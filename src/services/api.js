@@ -208,22 +208,7 @@ export const deleteProduct = async (id) => {
 };
 
 
-export const bulkUploadProducts = async (products) => {
-  const results = { success: 0, failed: 0 };
-  for (const product of products) {
-    try {
-      const data = { ...product };
-      delete data.id;
-      delete data._id;
-      await createProduct(data);
-      results.success++;
-    } catch (err) {
-      console.error(`Failed to upload ${product.name}:`, err);
-      results.failed++;
-    }
-  }
-  return results;
-};
+
 
 export const uploadProductImage = async (file) => {
   try {
@@ -408,23 +393,7 @@ export const deleteOrder = async (id) => {
 };
 
 // Auth
-export const loginUser = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  return userCredential.user;
-};
 
-export const registerUser = async (email, password) => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  return userCredential.user;
-};
-
-export const logoutUser = async () => {
-  await signOut(auth);
-};
-export const resetPassword = async (email) => {
-  await sendPasswordResetEmail(auth, email);
-  return { success: true };
-};
 
 // User Profile
 export const fetchUserProfile = async (uid) => {

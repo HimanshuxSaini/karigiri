@@ -65,7 +65,7 @@ const AppInner = () => {
   const [showIntro, setShowIntro] = useState(() => {
     try {
       return !sessionStorage.getItem('hasSeenIntro');
-    } catch (e) {
+    } catch {
       return true; // Default to showing intro if storage access fails
     }
   });
@@ -103,7 +103,7 @@ const AppInner = () => {
           <IntroVideo onComplete={() => {
             try {
               sessionStorage.setItem('hasSeenIntro', 'true');
-            } catch (e) {
+            } catch {
               console.warn('sessionStorage is not available');
             }
             setShowIntro(false);

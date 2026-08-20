@@ -4,7 +4,7 @@
 // ===================================================================
 
 // Admin emails authorized for admin panel access
-export const ADMIN_EMAILS = [
+const ADMIN_EMAILS = [
   'himanshu0481@gmail.com',
   'artech2k10@gmail.com'
 ];

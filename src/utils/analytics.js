@@ -14,7 +14,7 @@ const safeGtag = (...args) => {
 /**
  * Format a product for GA4 Ecommerce tracking.
  */
-export const formatProduct = (product, quantity = 1) => {
+const formatProduct = (product, quantity = 1) => {
   if (!product) return null;
   return {
     item_id: product._id || product.id || 'unknown',
@@ -41,14 +41,6 @@ export const trackViewItemList = ({ item_list_id, item_list_name, items }) => {
     item_list_id: item_list_id || 'default_list',
     item_list_name: item_list_name || 'Default List',
     items: items.map(p => formatProduct(p)).filter(Boolean)
-  });
-};
-
-export const trackSelectItem = ({ item_list_id, item_list_name, product }) => {
-  safeGtag('event', 'select_item', {
-    item_list_id: item_list_id || 'default_list',
-    item_list_name: item_list_name || 'Default List',
-    items: [formatProduct(product)].filter(Boolean)
   });
 };
 

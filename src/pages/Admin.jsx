@@ -2278,7 +2278,7 @@ const Admin = () => {
                     setHeroSlides(newSlides);
                     setShowHeroModal(false);
                     showNotification(editingHeroIndex !== null ? 'Slide updated' : 'Slide added');
-                  } catch (err) {
+                  } catch {
                     showNotification('Failed to save slide', 'error');
                   } finally {
                     setIsUpdatingHero(false);
@@ -2346,7 +2346,7 @@ const Admin = () => {
                                 const url = await uploadProductImage(file);
                                 setHeroFormData({ ...heroFormData, img: url });
                                 showNotification('Image uploaded');
-                              } catch (err) {
+                              } catch {
                                 showNotification('Failed to upload image', 'error');
                               } finally {
                                 setUploadingImage(false);
