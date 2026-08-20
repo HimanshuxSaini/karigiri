@@ -345,11 +345,11 @@ const Home = () => {
             </div>
             <div className="flex space-x-4 md:space-x-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory scroll-smooth">
               {(reels.length > 0 ? reels : [
-                { image: "/shawl.png", tag: "Handmade Shawls", handle: "@prathamkarigiri.in" },
-                { image: "/item4.png", tag: "Kids Collection", handle: "@prathamkarigiri.in" },
-                { image: "/bag.png", tag: "Crochet Bags", handle: "@prathamkarigiri.in" },
-                { image: "/bookey.png", tag: "Floral Bouquet", handle: "@prathamkarigiri.in" },
-                { image: "/blanket.png", tag: "Premium Blankets", handle: "@prathamkarigiri.in" }
+                { image: "/shawl.webp", tag: "Handmade Shawls", handle: "@prathamkarigiri.in" },
+                { image: "/item4.webp", tag: "Kids Collection", handle: "@prathamkarigiri.in" },
+                { image: "/bag.webp", tag: "Crochet Bags", handle: "@prathamkarigiri.in" },
+                { image: "/bookey.webp", tag: "Floral Bouquet", handle: "@prathamkarigiri.in" },
+                { image: "/blanket.webp", tag: "Premium Blankets", handle: "@prathamkarigiri.in" }
               ]).map((reel, i) => (
                 <a 
                   key={i} 

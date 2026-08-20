@@ -298,25 +298,25 @@ const Admin = () => {
         {
           title: "Floral Collection",
           head: "Artisanal\nCrochet Bouquet.",
-          img: "/bookey.png",
+          img: "/bookey.webp",
           link: "/shop"
         },
         {
           title: "Kids Collection",
           head: "Warmth for\nSmall Wonders.",
-          img: "/item4.png",
+          img: "/item4.webp",
           link: "/shop"
         },
         {
           title: "Women's Luxe",
           head: "Handcrafted\nBracelets & Bags.",
-          img: "/bracelet.png",
+          img: "/bracelet.webp",
           link: "/shop"
         },
         {
           title: "Artisanal Comfort",
           head: "Premium\nWoolen Blankets.",
-          img: "/blanket.png",
+          img: "/blanket.webp",
           link: "/shop"
         }
       ];

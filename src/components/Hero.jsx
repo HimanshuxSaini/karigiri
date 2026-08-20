@@ -1,14 +1,14 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect, memo } from 'react';
-import yarnImg from '../assets/yarn.png';
+import yarnImg from '../assets/yarn.webp';
 import { fetchHeroSlides } from '../services/api';
 
 const defaultSlides = [
   { 
     title: "Floral Collection", 
     head: "Artisanal\nCrochet Bouquet.", 
-    img: "/bookey.png", 
+    img: "/bookey.webp", 
     link: "/shop",
     pos: "object-center",
     fit: "contain"
@@ -16,7 +16,7 @@ const defaultSlides = [
   { 
     title: "Kids Collection", 
     head: "Warmth for\nSmall Wonders.", 
-    img: "/item4.png", 
+    img: "/item4.webp", 
     link: "/shop",
     pos: "object-center",
     fit: "contain" 
@@ -24,7 +24,7 @@ const defaultSlides = [
   { 
     title: "Women's Luxe", 
     head: "Handcrafted\nBracelets & Bags.", 
-    img: "/bracelet.png", 
+    img: "/bracelet.webp", 
     link: "/shop",
     pos: "object-center",
     fit: "contain"
@@ -32,7 +32,7 @@ const defaultSlides = [
   { 
     title: "Artisanal Comfort", 
     head: "Premium\nWoolen Blankets.", 
-    img: "/blanket.png", 
+    img: "/blanket.webp", 
     link: "/shop",
     pos: "object-center",
     fit: "contain"
@@ -152,6 +152,8 @@ const Hero = () => {
                   src={slides[current].img} 
                   alt={slides[current].title} 
                   fetchPriority="high"
+                  width="800"
+                  height="800"
                   className="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)]"
                 />
               </motion.div>

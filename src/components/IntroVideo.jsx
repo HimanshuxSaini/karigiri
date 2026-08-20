@@ -54,7 +54,7 @@ const IntroVideo = ({ onComplete }) => {
         style={{ backgroundColor: '#ffffff', background: '#ffffff' }}
       >
         <img
-          src="/pratham karigiri.png"
+          src="/pratham karigiri.webp"
           alt="Pratham Karigiri"
           onLoad={() => setImageLoaded(true)}
           className={`max-w-full max-h-[70vh] w-auto h-auto transition-opacity duration-700 ${
