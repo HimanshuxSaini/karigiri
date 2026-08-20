@@ -4,23 +4,13 @@
 # =========================================================
 
 # ---------------------------------------------------------
-# GLOBAL CRAWLING & AI BOTS
+# ALL SEARCH ENGINES & CRAWLERS
 # ---------------------------------------------------------
+
 User-agent: *
-User-agent: OAI-SearchBot
-User-agent: GPTBot
-User-agent: ChatGPT-User
-User-agent: ClaudeBot
-User-agent: anthropic-ai
-User-agent: Google-Extended
-User-agent: GoogleOther
-User-agent: Meta-ExternalAgent
-User-agent: PerplexityBot
 Allow: /
 
-# ---------------------------------------------------------
-# PRIVATE / ADMIN / TRANSACTIONAL ROUTES
-# ---------------------------------------------------------
+# Private / administrative / transactional pages
 Disallow: /admin/
 Disallow: /profile/
 Disallow: /checkout/
@@ -28,12 +18,88 @@ Disallow: /cart/
 Disallow: /wishlist/
 
 # ---------------------------------------------------------
-# DUPLICATE / FILTERED URLS
+# OPENAI / CHATGPT
 # ---------------------------------------------------------
-Disallow: /*?sort=
-Disallow: /*?filter=
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
 
 # ---------------------------------------------------------
-# SITEMAP
+# ANTHROPIC / CLAUDE
 # ---------------------------------------------------------
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# ---------------------------------------------------------
+# GOOGLE AI
+# ---------------------------------------------------------
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+# ---------------------------------------------------------
+# META AI
+# ---------------------------------------------------------
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# ---------------------------------------------------------
+# PERPLEXITY & AI SEARCH
+# ---------------------------------------------------------
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+# ---------------------------------------------------------
+# OTHER AI / WEB CRAWLERS
+# ---------------------------------------------------------
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Cohere-ai
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+# ---------------------------------------------------------
+# XML SITEMAP
+# ---------------------------------------------------------
+
 Sitemap: https://www.prathamkarigiri.in/sitemap.xml
