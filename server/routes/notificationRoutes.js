@@ -67,17 +67,23 @@ router.post('/send', async (req, res) => {
       notification: {
         title: title,
         body: body,
-        ...(imageUrl && { image: imageUrl })
+        ...(imageUrl ? { image: imageUrl } : {})
       },
       android: {
         priority: 'high',
         notification: {
-          sound: 'default'
+          sound: 'default',
+          icon: 'https://prathamkarigiri.in/pwa-192x192.png',
+          ...(imageUrl ? { image: imageUrl } : {})
         }
       },
       webpush: {
         headers: {
           Urgency: 'high'
+        },
+        notification: {
+          icon: 'https://prathamkarigiri.in/pwa-192x192.png',
+          ...(imageUrl ? { image: imageUrl } : {})
         },
         fcmOptions: {
           link: clickAction || 'https://prathamkarigiri.in'
