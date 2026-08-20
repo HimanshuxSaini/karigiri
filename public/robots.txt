@@ -1,6 +1,126 @@
+# ==========================================
+# Enterprise-Grade robots.txt 
+# ==========================================
+
+# --- General Web Crawlers ---
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /profile
-Disallow: /checkout
+Crawl-delay: 5
+
+# ------------------------------------------
+# Core Application Paths to Disallow
+# ------------------------------------------
+# Admin & User Portals
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /account/
+Disallow: /dashboard/
+
+# Checkout & Commerce
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /orders/
+Disallow: /payment/
+
+# Next.js & System Directories
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /public/
+Disallow: /server/
+
+# ------------------------------------------
+# Spider Traps & Duplicate Content Prevention
+# ------------------------------------------
+Disallow: /search
+Disallow: /*?q=*
+Disallow: /*?sort=*
+Disallow: /*?filter=*
+Disallow: /*?dir=*
+Disallow: /*?orderby=*
+Disallow: /*?price=*
+Disallow: /*?limit=*
+Disallow: /*?p=*
+
+# Tracking parameters (prevents duplicate URLs in index)
+Disallow: /*?utm_source=*
+Disallow: /*?utm_medium=*
+Disallow: /*?utm_campaign=*
+Disallow: /*?gclid=*
+Disallow: /*?fbclid=*
+
+# System & Config Extensions
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.env$
+Disallow: /*.bak$
+Disallow: /*.log$
+Disallow: /*.sql$
+
+# --- AI & LLM Bots (Explicitly Allowed) ---
+# OpenAI
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic
+User-agent: ClaudeBot
+User-agent: Claude-Web
+User-agent: anthropic-ai
+Allow: /
+
+# Google AI
+User-agent: Google-Extended
+User-agent: GoogleOther
+Allow: /
+
+# Meta AI
+User-agent: Meta-ExternalAgent
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# Perplexity & Search AI
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: YouBot
+Allow: /
+
+# Other LLM Agents
+User-agent: CCBot
+User-agent: Diffbot
+User-agent: FacebookBot
+User-agent: Bytespider
+User-agent: Cohere-ai
+User-agent: Amazonbot
+Allow: /
+
+# --- Common Scrapers, Analytics & Bad Bots (Explicitly Blocked) ---
+User-agent: Baiduspider
+User-agent: YandexBot
+User-agent: AhrefsBot
+User-agent: SEMrushBot
+User-agent: DotBot
+User-agent: MJ12bot
+User-agent: MegaIndex
+User-agent: Barkrowler
+User-agent: BLEXBot
+User-agent: PetalBot
+User-agent: DataForSeoBot
+User-agent: SEOkicks
+Disallow: /
+
+# --- Vulnerability Scanners (Explicitly Blocked) ---
+User-agent: sqlmap
+User-agent: Nikto
+User-agent: ZmEu
+User-agent: nmap
+User-agent: masscan
+User-agent: zgrab
+Disallow: /
+
+# --- Hostname ---
+Host: https://www.prathamkarigiri.in
+
+# --- Sitemap ---
 Sitemap: https://www.prathamkarigiri.in/sitemap.xml
