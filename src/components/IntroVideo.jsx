@@ -56,6 +56,8 @@ const IntroVideo = ({ onComplete }) => {
         <img
           src="/pratham karigiri.webp"
           alt="Pratham Karigiri"
+          width="800"
+          height="800"
           onLoad={() => setImageLoaded(true)}
           className={`max-w-full max-h-[70vh] w-auto h-auto transition-opacity duration-700 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
