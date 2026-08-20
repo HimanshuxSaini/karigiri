@@ -33,11 +33,11 @@ const Admin = lazy(() => import('./pages/Admin'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Policies = lazy(() => import('./pages/Policies'));
 
-import WoolenLoader from './components/WoolenLoader';
-
 // Minimal loading fallback
 const PageLoader = () => (
-  <WoolenLoader />
+  <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+    <div className="w-10 h-10 border-4 border-[var(--primary)] border-t-transparent animate-spin rounded-full"></div>
+  </div>
 );
 
 // Page transition wrapper — wraps each route for smooth fade+slide
