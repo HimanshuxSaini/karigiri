@@ -69,7 +69,16 @@ router.post('/send', async (req, res) => {
         body: body,
         ...(imageUrl && { image: imageUrl })
       },
+      android: {
+        priority: 'high',
+        notification: {
+          sound: 'default'
+        }
+      },
       webpush: {
+        headers: {
+          Urgency: 'high'
+        },
         fcmOptions: {
           link: clickAction || 'https://prathamkarigiri.in'
         }
