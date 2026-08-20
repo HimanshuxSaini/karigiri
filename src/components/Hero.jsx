@@ -77,11 +77,11 @@ const Hero = () => {
   }, [slides]);
 
   if (loading) {
-    return <div className="h-[calc(100dvh-4.5rem)] md:h-[80vh] md:h-auto pt-14 md:pt-24 bg-white border-b border-gray-100 flex items-center justify-center"></div>;
+    return <div className="min-h-[calc(100dvh-4.5rem)] md:min-h-[80vh] pt-14 md:pt-24 bg-white border-b border-gray-100 flex items-center justify-center"></div>;
   }
 
   return (
-    <div className="h-[calc(100dvh-4.5rem)] md:h-auto pt-14 md:pt-24 bg-white border-b border-gray-100 flex flex-col">
+    <div className="min-h-[calc(100dvh-4.5rem)] md:min-h-[80vh] pt-14 md:pt-24 bg-white border-b border-gray-100 flex flex-col">
       <div className="flex-1 w-full max-w-[1440px] mx-auto flex flex-col md:flex-row items-stretch md:items-center overflow-hidden relative">
         
         {/* Left Side: Content */}
