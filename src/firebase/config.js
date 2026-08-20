@@ -17,4 +17,17 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const messaging = getMessaging(app);
+
+export let messaging = null;
+try {
+  if (
+    typeof window !== "undefined" &&
+    "Notification" in window &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window
+  ) {
+    messaging = getMessaging(app);
+  }
+} catch (error) {
+  console.warn("Firebase Messaging is not supported in this browser:", error);
+}

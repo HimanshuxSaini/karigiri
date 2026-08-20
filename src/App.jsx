@@ -62,7 +62,13 @@ const ProtectedRoute = ({ children, isAdmin = false }) => {
 // Inner component — needs to be inside Router to access useLocation
 const AppInner = () => {
   const location = useLocation();
-  const [showIntro, setShowIntro] = useState(() => !sessionStorage.getItem('hasSeenIntro'));
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      return !sessionStorage.getItem('hasSeenIntro');
+    } catch (e) {
+      return true; // Default to showing intro if storage access fails
+    }
+  });
   const setUser = useAuthStore((state) => state.setUser);
   const { requestPermission } = usePushNotifications();
 
@@ -95,7 +101,11 @@ const AppInner = () => {
       <AnimatePresence>
         {showIntro && (
           <IntroVideo onComplete={() => {
-            sessionStorage.setItem('hasSeenIntro', 'true');
+            try {
+              sessionStorage.setItem('hasSeenIntro', 'true');
+            } catch (e) {
+              console.warn('sessionStorage is not available');
+            }
             setShowIntro(false);
           }} />
         )}

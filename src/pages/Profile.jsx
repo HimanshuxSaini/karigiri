@@ -731,7 +731,7 @@ const Profile = () => {
                               onClick={async () => {
                                 try {
                                   await requestPermission();
-                                  if (Notification.permission === 'granted') {
+                                  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
                                     showToast('Notifications Enabled Successfully!', 'success');
                                   } else {
                                     showToast('Notification permission denied.', 'error');

@@ -5,12 +5,16 @@ import { useToastStore } from '../store/useStore';
 
 export const usePushNotifications = () => {
   const [fcmToken, setFcmToken] = useState(null);
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState('Notification' in window ? Notification.permission : 'denied');
 
   const requestPermission = async () => {
     try {
       if (permission === 'granted') {
         await generateToken();
+        return;
+      }
+      if (!('Notification' in window)) {
+        console.warn('Push notifications are not supported in this browser.');
         return;
       }
       
