@@ -43,6 +43,8 @@ const ProductCard = ({ product, priority = false }) => {
             transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             src={getOptimizedImage(product.image, { width: 400, quality: 'auto:eco' })}
             alt={product.name}
+            width="400"
+            height="533"
             loading={priority ? undefined : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             className="max-w-full max-h-full object-contain drop-shadow-sm"
@@ -79,6 +81,7 @@ const ProductCard = ({ product, priority = false }) => {
 
           {/* Wishlist button */}
           <motion.button
+            aria-label="Toggle Wishlist"
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.9 }}
             onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
@@ -89,6 +92,7 @@ const ProductCard = ({ product, priority = false }) => {
 
           {/* Quick View button — visible on hover (desktop) */}
           <button
+            aria-label="Quick View"
             onClick={(e) => { e.preventDefault(); setShowQuickView(true); }}
             className="hidden lg:flex absolute bottom-24 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 items-center gap-1.5 bg-white/95 backdrop-blur z-20 text-slate-800 text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-full shadow-md hover:bg-white"
           >
@@ -114,6 +118,7 @@ const ProductCard = ({ product, priority = false }) => {
           {/* Mobile Quick Add */}
           {!isOutOfStock && (
             <motion.button
+              aria-label="Add to cart"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={(e) => { e.preventDefault(); addItem(product); }}

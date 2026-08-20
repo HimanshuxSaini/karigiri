@@ -256,6 +256,8 @@ const Home = () => {
                     <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4 relative">
                        <img 
                          src={getOptimizedImage(deal.image, { width: 300, quality: 'auto:eco' })} 
+                         width="300"
+                         height="400"
                          loading={i < 2 ? undefined : "lazy"}
                          fetchPriority={i < 2 ? "high" : "auto"}
                          className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-700 drop-shadow-lg" 
@@ -354,10 +356,11 @@ const Home = () => {
                   href={BRAND.social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`View ${reel.tag} on Instagram`}
                   className="block min-w-[160px] md:min-w-[200px] h-[280px] md:h-[350px] bg-slate-200 rounded-xl relative overflow-hidden flex-shrink-0 group snap-center border border-white/20 shadow-lg cursor-pointer"
                 >
                   <div className="absolute inset-0 aspect-[3/4] overflow-hidden bg-gray-50 flex items-center justify-center p-4">
-                    <img src={getOptimizedImage(reel.image || reel.img, { width: 300, quality: 'auto:eco' })} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} loading="lazy" />
+                    <img src={getOptimizedImage(reel.image || reel.img, { width: 300, quality: 'auto:eco' })} width="300" height="400" className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-lg" alt={reel.tag} loading="lazy" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
                   <div className="absolute bottom-4 left-4 text-white">

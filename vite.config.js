@@ -5,6 +5,21 @@ import legacy from '@vitejs/plugin-legacy';
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'react-vendor';
+            if (id.includes('firebase')) return 'firebase-vendor';
+            if (id.includes('framer-motion')) return 'framer-vendor';
+            if (id.includes('lucide') || id.includes('zustand')) return 'ui-vendor';
+            return 'vendor'; // all other deps
+          }
+        }
+      }
+    }
+  },
   plugins: [
     react(),
     legacy({
