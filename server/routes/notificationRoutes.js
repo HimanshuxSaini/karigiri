@@ -41,7 +41,7 @@ router.post('/subscribe', async (req, res) => {
  */
 router.post('/send', async (req, res) => {
   try {
-    const { title, body, imageUrl, clickAction } = req.body;
+    const { title, body, image: imageUrl, url: clickAction } = req.body;
     
     // Basic validation
     if (!title || !body) {
