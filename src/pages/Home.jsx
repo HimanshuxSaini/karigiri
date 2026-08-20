@@ -214,7 +214,7 @@ const Home = () => {
                 )}
                 <Link to="/shop" className="bg-white hover:bg-slate-100 text-[var(--primary)] px-6 py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-colors shadow-sm">Shop Now</Link>
               </div>
-            </motion.div>
+            </div>
           </motion.section>
         )}
       </AnimatePresence>
