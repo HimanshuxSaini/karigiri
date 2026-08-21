@@ -66,9 +66,9 @@ const FAQ = () => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-[var(--primary)] font-black uppercase tracking-[0.3em] text-[10px] md:text-xs mb-4 block"
+            className="text-amber-700 font-black uppercase tracking-[0.3em] text-[10px] mb-3 md:mb-4 block"
           >
-            Transparency & Trust
+            About Our Platform
           </motion.span>
           <motion.h2 
             initial={{ opacity: 0, y: 10 }}
@@ -77,16 +77,16 @@ const FAQ = () => {
             transition={{ delay: 0.1 }}
             className="text-3xl md:text-5xl font-black text-[var(--primary)] mb-6"
           >
-            Why Choose PrathamKarigiri?
+            What is PrathamKarigiri?
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-sm md:text-lg text-slate-500 max-w-2xl mx-auto italic"
+            className="text-sm md:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed"
           >
-            Everything you need to know about our commitment to artisanal excellence and ethical craftsmanship.
+            We are an e-commerce platform offering premium, authentic handcrafted woolen masterpieces. By creating an account, you can securely purchase artisanal products, curate a wishlist, manage orders, and enjoy faster checkout with real-time tracking.
           </motion.p>
         </div>
 

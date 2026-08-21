@@ -190,6 +190,7 @@ const Home = () => {
         </div>
       </div>
 
+
       {/* Flash Sale Countdown */}
       <AnimatePresence>
         {saleConfig?.isActive && (
@@ -410,6 +411,8 @@ const Home = () => {
       <CustomizationSection />
 
       <FAQ />
+
+
     </div>
   );
 };
