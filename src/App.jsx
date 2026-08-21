@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { HelmetProvider } from 'react-helmet-async';
 import { clearAllStores } from './utils/clearStores';
 import { lazy, Suspense, useState, useEffect } from 'react';
-import AmbientBackground from './components/AmbientBackground';
+const AmbientBackground = lazy(() => import('./components/AmbientBackground'));
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -11,7 +11,7 @@ import BottomNav from './components/BottomNav';
 import BackToTop from './components/BackToTop';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
-import IntroVideo from './components/IntroVideo';
+
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/config';
 import { useAuthStore } from './store/useStore';
@@ -62,13 +62,6 @@ const ProtectedRoute = ({ children, isAdmin = false }) => {
 // Inner component — needs to be inside Router to access useLocation
 const AppInner = () => {
   const location = useLocation();
-  const [showIntro, setShowIntro] = useState(() => {
-    try {
-      return !sessionStorage.getItem('hasSeenIntro');
-    } catch {
-      return true; // Default to showing intro if storage access fails
-    }
-  });
   const setUser = useAuthStore((state) => state.setUser);
   const { requestPermission } = usePushNotifications();
 
@@ -98,22 +91,13 @@ const AppInner = () => {
   return (
     <SmoothScroll>
       <ScrollToTop />
-      <AnimatePresence>
-        {showIntro && (
-          <IntroVideo onComplete={() => {
-            try {
-              sessionStorage.setItem('hasSeenIntro', 'true');
-            } catch {
-              console.warn('sessionStorage is not available');
-            }
-            setShowIntro(false);
-          }} />
-        )}
-      </AnimatePresence>
+
       <div className="min-h-screen relative pb-16 md:pb-0">
         <ToastContainer />
         <AnnouncementBar />
-        <AmbientBackground />
+        <Suspense fallback={null}>
+          <AmbientBackground />
+        </Suspense>
         <BackToTop />
         <Suspense fallback={<PageLoader />}>
           <AnimatePresence mode="wait">

@@ -50,8 +50,6 @@ const defaultSlides = [
 const Hero = () => {
   const [current, setCurrent] = useState(0);
   const [slides, setSlides] = useState(defaultSlides);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const loadSlides = async () => {
       try {
@@ -61,8 +59,6 @@ const Hero = () => {
         }
       } catch (error) {
         console.error("Failed to fetch hero slides:", error);
-      } finally {
-        setLoading(false);
       }
     };
     loadSlides();
@@ -75,10 +71,6 @@ const Hero = () => {
     }, 5000);
     return () => clearInterval(next);
   }, [slides]);
-
-  if (loading) {
-    return <div className="min-h-[calc(100dvh-4.5rem)] md:min-h-[80vh] pt-14 md:pt-24 bg-white border-b border-gray-100 flex items-center justify-center"></div>;
-  }
 
   return (
     <div className="min-h-[calc(100dvh-4.5rem)] md:min-h-[80vh] pt-14 md:pt-24 bg-white border-b border-gray-100 flex flex-col">
