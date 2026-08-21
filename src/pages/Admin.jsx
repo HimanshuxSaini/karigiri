@@ -216,7 +216,7 @@ const Admin = () => {
     images: [],
     brand: 'PrathamKarigiri',
     inStock: true,
-    stockCount: 0,
+    stockCount: '',
     sizeType: 'none',
     sizes: [],
     sizePrices: {},
@@ -263,10 +263,14 @@ const Admin = () => {
         images: product.images || [],
         brand: product.brand,
         inStock: product.inStock,
+        stockCount: product.stockCount !== undefined ? product.stockCount : '',
         sizeType: product.sizeType || 'none',
         sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
+        sizePrices: product.sizePrices || {},
         deliveryCharge: product.deliveryCharge || 0,
-        badge: product.badge || 'none'
+        badge: product.badge || 'none',
+        isReturnable: product.isReturnable || false,
+        returnDays: product.returnDays || 7
       });
       setShowProductModal(true);
 
@@ -455,7 +459,7 @@ const Admin = () => {
       images: product.images || [],
       brand: product.brand,
       inStock: product.inStock,
-      stockCount: product.stockCount !== undefined ? product.stockCount : 0,
+      stockCount: product.stockCount !== undefined ? product.stockCount : '',
       sizeType: product.sizeType || 'none',
       sizes: Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []),
       sizePrices: product.sizePrices || {},
@@ -536,13 +540,19 @@ const Admin = () => {
       showNotification('Please upload or provide an image URL', 'error');
       return;
     }
+
+    const payload = { ...formData };
+    if (payload.stockCount === '') {
+      payload.stockCount = undefined;
+    }
+
     try {
       if (editingProduct) {
-        const updated = await updateProduct(editingProduct._id, formData);
+        const updated = await updateProduct(editingProduct._id, payload);
         setProducts(products.map(p => p._id === editingProduct._id ? updated : p));
         showNotification('Product updated successfully');
       } else {
-        const created = await createProduct(formData);
+        const created = await createProduct(payload);
         setProducts([created, ...products]);
         showNotification('Product created successfully');
       }
@@ -558,7 +568,7 @@ const Admin = () => {
         images: [],
         brand: 'PrathamKarigiri',
         inStock: true,
-        stockCount: 0,
+        stockCount: '',
         sizeType: 'none',
         sizes: [],
         deliveryCharge: 0,
@@ -1286,6 +1296,7 @@ const Admin = () => {
                             images: [],
                             brand: 'PrathamKarigiri',
                             inStock: true,
+                            stockCount: '',
                             sizeType: 'none',
                             sizes: [],
                             deliveryCharge: 0,
@@ -2858,12 +2869,19 @@ const Admin = () => {
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Stock Count</label>
                       <input
-                        required
                         type="number"
                         min="0"
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                        value={formData.stockCount !== undefined ? formData.stockCount : 0}
-                        onChange={(e) => setFormData({ ...formData, stockCount: Number(e.target.value) })}
+                        disabled={!formData.inStock}
+                        placeholder={formData.inStock ? "Unlimited" : "Not Applicable"}
+                        className={`w-full px-4 py-3 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 transition-colors ${!formData.inStock ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-70' : 'bg-gray-50 border-gray-100'}`}
+                        value={formData.stockCount !== undefined ? formData.stockCount : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData({ 
+                            ...formData, 
+                            stockCount: val === '' ? '' : Number(val) 
+                          });
+                        }}
                       />
                     </div>
                     <div className="flex items-center space-x-3 pt-8">
@@ -2871,7 +2889,14 @@ const Admin = () => {
                         type="checkbox"
                         id="inStock"
                         checked={formData.inStock}
-                        onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setFormData({ 
+                            ...formData, 
+                            inStock: isChecked,
+                            ...(!isChecked ? { stockCount: '' } : {})
+                          });
+                        }}
                         className="w-5 h-5 accent-[var(--primary)]"
                       />
                       <label htmlFor="inStock" className="text-sm font-bold text-gray-700">Available in Stock</label>
