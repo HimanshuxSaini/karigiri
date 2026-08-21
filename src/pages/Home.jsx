@@ -19,6 +19,8 @@ const Home = () => {
   const [products, setProducts] = useState([]);
 
   const [dealsProducts, setDealsProducts] = useState([]);
+  const [newProducts, setNewProducts] = useState([]);
+  const [bestProducts, setBestProducts] = useState([]);
   const [reels, setReels] = useState([]);
   const [reelsConfig, setReelsConfig] = useState({ isVisible: true });
   const [saleConfig, setSaleConfig] = useState({ isActive: false });
@@ -83,14 +85,26 @@ const Home = () => {
             items: finalProducts
           });
 
+          // New Products
+          const newProds = filteredData.filter(p => p.badge?.toLowerCase() === 'new');
+          setNewProducts(newProds);
+
+          // Best Sellers
+          const bestProds = filteredData.filter(p => p.badge?.toLowerCase() === 'bestseller');
+          setBestProducts(bestProds);
+
         } else {
           setProducts([]);
           setDealsProducts([]); 
+          setNewProducts([]);
+          setBestProducts([]);
         }
       } catch (err) {
         console.error('Failed to fetch home products:', err);
         setProducts([]);
         setDealsProducts([]);
+        setNewProducts([]);
+        setBestProducts([]);
       } finally {
         setLoading(false);
       }
@@ -327,6 +341,82 @@ const Home = () => {
           <Link to="/shop" className="inline-block text-[10px] font-black uppercase tracking-[0.2em] bg-[var(--primary)] text-white px-10 py-4 rounded-full shadow-lg">View Full Catalog</Link>
         </div>
       </section>
+
+      {/* New Arrivals */}
+      {(!loading && newProducts.length === 0) ? null : (
+        <section className="py-12 md:py-20 px-4 md:px-12 bg-gray-50 border-y border-gray-100">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-end mb-8 md:mb-12">
+              <div>
+                <span className="text-sky-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest block mb-1 md:mb-2 text-center sm:text-left">Freshly Crafted</span>
+                <h2 className="text-2xl md:text-4xl font-black text-[var(--primary)] tracking-tighter text-center sm:text-left">New Arrivals</h2>
+              </div>
+              <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b border-[var(--primary)] pb-0.5 md:pb-1 text-[var(--primary)]">Shop New</Link>
+            </div>
+            <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-4 md:gap-8 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
+              {loading ? (
+                [...Array(4)].map((_, i) => (
+                   <div key={i} className="min-w-[220px] md:min-w-0 bg-white p-4 rounded-3xl space-y-4">
+                      <div className="aspect-[3/4] shimmer-bg rounded-2xl w-full"></div>
+                      <div className="h-4 shimmer-bg rounded-md w-3/4"></div>
+                   </div>
+                ))
+              ) : newProducts.length > 0 ? (
+                newProducts.map((product, i) => (
+                  <motion.div 
+                    key={product._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    className="min-w-[220px] lg:min-w-0 snap-center"
+                  >
+                    <ProductCard product={product} priority={false} />
+                  </motion.div>
+                ))
+              ) : null}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Best Sellers */}
+      {(!loading && bestProducts.length === 0) ? null : (
+        <section className="py-12 md:py-24 px-4 md:px-12 bg-white">
+          <div className="max-w-[1440px] mx-auto">
+            <div className="flex justify-between items-end mb-10 md:mb-16">
+              <div>
+                <span className="text-amber-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest block mb-1 md:mb-2 text-center sm:text-left">Community Favorites</span>
+                <h2 className="text-3xl md:text-5xl font-black text-[var(--primary)] tracking-tighter text-center sm:text-left">Best Sellers</h2>
+              </div>
+              <Link to="/shop" className="hidden sm:block text-[10px] md:text-xs font-bold border-b-2 border-[var(--primary)] pb-1 text-[var(--primary)]">Shop Best Sellers</Link>
+            </div>
+            <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-8 md:gap-y-16 no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
+              {loading ? (
+                [...Array(4)].map((_, i) => (
+                   <div key={i} className="min-w-[220px] md:min-w-0 space-y-4">
+                      <div className="aspect-[3/4] shimmer-bg rounded-3xl w-full"></div>
+                      <div className="h-4 shimmer-bg rounded-md w-3/4"></div>
+                   </div>
+                ))
+              ) : bestProducts.length > 0 ? (
+                bestProducts.map((product, i) => (
+                  <motion.div 
+                    key={product._id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    className="min-w-[220px] lg:min-w-0 snap-center"
+                  >
+                    <ProductCard product={product} priority={false} />
+                  </motion.div>
+                ))
+              ) : null}
+            </div>
+          </div>
+        </section>
+      )}
 
 
 
