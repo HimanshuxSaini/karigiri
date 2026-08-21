@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { clearAllStores } from './utils/clearStores';
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 const AmbientBackground = lazy(() => import('./components/AmbientBackground'));
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
