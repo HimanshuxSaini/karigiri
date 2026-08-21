@@ -86,7 +86,7 @@ const FAQ = () => {
             transition={{ delay: 0.2 }}
             className="text-sm md:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed"
           >
-            PrathamKarigiri is an online e-commerce marketplace for handcrafted and traditional woolen products. Customers can browse products, view product details, create an account using Google Sign-In, add products to their wishlist, place and manage orders, make purchases through our secure checkout, and track their orders. Our platform connects customers with quality handmade products from skilled artisans.
+            PrathamKarigiri is a premium e-commerce marketplace dedicated to traditional, handcrafted woolen products. Our platform connects you directly with skilled artisans, offering a curated selection of authentic, handmade quality. By creating an account with Google Sign-In, you unlock a seamless shopping experience—allowing you to easily browse collections, manage your personal wishlist, breeze through secure checkout, and track your orders in real-time.
           </motion.p>
         </div>
 
