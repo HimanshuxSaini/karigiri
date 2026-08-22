@@ -26,7 +26,7 @@ export default defineConfig({
       targets: ['defaults', 'not IE 11']
     }),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       workbox: {
         importScripts: ['/firebase-messaging-sw.js'],
         navigateFallbackDenylist: [/^\/sitemap\.xml$/, /^\/sitemap\//, /\.xml$/]

@@ -10,6 +10,7 @@ import ToastContainer from './components/Toast';
 import BottomNav from './components/BottomNav';
 import BackToTop from './components/BackToTop';
 import ErrorBoundary from './components/ErrorBoundary';
+import ReloadPrompt from './components/ReloadPrompt';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { onAuthStateChanged } from 'firebase/auth';
@@ -94,6 +95,7 @@ const AppInner = () => {
 
       <div className="min-h-screen relative pb-16 md:pb-0">
         <ToastContainer />
+        <ReloadPrompt />
         <AnnouncementBar />
         <Suspense fallback={null}>
           <AmbientBackground />
