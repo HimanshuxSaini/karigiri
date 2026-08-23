@@ -12,7 +12,8 @@ export const useInstallPrompt = () => {
     const checkStandalone = () => {
       const isStandaloneQuery = window.matchMedia('(display-mode: standalone)').matches;
       const isIOSStandalone = window.navigator.standalone === true;
-      setIsStandalone(isStandaloneQuery || isIOSStandalone);
+      const isLocallyInstalled = localStorage.getItem('pwa_installed') === '1';
+      setIsStandalone(isStandaloneQuery || isIOSStandalone || isLocallyInstalled);
     };
     checkStandalone();
 
@@ -42,6 +43,7 @@ export const useInstallPrompt = () => {
       setIsInstallable(false);
       setIsStandalone(true);
       setInstallPromptEvent(null);
+      localStorage.setItem('pwa_installed', '1');
       console.log('PWA was installed');
     };
 

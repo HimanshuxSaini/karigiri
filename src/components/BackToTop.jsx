@@ -18,9 +18,12 @@ const BackToTop = () => {
   const hasMobileStickyBar = isCartPage || isProductPage || isCheckoutPage;
 
   const [isHovered, setIsHovered] = useState(false);
+  const [hasDismissed, setHasDismissed] = useState(
+    localStorage.getItem('pwa_dismissed') === '1'
+  );
   
-  // Show the download button if they are NOT already using the installed app
-  const shouldShowDownload = !isStandalone;
+  // Show the download button if they are NOT already using the installed app and haven't dismissed it
+  const shouldShowDownload = !isStandalone && !hasDismissed;
 
   useEffect(() => {
     if (!shouldShowDownload) return;
@@ -195,7 +198,11 @@ const BackToTop = () => {
               </div>
 
               <button
-                onClick={() => setShowInstallModal(false)}
+                onClick={() => {
+                  setShowInstallModal(false);
+                  localStorage.setItem('pwa_dismissed', '1');
+                  setHasDismissed(true);
+                }}
                 className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors"
               >
                 Got it
