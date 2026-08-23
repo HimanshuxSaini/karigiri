@@ -31,49 +31,53 @@ function ReloadPrompt() {
     <AnimatePresence>
       {needRefresh && (
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 20, scale: 0.95 }}
-          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-          className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl p-4 overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
         >
-          {/* Subtle gradient background element for premium feel */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 via-amber-500 to-yellow-500 opacity-70"></div>
-          
-          <div className="flex items-start justify-between mb-3">
-            <div className="pr-4">
-              <h3 className="text-[var(--text)] font-semibold text-base mb-1">
-                New update available!
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="bg-white w-full max-w-sm rounded-3xl p-6 relative shadow-2xl overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-400 via-amber-500 to-yellow-500 opacity-90"></div>
+            
+            <button
+              onClick={close}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="text-center mb-6 mt-2">
+              <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <RefreshCw size={32} />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-2">
+                Update Available
               </h3>
-              <p className="text-sm text-[var(--text-light)]">
+              <p className="text-sm text-gray-600 font-medium px-2">
                 A new version of Pratham Karigiri is ready. Update now for the latest features and fixes.
               </p>
             </div>
-            <button
-              onClick={close}
-              className="p-1 text-[var(--text-light)] hover:text-[var(--text)] hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
 
-          <div className="flex gap-3 mt-4">
-            {needRefresh && (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={close}
+                className="flex-1 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-bold transition-colors order-2 sm:order-1"
+              >
+                Later
+              </button>
               <button
                 onClick={() => updateServiceWorker(true)}
-                className="flex-1 flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm"
+                className="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-bold transition-colors shadow-lg order-1 sm:order-2"
               >
-                <RefreshCw size={16} />
-                Update App Now
+                Update Now
               </button>
-            )}
-            <button
-              onClick={close}
-              className="flex-1 px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[var(--text)] rounded-xl text-sm font-medium transition-colors"
-            >
-              Close
-            </button>
-          </div>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
