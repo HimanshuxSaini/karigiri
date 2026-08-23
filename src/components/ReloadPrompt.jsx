@@ -71,7 +71,10 @@ function ReloadPrompt() {
                 Later
               </button>
               <button
-                onClick={() => updateServiceWorker(true)}
+                onClick={() => {
+                  updateServiceWorker(true);
+                  close();
+                }}
                 className="flex-1 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl font-bold transition-colors shadow-lg order-1 sm:order-2"
               >
                 Update Now
