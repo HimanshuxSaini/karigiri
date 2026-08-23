@@ -29,7 +29,7 @@ function ReloadPrompt() {
 
   return (
     <AnimatePresence>
-      {(offlineReady || needRefresh) && (
+      {needRefresh && (
         <motion.div
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -43,14 +43,10 @@ function ReloadPrompt() {
           <div className="flex items-start justify-between mb-3">
             <div className="pr-4">
               <h3 className="text-[var(--text)] font-semibold text-base mb-1">
-                {offlineReady
-                  ? 'App ready to work offline'
-                  : 'New update available!'}
+                New update available!
               </h3>
               <p className="text-sm text-[var(--text-light)]">
-                {offlineReady
-                  ? 'The app has been cached for offline use.'
-                  : 'A new version of Pratham Karigiri is ready. Update now for the latest features and fixes.'}
+                A new version of Pratham Karigiri is ready. Update now for the latest features and fixes.
               </p>
             </div>
             <button
