@@ -22,14 +22,17 @@ function ReloadPrompt() {
     },
   });
 
+  const [testShow, setTestShow] = React.useState(true); // TEMP: Force show for testing
+
   const close = () => {
     setOfflineReady(false);
     setNeedRefresh(false);
+    setTestShow(false);
   };
 
   return (
     <AnimatePresence>
-      {needRefresh && (
+      {(needRefresh || testShow) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
