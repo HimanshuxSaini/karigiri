@@ -4,6 +4,7 @@ export const useInstallPrompt = () => {
   const [installPromptEvent, setInstallPromptEvent] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isLocallyInstalled, setIsLocallyInstalled] = useState(false);
   const [isAppleOS, setIsAppleOS] = useState(false);
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
@@ -12,10 +13,13 @@ export const useInstallPrompt = () => {
     const checkStandalone = () => {
       const isStandaloneQuery = window.matchMedia('(display-mode: standalone)').matches;
       const isIOSStandalone = window.navigator.standalone === true;
-      const isLocallyInstalled = localStorage.getItem('pwa_installed') === '1';
-      setIsStandalone(isStandaloneQuery || isIOSStandalone || isLocallyInstalled);
+      setIsStandalone(isStandaloneQuery || isIOSStandalone);
     };
     checkStandalone();
+    
+    // Check if installed locally (to show "Open App" state in browser)
+    const installed = localStorage.getItem('pwa_installed') === '1';
+    setIsLocallyInstalled(installed);
 
     // Detect Apple OS
     const userAgent = window.navigator.userAgent.toLowerCase();
@@ -70,5 +74,5 @@ export const useInstallPrompt = () => {
     setInstallPromptEvent(null);
   };
 
-  return { isInstallable, promptInstall, isStandalone, isAppleOS, isInAppBrowser };
+  return { isInstallable, promptInstall, isStandalone, isAppleOS, isInAppBrowser, isLocallyInstalled };
 };

@@ -8,8 +8,9 @@ import { WHATSAPP } from '../config/constants';
 const BackToTop = () => {
   const [showAppText, setShowAppText] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [showOpenAppModal, setShowOpenAppModal] = useState(false);
   const location = useLocation();
-  const { isInstallable, promptInstall, isStandalone, isAppleOS, isInAppBrowser } = useInstallPrompt();
+  const { isInstallable, promptInstall, isStandalone, isAppleOS, isInAppBrowser, isLocallyInstalled } = useInstallPrompt();
 
   // Determine if we are on a page with a sticky bottom bar on mobile
   const isCartPage = location.pathname === '/cart';
@@ -22,11 +23,13 @@ const BackToTop = () => {
     localStorage.getItem('pwa_dismissed') === '1'
   );
   
-  // Show the download button if they are NOT already using the installed app and haven't dismissed it
-  const shouldShowDownload = !isStandalone && !hasDismissed;
+  const isDownloaded = isLocallyInstalled || hasDismissed;
+  
+  // Show the floating button if they are in the browser (not standalone)
+  const shouldShowButton = !isStandalone;
 
   useEffect(() => {
-    if (!shouldShowDownload) return;
+    if (!shouldShowButton || isDownloaded) return;
     let isMounted = true;
     
     const cycle = () => {
@@ -47,6 +50,10 @@ const BackToTop = () => {
   }, [shouldShowDownload]);
 
   const handleDownloadClick = () => {
+    if (isDownloaded) {
+      setShowOpenAppModal(true);
+      return;
+    }
     if (isInstallable) {
       // Android Chrome native prompt
       promptInstall();
@@ -89,7 +96,7 @@ const BackToTop = () => {
                       transition={{ duration: 0.2 }}
                       className="text-[12px] font-black uppercase tracking-wider"
                     >
-                      App
+                      {isDownloaded ? 'Open' : 'App'}
                     </motion.span>
                   ) : (
                     <motion.div
@@ -101,7 +108,11 @@ const BackToTop = () => {
                       className="flex items-center justify-center"
                     >
                       <div className="flex items-center justify-center transition-transform group-hover:scale-110">
-                        <Download size={18} strokeWidth={2.5} />
+                        {isDownloaded ? (
+                          <ExternalLink size={18} strokeWidth={2.5} />
+                        ) : (
+                          <Download size={18} strokeWidth={2.5} />
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -109,7 +120,7 @@ const BackToTop = () => {
               </div>
               
               <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 whitespace-nowrap text-[12px] font-bold uppercase tracking-wider text-left">
-                 Download App
+                 {isDownloaded ? 'Open App' : 'Download App'}
               </span>
             </motion.button>
           )}
@@ -129,6 +140,44 @@ const BackToTop = () => {
           </span>
         </a>
       </div>
+
+      {/* Open App Modal */}
+      <AnimatePresence>
+        {showOpenAppModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-sm rounded-3xl p-6 relative shadow-2xl"
+            >
+              <button
+                onClick={() => setShowOpenAppModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="text-center mb-6 mt-4">
+                <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ExternalLink size={32} />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-2">App is Downloaded!</h3>
+                <p className="text-sm text-gray-500 font-medium px-2">
+                  You already have the Pratham Karigiri app. Please open it from your home screen for the best experience.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowOpenAppModal(false)}
+                className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors"
+              >
+                Got it
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Instructions Modal for iOS and In-App Browsers */}
       <AnimatePresence>
