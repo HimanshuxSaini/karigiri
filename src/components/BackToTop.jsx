@@ -47,7 +47,7 @@ const BackToTop = () => {
     return () => {
       isMounted = false;
     };
-  }, [shouldShowDownload]);
+  }, [shouldShowButton, isDownloaded]);
 
   const handleDownloadClick = () => {
     if (isDownloaded) {
