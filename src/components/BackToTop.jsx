@@ -149,23 +149,27 @@ const BackToTop = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-[260px] bg-gray-900 text-white text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto"
+              className="w-full max-w-[260px] bg-white text-gray-900 border border-gray-100 text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto"
             >
               {activeTooltip === 'ios' ? (
                 <>
-                  <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-400">
+                  <div className="bg-blue-50 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-500">
                     <Share size={20} />
                   </div>
-                  To install on iPhone:<br/>
-                  Tap the <span className="font-bold text-blue-400">Share</span> icon below, then <span className="font-bold">'Add to Home Screen'</span>.
+                  <h3 className="font-bold text-[15px] mb-1 text-gray-900">Install on iPhone</h3>
+                  <span className="text-gray-500 text-[13px] leading-relaxed block mt-1 px-1">
+                    Tap the <span className="font-bold text-blue-600">Share</span> icon below, then select <span className="font-bold text-gray-800">Add to Home Screen</span> to enjoy the app!
+                  </span>
                 </>
               ) : (
                 <>
-                  <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-green-400">
+                  <div className="bg-green-50 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-green-600">
                     <ExternalLink size={20} />
                   </div>
-                  <h3 className="font-bold text-lg mb-1 text-green-400">App Downloaded!</h3>
-                  Go to your home screen to use and enjoy the app.
+                  <h3 className="font-bold text-[15px] mb-1 text-gray-900">Ready to Explore!</h3>
+                  <span className="text-gray-500 text-[13px] leading-relaxed block mt-1 px-1">
+                    You've already installed our app. Open it directly from your home screen for the best experience.
+                  </span>
                 </>
               )}
             </motion.div>
