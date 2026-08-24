@@ -59,9 +59,7 @@ import {
   fetchSettings,
   updateSettings,
   fetchHeroSlides,
-  updateHeroSlides,
-  fetchAutomaticCouponsConfig,
-  updateAutomaticCouponsConfig
+  updateHeroSlides
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
@@ -148,12 +146,6 @@ const Admin = () => {
   const [reelsConfig, setReelsConfig] = useState({ isVisible: true });
   const [isUpdatingReelsConfig, setIsUpdatingReelsConfig] = useState(false);
   
-  const [autoCouponsConfig, setAutoCouponsConfig] = useState({
-    firstOrderFreeDelivery: { isActive: true },
-    freeDeliveryOverAmount: { isActive: true, amount: 1000 }
-  });
-  const [isUpdatingAutoCoupons, setIsUpdatingAutoCoupons] = useState(false);
-
   const [announcements, setAnnouncements] = useState([]);
   const [newAnnouncement, setNewAnnouncement] = useState('');
   const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
@@ -197,19 +189,6 @@ const Admin = () => {
       showNotification('Failed to send push notification', 'error');
     } finally {
       setIsSendingPush(false);
-    }
-  };
-  const handleUpdateAutoCoupons = async (e) => {
-    if (e) e.preventDefault();
-    setIsUpdatingAutoCoupons(true);
-    try {
-      await updateAutomaticCouponsConfig(autoCouponsConfig);
-      showNotification('Automatic coupons updated successfully!');
-    } catch (err) {
-      console.error('Failed to update automatic coupons:', err);
-      showNotification('Failed to update configuration', 'error');
-    } finally {
-      setIsUpdatingAutoCoupons(false);
     }
   };
 
@@ -306,7 +285,7 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes, autoCouponRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
@@ -314,8 +293,7 @@ const Admin = () => {
         fetchFlashSale(),
         fetchReelsConfig(),
         fetchSettings(),
-        fetchHeroSlides(),
-        fetchAutomaticCouponsConfig()
+        fetchHeroSlides()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
@@ -1872,83 +1850,7 @@ const Admin = () => {
 
               {activeTab === 'coupons' && (
                 <div className="space-y-8">
-                  {/* Automatic Coupons Section */}
-                  <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
-                    <div className="mb-6 flex justify-between items-center">
-                      <div>
-                        <h4 className="text-xl font-bold text-gray-900">Automatic Offers & Delivery Rules</h4>
-                        <p className="text-sm text-gray-500">Configure global automatic discounts applied at checkout.</p>
-                      </div>
-                      <button
-                        onClick={handleUpdateAutoCoupons}
-                        disabled={isUpdatingAutoCoupons}
-                        className="flex items-center space-x-2 bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 disabled:opacity-50 transition-all"
-                      >
-                        {isUpdatingAutoCoupons ? 'Saving...' : 'Save Rules'}
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* First Order Free Delivery */}
-                      <div className="flex flex-col p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h5 className="font-bold text-gray-900 text-sm">First Order Free Delivery</h5>
-                            <p className="text-xs text-gray-500 mt-1">Automatically waive delivery charges on the user's first order.</p>
-                          </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="sr-only peer"
-                              checked={autoCouponsConfig?.firstOrderFreeDelivery?.isActive || false}
-                              onChange={(e) => setAutoCouponsConfig(prev => ({
-                                ...prev,
-                                firstOrderFreeDelivery: { ...prev.firstOrderFreeDelivery, isActive: e.target.checked }
-                              }))}
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Free Delivery Over Amount */}
-                      <div className="flex flex-col p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h5 className="font-bold text-gray-900 text-sm">Free Delivery Threshold</h5>
-                            <p className="text-xs text-gray-500 mt-1">Waive delivery when cart total exceeds a certain amount.</p>
-                          </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="sr-only peer"
-                              checked={autoCouponsConfig?.freeDeliveryOverAmount?.isActive || false}
-                              onChange={(e) => setAutoCouponsConfig(prev => ({
-                                ...prev,
-                                freeDeliveryOverAmount: { ...prev.freeDeliveryOverAmount, isActive: e.target.checked }
-                              }))}
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                          </label>
-                        </div>
-                        <div className={`mt-2 transition-opacity ${autoCouponsConfig?.freeDeliveryOverAmount?.isActive ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-                          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Threshold Amount (₹)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            className="w-full mt-1 px-4 py-2.5 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                            value={autoCouponsConfig?.freeDeliveryOverAmount?.amount || 0}
-                            onChange={(e) => setAutoCouponsConfig(prev => ({
-                              ...prev,
-                              freeDeliveryOverAmount: { ...prev.freeDeliveryOverAmount, amount: Number(e.target.value) }
-                            }))}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr className="border-gray-100" />
+                  {/* Removed static Automatic Coupons Section */}
 
                   <div className="flex justify-between items-center">
                     <div>
@@ -1956,7 +1858,7 @@ const Admin = () => {
                       <p className="text-sm text-gray-500">Manage promotional discount codes</p>
                     </div>
                     <button
-                      onClick={() => { setEditingCoupon(null); setCouponFormData({ code: '', description: '', discountType: 'percentage', discountPercent: 10, discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true }); setShowCouponModal(true); }}
+                      onClick={() => { setEditingCoupon(null); setCouponFormData({ code: '', description: '', discountType: 'percentage', discountPercent: 10, discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true, isAutomatic: false, isFirstOrderOnly: false }); setShowCouponModal(true); }}
                       className="flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
                     >
                       <Plus size={20} />
@@ -1989,10 +1891,22 @@ const Admin = () => {
                               <tr key={coupon._id || coupon.id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4">
                                   <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg text-xs font-black tracking-wider">{coupon.code}</span>
+                                  {coupon.isAutomatic && (
+                                    <div className="mt-2 flex space-x-2">
+                                      <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Auto</span>
+                                      {coupon.isFirstOrderOnly && (
+                                        <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">First Order</span>
+                                      )}
+                                    </div>
+                                  )}
                                 </td>
-                                <td className="px-6 py-4 text-xs font-bold text-gray-600 capitalize">{coupon.discountType}</td>
+                                <td className="px-6 py-4 text-xs font-bold text-gray-600 capitalize">{coupon.discountType.replace('_', ' ')}</td>
                                 <td className="px-6 py-4 text-sm font-bold text-gray-900">
-                                  {coupon.discountType === 'percentage' ? `${coupon.discountPercent}% (max ₹${coupon.maxDiscount})` : `₹${coupon.discountAmount}`}
+                                  {coupon.discountType === 'percentage' 
+                                    ? `${coupon.discountPercent}% (max ₹${coupon.maxDiscount})` 
+                                    : coupon.discountType === 'free_shipping' 
+                                    ? 'Free Shipping' 
+                                    : `₹${coupon.discountAmount}`}
                                 </td>
                                 <td className="px-6 py-4 text-sm font-bold text-gray-600">₹{coupon.minOrderAmount || 0}</td>
                                 <td className="px-6 py-4 text-sm font-bold text-gray-600">{coupon.usedCount || 0} / {coupon.usageLimit || '∞'}</td>
@@ -3204,6 +3118,7 @@ const Admin = () => {
                         <select value={couponFormData.discountType} onChange={(e) => setCouponFormData({ ...couponFormData, discountType: e.target.value })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 outline-none font-bold">
                           <option value="percentage">Percentage (%)</option>
                           <option value="flat">Flat Amount (₹)</option>
+                          <option value="free_shipping">Free Shipping</option>
                         </select>
                       </div>
                     </div>
@@ -3223,12 +3138,12 @@ const Admin = () => {
                             <input type="number" min="0" value={couponFormData.maxDiscount} onChange={(e) => setCouponFormData({ ...couponFormData, maxDiscount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
                           </div>
                         </>
-                      ) : (
+                      ) : couponFormData.discountType === 'flat' ? (
                         <div className="space-y-1">
                           <label className="text-xs font-black uppercase tracking-widest text-gray-400">Flat Discount (₹)</label>
                           <input type="number" min="0" value={couponFormData.discountAmount} onChange={(e) => setCouponFormData({ ...couponFormData, discountAmount: Number(e.target.value) })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold" />
                         </div>
-                      )}
+                      ) : null}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
@@ -3249,6 +3164,37 @@ const Admin = () => {
                         className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold focus:ring-2 focus:ring-purple-500/20"
                       />
                       <p className="text-[10px] text-gray-400">Optional. Coupon will automatically stop working after this point.</p>
+                    </div>
+
+                    {/* Automatic Coupon Toggles */}
+                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={couponFormData.isAutomatic}
+                          onChange={(e) => setCouponFormData({ ...couponFormData, isAutomatic: e.target.checked })}
+                          className="w-5 h-5 rounded accent-blue-600 cursor-pointer"
+                        />
+                        <div className="flex flex-col">
+                          <label className="text-sm font-bold text-blue-900">Automatic Coupon</label>
+                          <span className="text-[10px] text-blue-600 font-medium">Apply this coupon automatically at checkout when conditions are met.</span>
+                        </div>
+                      </div>
+
+                      {couponFormData.isAutomatic && (
+                        <div className="flex items-center space-x-3 pl-8">
+                          <input
+                            type="checkbox"
+                            checked={couponFormData.isFirstOrderOnly}
+                            onChange={(e) => setCouponFormData({ ...couponFormData, isFirstOrderOnly: e.target.checked })}
+                            className="w-5 h-5 rounded accent-blue-600 cursor-pointer"
+                          />
+                          <div className="flex flex-col">
+                            <label className="text-sm font-bold text-blue-900">First Order Only</label>
+                            <span className="text-[10px] text-blue-600 font-medium">Only applies to users placing their very first order.</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     {(() => {
                       const isCouponExpired = couponFormData.expiryDate && new Date(couponFormData.expiryDate) < new Date();

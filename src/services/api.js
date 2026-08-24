@@ -779,6 +779,10 @@ export const deleteCoupon = async (id) => {
 };
 
 const calculateCouponDiscount = (coupon, cartTotal) => {
+  if (coupon.discountType === 'free_shipping') {
+    return 0; // Discount applied directly to delivery charges
+  }
+
   let discount = 0;
 
   if (coupon.discountType === 'percentage') {
@@ -793,25 +797,26 @@ const calculateCouponDiscount = (coupon, cartTotal) => {
   return Math.round(Math.min(discount, cartTotal));
 };
 
-export const getCouponEligibility = (coupon, cartTotal, cartCategories = []) => {
-  void cartCategories;
-
+export const getCouponEligibility = (coupon, cartTotal, isFirstOrder = false) => {
   if (!coupon) {
-    return { valid: false, discount: 0, message: 'Coupon not found' };
+    return { valid: false, discount: 0, isFreeShipping: false, message: 'Coupon not found' };
   }
 
   if (!coupon.isActive) {
-    return { valid: false, discount: 0, message: 'This coupon is not active right now' };
+    return { valid: false, discount: 0, isFreeShipping: false, message: 'This coupon is not active right now' };
   }
 
   // Check if coupon has expired
   if (coupon.expiryDate && new Date() > new Date(coupon.expiryDate)) {
-    return { valid: false, discount: 0, message: 'This coupon has expired' };
+    return { valid: false, discount: 0, isFreeShipping: false, message: 'This coupon has expired' };
   }
 
-
   if (coupon.usageLimit && (coupon.usedCount || 0) >= coupon.usageLimit) {
-    return { valid: false, discount: 0, message: 'Coupon usage limit has been reached' };
+    return { valid: false, discount: 0, isFreeShipping: false, message: 'Coupon usage limit has been reached' };
+  }
+
+  if (coupon.isFirstOrderOnly && !isFirstOrder) {
+    return { valid: false, discount: 0, isFreeShipping: false, message: 'This coupon is valid for first-time orders only.' };
   }
 
   if (coupon.minOrderAmount && cartTotal < coupon.minOrderAmount) {
@@ -819,17 +824,20 @@ export const getCouponEligibility = (coupon, cartTotal, cartCategories = []) => 
     return {
       valid: false,
       discount: 0,
+      isFreeShipping: false,
       message: `Add ${formatCurrency(amountLeft)} more to use this coupon. Minimum order is ${formatCurrency(coupon.minOrderAmount)}.`
     };
   }
 
   const discount = calculateCouponDiscount(coupon, cartTotal);
+  const isFreeShipping = coupon.discountType === 'free_shipping';
 
   return {
     valid: true,
     discount,
+    isFreeShipping,
     coupon,
-    message: discount > 0 ? `Coupon applied! You save ${formatCurrency(discount)}` : 'Coupon applied'
+    message: isFreeShipping ? 'Free shipping applied!' : (discount > 0 ? `Coupon applied! You save ${formatCurrency(discount)}` : 'Coupon applied')
   };
 };
 

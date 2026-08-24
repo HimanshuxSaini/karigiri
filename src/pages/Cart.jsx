@@ -4,7 +4,7 @@ import { Trash2, Plus, Minus, ArrowRight, Tag, X, Loader2, ChevronRight, Truck }
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { fetchCoupons, getCouponEligibility, fetchAutomaticCouponsConfig } from '../services/api';
+import { fetchCoupons, getCouponEligibility } from '../services/api';
 import LoginModal from '../components/LoginModal';
 import RecommendedProducts from '../components/RecommendedProducts';
 import { getOptimizedImage } from '../utils/imageHelpers';
@@ -29,18 +29,20 @@ const Cart = () => {
   const [loadingCoupons, setLoadingCoupons] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
-  const [autoCouponsConfig, setAutoCouponsConfig] = useState(null);
-
+  // We don't calculate final delivery cost here in UI if we can't reliably know isFirstOrder
+  // However, we CAN check if there is an active auto free_shipping coupon for cart total
   const cartTotal = getTotal();
   
   // Derive valid eligibility status
   const couponEligibility = appliedCoupon ? getCouponEligibility(appliedCoupon, cartTotal) : { valid: false, discount: 0 };
   const discount = couponEligibility.valid ? couponEligibility.discount : 0;
   
+  const autoFreeShipping = coupons.find(c => c.isAutomatic && c.isActive && c.discountType === 'free_shipping');
   let deliveryCharges = getDeliveryCharges();
-  if (autoCouponsConfig?.freeDeliveryOverAmount?.isActive && cartTotal >= (autoCouponsConfig.freeDeliveryOverAmount.amount || 1000)) {
+  if (autoFreeShipping && autoFreeShipping.minOrderAmount && cartTotal >= autoFreeShipping.minOrderAmount) {
     deliveryCharges = 0;
   }
+  
   const finalTotal = Math.max(0, cartTotal - discount + deliveryCharges);
 
   // Auto-clear global coupon if cart edits push them under min spend thresholds
@@ -53,12 +55,8 @@ const Cart = () => {
   useEffect(() => {
     const loadCoupons = async () => {
       try {
-        const [fetchedCoupons, config] = await Promise.all([
-          fetchCoupons(),
-          fetchAutomaticCouponsConfig()
-        ]);
+        const fetchedCoupons = await fetchCoupons();
         setCoupons(fetchedCoupons);
-        setAutoCouponsConfig(config);
       } catch (error) {
         console.error('Error fetching coupons:', error);
       } finally {
@@ -123,8 +121,9 @@ const Cart = () => {
 
         {/* Free Delivery Progress Bar */}
         {(() => {
-          if (!autoCouponsConfig || !autoCouponsConfig.freeDeliveryOverAmount?.isActive) return null;
-          const threshold = autoCouponsConfig.freeDeliveryOverAmount?.amount || 1000;
+          const autoFreeShipping = coupons.find(c => c.isAutomatic && c.isActive && c.discountType === 'free_shipping' && c.minOrderAmount > 0);
+          if (!autoFreeShipping) return null;
+          const threshold = autoFreeShipping.minOrderAmount;
           const pct = Math.min(100, Math.round((cartTotal / threshold) * 100));
           const remaining = threshold - cartTotal;
           return (

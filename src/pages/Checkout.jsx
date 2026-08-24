@@ -4,7 +4,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, Minus, X, Tag, Loader2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders, createRazorpayOrder, fetchAutomaticCouponsConfig } from '../services/api';
+import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders, createRazorpayOrder } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackPurchase } from '../utils/analytics';
@@ -61,7 +61,7 @@ const Checkout = () => {
   const [couponsLoading, setCouponsLoading] = useState(true);
   const [couponListError, setCouponListError] = useState('');
   
-  const [autoCouponsConfig, setAutoCouponsConfig] = useState(null);
+  // Config replaced by generic auto coupons in coupons state
 
   // User orders state for first delivery coupon validation
   const [userOrders, setUserOrders] = useState([]);
@@ -93,19 +93,26 @@ const Checkout = () => {
   
   let actualDeliveryCharges = deliveryCharges;
   let freeDeliveryReason = '';
+  let autoCouponsDiscount = 0;
+  let autoCouponsApplied = [];
 
-  if (autoCouponsConfig?.firstOrderFreeDelivery?.isActive && isFirstOrder) {
-    actualDeliveryCharges = 0;
-    freeDeliveryReason = 'First Order';
-  } else if (autoCouponsConfig?.freeDeliveryOverAmount?.isActive && cartTotal >= (autoCouponsConfig.freeDeliveryOverAmount.amount || 1000)) {
-    actualDeliveryCharges = 0;
-    freeDeliveryReason = 'Over ₹' + (autoCouponsConfig.freeDeliveryOverAmount.amount || 1000);
-  } else if (isFirstOrder && !autoCouponsConfig) {
-     // Fallback to legacy behaviour if config not loaded
-     actualDeliveryCharges = 0;
-     freeDeliveryReason = 'First Order';
-  }
-  const finalTotal = Math.max(0, cartTotal - couponDiscount + actualDeliveryCharges);
+  // Evaluate all active automatic coupons
+  const activeAutoCoupons = coupons.filter(c => c.isAutomatic && c.isActive);
+  
+  activeAutoCoupons.forEach(coupon => {
+    const eligibility = getCouponEligibility(coupon, cartTotal, isFirstOrder);
+    if (eligibility.valid) {
+      autoCouponsApplied.push(coupon);
+      if (eligibility.isFreeShipping) {
+        actualDeliveryCharges = 0;
+        freeDeliveryReason = coupon.description || coupon.code || 'Automatic Offer';
+      } else {
+        autoCouponsDiscount += eligibility.discount;
+      }
+    }
+  });
+
+  const finalTotal = Math.max(0, cartTotal - couponDiscount - autoCouponsDiscount + actualDeliveryCharges);
 
   useEffect(() => {
     if (!hasTrackedBeginCheckout.current && items.length > 0) {
@@ -117,8 +124,8 @@ const Checkout = () => {
 
   const appliedCouponId = appliedCoupon?._id || appliedCoupon?.id;
   
-  // Hide special internal coupons from UI list - now applied automatically
-  const displayedCoupons = coupons.filter(c => c.code?.toUpperCase() !== 'FIRSTDELIVERY');
+  // Hide automatic coupons from the manual application list
+  const displayedCoupons = coupons.filter(c => !c.isAutomatic);
 
   const couponCards = displayedCoupons
     .map((coupon) => {
@@ -148,12 +155,10 @@ const Checkout = () => {
     setCouponLoading(true);
     setCouponMessage({ text: '', type: '' });
 
-    if (normalizedCode === 'FIRSTDELIVERY') {
-      if (isFirstOrder) {
-        setCouponMessage({ text: 'Welcome! Free delivery is already automatically applied to your order total.', type: 'success' });
-      } else {
-        setCouponMessage({ text: 'The FIRSTDELIVERY offer is only valid for new customers.', type: 'error' });
-      }
+    // Ensure user doesn't try to manually apply an auto coupon that is already working
+    const isAuto = coupons.find(c => c.code?.toUpperCase() === normalizedCode && c.isAutomatic);
+    if (isAuto) {
+      setCouponMessage({ text: 'This is an automatic offer and applies by itself if you qualify.', type: 'error' });
       setCouponLoading(false);
       return;
     }
@@ -197,13 +202,9 @@ const Checkout = () => {
       setCouponListError('');
 
       try {
-        const [fetchedCoupons, config] = await Promise.all([
-          fetchCoupons(),
-          fetchAutomaticCouponsConfig()
-        ]);
+        const fetchedCoupons = await fetchCoupons();
         if (isMounted) {
           setCoupons(fetchedCoupons);
-          setAutoCouponsConfig(config);
         }
       } catch (error) {
         console.error('Failed to load coupons:', error);
@@ -749,6 +750,12 @@ const Checkout = () => {
                     </span>
                   )}
                 </div>
+                {autoCouponsApplied.filter(c => c.discountType !== 'free_shipping').map((coupon, idx) => (
+                  <div key={`auto-${idx}`} className="flex justify-between text-sm">
+                    <span className="text-blue-600 flex items-center space-x-1"><Tag size={12} /><span>Auto ({coupon.code})</span></span>
+                    <span className="font-bold text-blue-600">-{formatCurrency(getCouponEligibility(coupon, cartTotal, isFirstOrder).discount)}</span>
+                  </div>
+                ))}
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-emerald-600 flex items-center space-x-1"><Tag size={12} /><span>Coupon ({appliedCoupon?.code})</span></span>

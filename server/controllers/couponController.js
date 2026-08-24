@@ -5,7 +5,7 @@ const couponsCollection = () => admin.firestore().collection('coupons');
 const normalizeCouponPayload = (payload = {}) => ({
   code: String(payload.code || '').toUpperCase().trim(),
   description: String(payload.description || '').trim(),
-  discountType: payload.discountType === 'flat' ? 'flat' : 'percentage',
+  discountType: ['flat', 'percentage', 'free_shipping'].includes(payload.discountType) ? payload.discountType : 'percentage',
   discountPercent: Number(payload.discountPercent || 0),
   discountAmount: Number(payload.discountAmount || 0),
   maxDiscount: Number(payload.maxDiscount || 0),
@@ -13,6 +13,8 @@ const normalizeCouponPayload = (payload = {}) => ({
   usageLimit: Number(payload.usageLimit || 0),
   isActive: payload.isActive !== false,
   expiryDate: payload.expiryDate || null,
+  isAutomatic: Boolean(payload.isAutomatic || false),
+  isFirstOrderOnly: Boolean(payload.isFirstOrderOnly || false),
 });
 
 const validateCouponPayload = (payload) => {
@@ -24,8 +26,10 @@ const validateCouponPayload = (payload) => {
     if (payload.discountPercent <= 0 || payload.discountPercent > 100) {
       return 'Discount percent must be between 1 and 100';
     }
-  } else if (payload.discountAmount <= 0) {
-    return 'Flat discount amount must be greater than 0';
+  } else if (payload.discountType === 'flat') {
+    if (payload.discountAmount <= 0) {
+      return 'Flat discount amount must be greater than 0';
+    }
   }
 
   if (payload.minOrderAmount < 0 || payload.maxDiscount < 0 || payload.usageLimit < 0) {
