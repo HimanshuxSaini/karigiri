@@ -7,6 +7,7 @@ import { WHATSAPP } from '../config/constants';
 
 const BackToTop = () => {
   const [showAppText, setShowAppText] = useState(false);
+  const [showIosTooltip, setShowIosTooltip] = useState(false);
   const location = useLocation();
   const { isInstallable, promptInstall, isStandalone, isAppleOS, isInAppBrowser, isLocallyInstalled } = useInstallPrompt();
 
@@ -51,6 +52,9 @@ const BackToTop = () => {
   const handleDownloadClick = () => {
     if (isInstallable) {
       promptInstall();
+    } else if (isAppleOS && !isDownloaded) {
+      setShowIosTooltip(true);
+      setTimeout(() => setShowIosTooltip(false), 5000);
     }
   };
 
@@ -63,10 +67,11 @@ const BackToTop = () => {
       >
         <AnimatePresence>
           {shouldShowButton && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.7 }}
+            <div className="relative flex justify-end">
+              <motion.button
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.7 }}
               transition={{ duration: 0.2 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -114,6 +119,7 @@ const BackToTop = () => {
                  {isDownloaded ? 'Open App' : 'Download App'}
               </span>
             </motion.button>
+            </div>
           )}
         </AnimatePresence>
 
@@ -131,6 +137,26 @@ const BackToTop = () => {
           </span>
         </a>
       </div>
+
+      {/* Centered iOS Tooltip */}
+      <AnimatePresence>
+        {showIosTooltip && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none px-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="w-full max-w-[260px] bg-gray-900 text-white text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto"
+            >
+              <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-400">
+                <Share size={20} />
+              </div>
+              To install on iPhone:<br/>
+              Tap the <span className="font-bold text-blue-400">Share</span> icon below, then <span className="font-bold">'Add to Home Screen'</span>.
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </>
   );
