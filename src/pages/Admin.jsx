@@ -303,7 +303,6 @@ const Admin = () => {
       if (reelResConfig) setReelsConfig(reelResConfig);
       if (settingsRes && settingsRes.announcements) setAnnouncements(settingsRes.announcements);
       if (heroRes) setHeroSlides(heroRes.sort((a,b) => a.order - b.order));
-      if (autoCouponRes) setAutoCouponsConfig(autoCouponRes);
 
       const defaultHeroSlides = [
         {
