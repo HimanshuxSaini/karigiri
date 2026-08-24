@@ -149,8 +149,15 @@ const BackToTop = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-[260px] bg-white text-gray-900 border border-gray-100 text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto"
+              className="w-full max-w-[260px] bg-white text-gray-900 border border-gray-100 text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto relative"
             >
+              <button
+                onClick={() => setActiveTooltip(null)}
+                className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-full p-1.5 transition-colors"
+                aria-label="Close"
+              >
+                <X size={14} strokeWidth={2.5} />
+              </button>
               {activeTooltip === 'ios' ? (
                 <>
                   <div className="bg-blue-50 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-500">
