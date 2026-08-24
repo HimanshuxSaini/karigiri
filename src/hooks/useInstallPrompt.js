@@ -41,6 +41,16 @@ export const useInstallPrompt = () => {
       e.preventDefault();
       setInstallPromptEvent(e);
       setIsInstallable(true);
+      
+      // If the browser fires this event, the app is definitely not installed.
+      // Clear any stale local storage flags from previous installations.
+      if (localStorage.getItem('pwa_installed') === '1') {
+        localStorage.removeItem('pwa_installed');
+        setIsLocallyInstalled(false);
+      }
+      if (localStorage.getItem('pwa_dismissed') === '1') {
+        localStorage.removeItem('pwa_dismissed');
+      }
     };
 
     const handleAppInstalled = () => {

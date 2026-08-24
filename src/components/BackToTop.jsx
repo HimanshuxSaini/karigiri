@@ -23,7 +23,8 @@ const BackToTop = () => {
     localStorage.getItem('pwa_dismissed') === '1'
   );
   
-  const isDownloaded = isLocallyInstalled || hasDismissed;
+  // If the browser tells us it can be installed, it means it is definitely not downloaded
+  const isDownloaded = (isLocallyInstalled || hasDismissed) && !isInstallable;
   
   // Show the floating button if they are in the browser (not standalone)
   const shouldShowButton = !isStandalone;
