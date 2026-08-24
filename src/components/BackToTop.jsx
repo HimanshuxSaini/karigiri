@@ -7,7 +7,7 @@ import { WHATSAPP } from '../config/constants';
 
 const BackToTop = () => {
   const [showAppText, setShowAppText] = useState(false);
-  const [showIosTooltip, setShowIosTooltip] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState(null);
   const location = useLocation();
   const { isInstallable, promptInstall, isStandalone, isAppleOS, isInAppBrowser, isLocallyInstalled } = useInstallPrompt();
 
@@ -50,11 +50,14 @@ const BackToTop = () => {
   }, [shouldShowButton, isDownloaded]);
 
   const handleDownloadClick = () => {
-    if (isInstallable) {
+    if (isDownloaded) {
+      setActiveTooltip('downloaded');
+      setTimeout(() => setActiveTooltip(null), 5000);
+    } else if (isInstallable) {
       promptInstall();
-    } else if (isAppleOS && !isDownloaded) {
-      setShowIosTooltip(true);
-      setTimeout(() => setShowIosTooltip(false), 5000);
+    } else if (isAppleOS) {
+      setActiveTooltip('ios');
+      setTimeout(() => setActiveTooltip(null), 5000);
     }
   };
 
@@ -138,9 +141,9 @@ const BackToTop = () => {
         </a>
       </div>
 
-      {/* Centered iOS Tooltip */}
+      {/* Centered Tooltip */}
       <AnimatePresence>
-        {showIosTooltip && (
+        {activeTooltip && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none px-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -148,11 +151,23 @@ const BackToTop = () => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="w-full max-w-[260px] bg-gray-900 text-white text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto"
             >
-              <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-400">
-                <Share size={20} />
-              </div>
-              To install on iPhone:<br/>
-              Tap the <span className="font-bold text-blue-400">Share</span> icon below, then <span className="font-bold">'Add to Home Screen'</span>.
+              {activeTooltip === 'ios' ? (
+                <>
+                  <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-400">
+                    <Share size={20} />
+                  </div>
+                  To install on iPhone:<br/>
+                  Tap the <span className="font-bold text-blue-400">Share</span> icon below, then <span className="font-bold">'Add to Home Screen'</span>.
+                </>
+              ) : (
+                <>
+                  <div className="bg-white/10 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-green-400">
+                    <ExternalLink size={20} />
+                  </div>
+                  <h3 className="font-bold text-lg mb-1 text-green-400">App Downloaded!</h3>
+                  Go to your home screen to use and enjoy the app.
+                </>
+              )}
             </motion.div>
           </div>
         )}
