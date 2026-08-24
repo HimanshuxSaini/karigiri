@@ -49,7 +49,7 @@ const Navbar = () => {
             >
               <Menu size={22} />
             </button>
-            <Link to="/" className="flex flex-col items-start justify-center group">
+            <Link to="/" onClick={() => window.scrollTo(0, 0)} className="flex flex-col items-start justify-center group">
               <div className="text-xl lg:text-2xl font-black tracking-tighter text-black flex items-center leading-none">
                 PRATHAM<span className="text-[var(--primary)]">KARIGIRI</span>
               </div>
@@ -68,6 +68,7 @@ const Navbar = () => {
                 >
                   <Link
                     to={link.path}
+                    onClick={() => window.scrollTo(0, 0)}
                     className="hover:text-[var(--primary)] border-b-4 border-transparent hover:border-b-[var(--primary)] pb-4 transition-all block"
                   >
                     {link.name}
@@ -98,7 +99,7 @@ const Navbar = () => {
                                   key={item}
                                   to={`/shop?category=${link.name}&sub=${item}`}
                                   className="text-gray-500 hover:text-black font-semibold transition-all duration-300 hover:translate-x-2 flex items-center group/item text-[13px]"
-                                  onClick={() => setHoveredCategory(null)}
+                                  onClick={() => { setHoveredCategory(null); window.scrollTo(0, 0); }}
                                 >
                                   <span className="w-0 group-hover/item:w-3 h-[1px] bg-[var(--primary)] mr-0 group-hover/item:mr-3 transition-all"></span>
                                   <span className="lowercase first-letter:uppercase">{item}</span>
@@ -272,7 +273,7 @@ const Navbar = () => {
                                         <Link
                                           key={item}
                                           to={`/shop?category=${link.name}&sub=${item}`}
-                                          onClick={() => setIsMobileMenuOpen(false)}
+                                          onClick={() => { setIsMobileMenuOpen(false); window.scrollTo(0, 0); }}
                                           className="text-sm font-medium text-gray-600 hover:text-black py-1"
                                         >
                                           {item}
@@ -280,7 +281,7 @@ const Navbar = () => {
                                       ))}
                                       <Link
                                         to={link.path}
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        onClick={() => { setIsMobileMenuOpen(false); window.scrollTo(0, 0); }}
                                         className="text-sm font-bold text-[var(--primary)] py-1 mt-2 flex items-center"
                                       >
                                         View All {link.name} <ChevronRight size={14} className="ml-1" />
