@@ -70,58 +70,106 @@ const BackToTop = () => {
       >
         <AnimatePresence>
           {shouldShowButton && (
-            <div className="relative flex justify-end">
+            <div className="relative flex justify-end items-center">
+              {/* Tooltip */}
+              <AnimatePresence>
+                {activeTooltip && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none px-4 md:absolute md:inset-auto md:right-full md:mr-4 md:top-1/2 md:-translate-y-1/2"
+                  >
+                    <div className="w-full max-w-[260px] md:min-w-[260px] bg-white text-gray-900 border border-gray-100 text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto relative">
+                      {/* Pointer triangle for desktop */}
+                      <div className="hidden md:block absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-y-[6px] border-y-transparent border-l-[6px] border-l-white drop-shadow-sm" />
+                      
+                      <button
+                        onClick={() => setActiveTooltip(null)}
+                        className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-full p-1.5 transition-colors"
+                        aria-label="Close"
+                      >
+                        <X size={14} strokeWidth={2.5} />
+                      </button>
+                      
+                      {activeTooltip === 'ios' ? (
+                        <>
+                          <div className="bg-blue-50 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-500">
+                            <Share size={20} />
+                          </div>
+                          <h3 className="font-bold text-[15px] mb-1 text-gray-900">Install on iPhone</h3>
+                          <span className="text-gray-500 text-[13px] leading-relaxed block mt-1 px-1">
+                            Tap the <span className="font-bold text-blue-600">Share</span> icon below, then select <span className="font-bold text-gray-800">Add to Home Screen</span> to enjoy the app!
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="bg-green-50 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-green-600">
+                            <ExternalLink size={20} />
+                          </div>
+                          <h3 className="font-bold text-[15px] mb-1 text-gray-900">Ready to Explore!</h3>
+                          <span className="text-gray-500 text-[13px] leading-relaxed block mt-1 px-1">
+                            You've already installed our app. Open it directly from your home screen for the best experience.
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <motion.button
                 initial={{ opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.7 }}
-              transition={{ duration: 0.2 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleDownloadClick}
-              onHoverStart={() => setIsHovered(true)}
-              onHoverEnd={() => setIsHovered(false)}
-              aria-label="Install App"
-              className="h-11 px-0 min-w-[44px] hover:px-4 bg-white text-[var(--primary)] border-2 border-[var(--primary)] rounded-full shadow-xl flex items-center justify-center transition-all duration-300 overflow-hidden group"
-            >
-              <div className="w-[40px] shrink-0 flex items-center justify-center">
-                <AnimatePresence mode="wait">
-                  {(!isHovered && showAppText) ? (
-                    <motion.span
-                      key="text"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-[12px] font-black uppercase tracking-wider"
-                    >
-                      {isDownloaded ? 'Open' : 'App'}
-                    </motion.span>
-                  ) : (
-                    <motion.div
-                      key="icon"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex items-center justify-center"
-                    >
-                      <div className="flex items-center justify-center transition-transform group-hover:scale-110">
-                        {isDownloaded ? (
-                          <ExternalLink size={18} strokeWidth={2.5} />
-                        ) : (
-                          <Download size={18} strokeWidth={2.5} />
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              
-              <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 whitespace-nowrap text-[12px] font-bold uppercase tracking-wider text-left">
-                 {isDownloaded ? 'Open App' : 'Download App'}
-              </span>
-            </motion.button>
+                transition={{ duration: 0.2 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDownloadClick}
+                onHoverStart={() => setIsHovered(true)}
+                onHoverEnd={() => setIsHovered(false)}
+                aria-label="Install App"
+                className="h-11 px-0 min-w-[44px] hover:px-4 bg-white text-[var(--primary)] border-2 border-[var(--primary)] rounded-full shadow-xl flex items-center justify-center transition-all duration-300 overflow-hidden group"
+              >
+                <div className="w-[40px] shrink-0 flex items-center justify-center">
+                  <AnimatePresence mode="wait">
+                    {(!isHovered && showAppText) ? (
+                      <motion.span
+                        key="text"
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-[12px] font-black uppercase tracking-wider"
+                      >
+                        {isDownloaded ? 'Open' : 'App'}
+                      </motion.span>
+                    ) : (
+                      <motion.div
+                        key="icon"
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center justify-center"
+                      >
+                        <div className="flex items-center justify-center transition-transform group-hover:scale-110">
+                          {isDownloaded ? (
+                            <ExternalLink size={18} strokeWidth={2.5} />
+                          ) : (
+                            <Download size={18} strokeWidth={2.5} />
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                
+                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 whitespace-nowrap text-[12px] font-bold uppercase tracking-wider text-left">
+                   {isDownloaded ? 'Open App' : 'Download App'}
+                </span>
+              </motion.button>
             </div>
           )}
         </AnimatePresence>
@@ -141,48 +189,6 @@ const BackToTop = () => {
         </a>
       </div>
 
-      {/* Centered Tooltip */}
-      <AnimatePresence>
-        {activeTooltip && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none px-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-[260px] bg-white text-gray-900 border border-gray-100 text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto relative"
-            >
-              <button
-                onClick={() => setActiveTooltip(null)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-full p-1.5 transition-colors"
-                aria-label="Close"
-              >
-                <X size={14} strokeWidth={2.5} />
-              </button>
-              {activeTooltip === 'ios' ? (
-                <>
-                  <div className="bg-blue-50 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-500">
-                    <Share size={20} />
-                  </div>
-                  <h3 className="font-bold text-[15px] mb-1 text-gray-900">Install on iPhone</h3>
-                  <span className="text-gray-500 text-[13px] leading-relaxed block mt-1 px-1">
-                    Tap the <span className="font-bold text-blue-600">Share</span> icon below, then select <span className="font-bold text-gray-800">Add to Home Screen</span> to enjoy the app!
-                  </span>
-                </>
-              ) : (
-                <>
-                  <div className="bg-green-50 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 text-green-600">
-                    <ExternalLink size={20} />
-                  </div>
-                  <h3 className="font-bold text-[15px] mb-1 text-gray-900">Ready to Explore!</h3>
-                  <span className="text-gray-500 text-[13px] leading-relaxed block mt-1 px-1">
-                    You've already installed our app. Open it directly from your home screen for the best experience.
-                  </span>
-                </>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
     </>
   );
