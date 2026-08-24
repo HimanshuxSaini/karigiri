@@ -4,7 +4,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, MapPin, ChevronRight, Truck, ShieldCheck, Plus, Minus, X, Tag, Loader2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders, createRazorpayOrder } from '../services/api';
+import { createOrder, validateCoupon, fetchCoupons, getCouponEligibility, fetchOrders, createRazorpayOrder, fetchAutomaticCouponsConfig } from '../services/api';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackPurchase } from '../utils/analytics';
@@ -60,6 +60,8 @@ const Checkout = () => {
   const [coupons, setCoupons] = useState([]);
   const [couponsLoading, setCouponsLoading] = useState(true);
   const [couponListError, setCouponListError] = useState('');
+  
+  const [autoCouponsConfig, setAutoCouponsConfig] = useState(null);
 
   // User orders state for first delivery coupon validation
   const [userOrders, setUserOrders] = useState([]);
@@ -88,7 +90,21 @@ const Checkout = () => {
   const cartTotal = getTotal();
   const deliveryCharges = getDeliveryCharges();
   const isFirstOrder = !loadingOrders && userOrders.length === 0;
-  const actualDeliveryCharges = isFirstOrder ? 0 : deliveryCharges;
+  
+  let actualDeliveryCharges = deliveryCharges;
+  let freeDeliveryReason = '';
+
+  if (autoCouponsConfig?.firstOrderFreeDelivery?.isActive && isFirstOrder) {
+    actualDeliveryCharges = 0;
+    freeDeliveryReason = 'First Order';
+  } else if (autoCouponsConfig?.freeDeliveryOverAmount?.isActive && cartTotal >= (autoCouponsConfig.freeDeliveryOverAmount.amount || 1000)) {
+    actualDeliveryCharges = 0;
+    freeDeliveryReason = 'Over ₹' + (autoCouponsConfig.freeDeliveryOverAmount.amount || 1000);
+  } else if (isFirstOrder && !autoCouponsConfig) {
+     // Fallback to legacy behaviour if config not loaded
+     actualDeliveryCharges = 0;
+     freeDeliveryReason = 'First Order';
+  }
   const finalTotal = Math.max(0, cartTotal - couponDiscount + actualDeliveryCharges);
 
   useEffect(() => {
@@ -181,9 +197,13 @@ const Checkout = () => {
       setCouponListError('');
 
       try {
-        const fetchedCoupons = await fetchCoupons();
+        const [fetchedCoupons, config] = await Promise.all([
+          fetchCoupons(),
+          fetchAutomaticCouponsConfig()
+        ]);
         if (isMounted) {
           setCoupons(fetchedCoupons);
+          setAutoCouponsConfig(config);
         }
       } catch (error) {
         console.error('Failed to load coupons:', error);
@@ -725,7 +745,7 @@ const Checkout = () => {
                     <span className="font-bold text-[var(--text-main)]">{formatCurrency(actualDeliveryCharges)}</span>
                   ) : (
                     <span className="font-bold text-emerald-600 uppercase tracking-widest text-[10px]">
-                      {isFirstOrder ? 'Free (First Order)' : 'Free'}
+                      {freeDeliveryReason ? `Free (${freeDeliveryReason})` : 'Free'}
                     </span>
                   )}
                 </div>

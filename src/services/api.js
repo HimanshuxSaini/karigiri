@@ -652,6 +652,42 @@ export const updateReelsConfig = async (config) => {
   }
 };
 
+// Automatic Coupons Config
+export const fetchAutomaticCouponsConfig = async () => {
+  try {
+    const docRef = doc(db, 'config', 'automaticCoupons');
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return snapshot.data();
+    }
+    // Default config
+    return {
+      firstOrderFreeDelivery: { isActive: true },
+      freeDeliveryOverAmount: { isActive: true, amount: 1000 }
+    };
+  } catch (error) {
+    console.error("Error fetching automatic coupons config:", error);
+    return {
+      firstOrderFreeDelivery: { isActive: true },
+      freeDeliveryOverAmount: { isActive: true, amount: 1000 }
+    };
+  }
+};
+
+export const updateAutomaticCouponsConfig = async (config) => {
+  try {
+    const docRef = doc(db, 'config', 'automaticCoupons');
+    await setDoc(docRef, { 
+      ...config, 
+      updatedAt: serverTimestamp() 
+    }, { merge: true });
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating automatic coupons config:", error);
+    throw error;
+  }
+};
+
 // Hero Slides
 export const fetchHeroSlides = async () => {
   try {

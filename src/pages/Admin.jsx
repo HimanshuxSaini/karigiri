@@ -59,7 +59,9 @@ import {
   fetchSettings,
   updateSettings,
   fetchHeroSlides,
-  updateHeroSlides
+  updateHeroSlides,
+  fetchAutomaticCouponsConfig,
+  updateAutomaticCouponsConfig
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
@@ -145,6 +147,13 @@ const Admin = () => {
   const [isUpdatingSale, setIsUpdatingSale] = useState(false);
   const [reelsConfig, setReelsConfig] = useState({ isVisible: true });
   const [isUpdatingReelsConfig, setIsUpdatingReelsConfig] = useState(false);
+  
+  const [autoCouponsConfig, setAutoCouponsConfig] = useState({
+    firstOrderFreeDelivery: { isActive: true },
+    freeDeliveryOverAmount: { isActive: true, amount: 1000 }
+  });
+  const [isUpdatingAutoCoupons, setIsUpdatingAutoCoupons] = useState(false);
+
   const [announcements, setAnnouncements] = useState([]);
   const [newAnnouncement, setNewAnnouncement] = useState('');
   const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
@@ -190,6 +199,20 @@ const Admin = () => {
       setIsSendingPush(false);
     }
   };
+  const handleUpdateAutoCoupons = async (e) => {
+    if (e) e.preventDefault();
+    setIsUpdatingAutoCoupons(true);
+    try {
+      await updateAutomaticCouponsConfig(autoCouponsConfig);
+      showNotification('Automatic coupons updated successfully!');
+    } catch (err) {
+      console.error('Failed to update automatic coupons:', err);
+      showNotification('Failed to update configuration', 'error');
+    } finally {
+      setIsUpdatingAutoCoupons(false);
+    }
+  };
+
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -283,7 +306,7 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes, autoCouponRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
@@ -291,12 +314,18 @@ const Admin = () => {
         fetchFlashSale(),
         fetchReelsConfig(),
         fetchSettings(),
-        fetchHeroSlides()
+        fetchHeroSlides(),
+        fetchAutomaticCouponsConfig()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
       setReels(reelRes || []);
       setCoupons(couponRes || []);
+      if (saleRes) setSaleConfig(saleRes);
+      if (reelResConfig) setReelsConfig(reelResConfig);
+      if (settingsRes && settingsRes.announcements) setAnnouncements(settingsRes.announcements);
+      if (heroRes) setHeroSlides(heroRes.sort((a,b) => a.order - b.order));
+      if (autoCouponRes) setAutoCouponsConfig(autoCouponRes);
 
       const defaultHeroSlides = [
         {
@@ -1843,10 +1872,88 @@ const Admin = () => {
 
               {activeTab === 'coupons' && (
                 <div className="space-y-8">
+                  {/* Automatic Coupons Section */}
+                  <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                    <div className="mb-6 flex justify-between items-center">
+                      <div>
+                        <h4 className="text-xl font-bold text-gray-900">Automatic Offers & Delivery Rules</h4>
+                        <p className="text-sm text-gray-500">Configure global automatic discounts applied at checkout.</p>
+                      </div>
+                      <button
+                        onClick={handleUpdateAutoCoupons}
+                        disabled={isUpdatingAutoCoupons}
+                        className="flex items-center space-x-2 bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 disabled:opacity-50 transition-all"
+                      >
+                        {isUpdatingAutoCoupons ? 'Saving...' : 'Save Rules'}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* First Order Free Delivery */}
+                      <div className="flex flex-col p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h5 className="font-bold text-gray-900 text-sm">First Order Free Delivery</h5>
+                            <p className="text-xs text-gray-500 mt-1">Automatically waive delivery charges on the user's first order.</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={autoCouponsConfig?.firstOrderFreeDelivery?.isActive || false}
+                              onChange={(e) => setAutoCouponsConfig(prev => ({
+                                ...prev,
+                                firstOrderFreeDelivery: { ...prev.firstOrderFreeDelivery, isActive: e.target.checked }
+                              }))}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Free Delivery Over Amount */}
+                      <div className="flex flex-col p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h5 className="font-bold text-gray-900 text-sm">Free Delivery Threshold</h5>
+                            <p className="text-xs text-gray-500 mt-1">Waive delivery when cart total exceeds a certain amount.</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={autoCouponsConfig?.freeDeliveryOverAmount?.isActive || false}
+                              onChange={(e) => setAutoCouponsConfig(prev => ({
+                                ...prev,
+                                freeDeliveryOverAmount: { ...prev.freeDeliveryOverAmount, isActive: e.target.checked }
+                              }))}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                          </label>
+                        </div>
+                        <div className={`mt-2 transition-opacity ${autoCouponsConfig?.freeDeliveryOverAmount?.isActive ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Threshold Amount (₹)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            className="w-full mt-1 px-4 py-2.5 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                            value={autoCouponsConfig?.freeDeliveryOverAmount?.amount || 0}
+                            onChange={(e) => setAutoCouponsConfig(prev => ({
+                              ...prev,
+                              freeDeliveryOverAmount: { ...prev.freeDeliveryOverAmount, amount: Number(e.target.value) }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr className="border-gray-100" />
+
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-2xl font-serif font-bold text-gray-900">Coupons</h3>
-                      <p className="text-sm text-gray-500">Manage discount codes and promotions</p>
+                      <h3 className="text-2xl font-serif font-bold text-gray-900">Manual Coupons</h3>
+                      <p className="text-sm text-gray-500">Manage promotional discount codes</p>
                     </div>
                     <button
                       onClick={() => { setEditingCoupon(null); setCouponFormData({ code: '', description: '', discountType: 'percentage', discountPercent: 10, discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true }); setShowCouponModal(true); }}

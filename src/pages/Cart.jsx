@@ -4,7 +4,7 @@ import { Trash2, Plus, Minus, ArrowRight, Tag, X, Loader2, ChevronRight, Truck }
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { fetchCoupons, getCouponEligibility } from '../services/api';
+import { fetchCoupons, getCouponEligibility, fetchAutomaticCouponsConfig } from '../services/api';
 import LoginModal from '../components/LoginModal';
 import RecommendedProducts from '../components/RecommendedProducts';
 import { getOptimizedImage } from '../utils/imageHelpers';
@@ -28,6 +28,8 @@ const Cart = () => {
   const [coupons, setCoupons] = useState([]);
   const [loadingCoupons, setLoadingCoupons] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  
+  const [autoCouponsConfig, setAutoCouponsConfig] = useState(null);
 
   const cartTotal = getTotal();
   
@@ -35,7 +37,10 @@ const Cart = () => {
   const couponEligibility = appliedCoupon ? getCouponEligibility(appliedCoupon, cartTotal) : { valid: false, discount: 0 };
   const discount = couponEligibility.valid ? couponEligibility.discount : 0;
   
-  const deliveryCharges = getDeliveryCharges();
+  let deliveryCharges = getDeliveryCharges();
+  if (autoCouponsConfig?.freeDeliveryOverAmount?.isActive && cartTotal >= (autoCouponsConfig.freeDeliveryOverAmount.amount || 1000)) {
+    deliveryCharges = 0;
+  }
   const finalTotal = Math.max(0, cartTotal - discount + deliveryCharges);
 
   // Auto-clear global coupon if cart edits push them under min spend thresholds
@@ -48,8 +53,12 @@ const Cart = () => {
   useEffect(() => {
     const loadCoupons = async () => {
       try {
-        const fetchedCoupons = await fetchCoupons();
+        const [fetchedCoupons, config] = await Promise.all([
+          fetchCoupons(),
+          fetchAutomaticCouponsConfig()
+        ]);
         setCoupons(fetchedCoupons);
+        setAutoCouponsConfig(config);
       } catch (error) {
         console.error('Error fetching coupons:', error);
       } finally {
@@ -114,7 +123,8 @@ const Cart = () => {
 
         {/* Free Delivery Progress Bar */}
         {(() => {
-          const threshold = 1000;
+          if (!autoCouponsConfig || !autoCouponsConfig.freeDeliveryOverAmount?.isActive) return null;
+          const threshold = autoCouponsConfig.freeDeliveryOverAmount?.amount || 1000;
           const pct = Math.min(100, Math.round((cartTotal / threshold) * 100));
           const remaining = threshold - cartTotal;
           return (
@@ -220,9 +230,9 @@ const Cart = () => {
                 <div className="flex justify-between text-sm md:text-base text-[var(--text-muted)]">
                   <span>Delivery Charges</span>
                   {deliveryCharges > 0 ? (
-                    <span className="font-bold text-gray-800">₹{deliveryCharges.toLocaleString('en-IN')}</span>
+                    <span className="font-bold text-[var(--text-main)]">₹{deliveryCharges.toLocaleString('en-IN')}</span>
                   ) : (
-                    <span className="text-green-600 font-bold uppercase text-[10px]">Free</span>
+                    <span className="font-bold text-emerald-600 uppercase tracking-widest text-[10px]">Free</span>
                   )}
                 </div>
                 <div className="pt-4 border-t border-gray-100 flex justify-between font-black text-lg md:text-xl text-[var(--primary)]">
