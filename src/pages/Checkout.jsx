@@ -41,10 +41,10 @@ const Checkout = () => {
   const [isOrdered, setIsOrdered] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  
+
   // Modal states for adding new data during checkout
   const [showAddressModal, setShowAddressModal] = useState(false);
-  
+
   // Form states
   const [addressForm, setAddressForm] = useState({ type: 'Home', street: '', city: '', state: '', pincode: '', phone: '' });
 
@@ -60,7 +60,7 @@ const Checkout = () => {
   const [coupons, setCoupons] = useState([]);
   const [couponsLoading, setCouponsLoading] = useState(true);
   const [couponListError, setCouponListError] = useState('');
-  
+
   // Config replaced by generic auto coupons in coupons state
 
   // User orders state for first delivery coupon validation
@@ -74,7 +74,7 @@ const Checkout = () => {
       setLoadingOrders(true);
       try {
         const allOrders = await fetchOrders();
-        const filtered = (allOrders || []).filter(o => 
+        const filtered = (allOrders || []).filter(o =>
           o && (o.user === user.uid || (o.email && user.email && o.email.toLowerCase() === user.email.toLowerCase()))
         );
         setUserOrders(filtered);
@@ -90,7 +90,7 @@ const Checkout = () => {
   const cartTotal = getTotal();
   const deliveryCharges = getDeliveryCharges();
   const isFirstOrder = !loadingOrders && userOrders.length === 0;
-  
+
   let actualDeliveryCharges = deliveryCharges;
   let freeDeliveryReason = '';
   let autoCouponsDiscount = 0;
@@ -98,7 +98,7 @@ const Checkout = () => {
 
   // Evaluate all active automatic coupons
   const activeAutoCoupons = coupons.filter(c => c.isAutomatic && c.isActive);
-  
+
   activeAutoCoupons.forEach(coupon => {
     const eligibility = getCouponEligibility(coupon, cartTotal, isFirstOrder);
     if (eligibility.valid) {
@@ -123,7 +123,7 @@ const Checkout = () => {
   }, [items, cartTotal]);
 
   const appliedCouponId = appliedCoupon?._id || appliedCoupon?.id;
-  
+
   // Hide automatic coupons from the manual application list
   const displayedCoupons = coupons.filter(c => !c.isAutomatic);
 
@@ -320,6 +320,7 @@ const Checkout = () => {
         currency: rpOrderRes.order.currency,
         name: "PrathamKarigiri",
         description: "Secure Payment",
+        image: window.location.origin + "/favicon.png",
         order_id: rpOrderRes.order.id,
         handler: async function (response) {
           try {
@@ -354,7 +355,7 @@ const Checkout = () => {
 
             const createdOrder = await createOrder(orderData);
             addOrder(createdOrder);
-            
+
             // GA4 Track Purchase
             trackPurchase({
               transaction_id: createdOrder._id || createdOrder.id || response.razorpay_payment_id,
@@ -363,7 +364,7 @@ const Checkout = () => {
               coupon: appliedCoupon?.code || '',
               cartItems: items
             });
-            
+
             setIsOrdered(true);
             clearCart();
           } catch (err) {
@@ -382,7 +383,7 @@ const Checkout = () => {
       };
 
       const rzp1 = new window.Razorpay(options);
-      rzp1.on('payment.failed', function (response){
+      rzp1.on('payment.failed', function (response) {
         console.error(response.error);
         showToast(response.error.description || "Payment failed", "error");
       });
@@ -407,13 +408,13 @@ const Checkout = () => {
   if (isOrdered) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
-        <Motion.div 
+        <Motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="max-w-md w-full glass-card p-12 text-center premium-shadow"
         >
           <div className="flex justify-center mb-8">
-            <Motion.div 
+            <Motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', damping: 12 }}
@@ -437,13 +438,13 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <SEO 
+      <SEO
         title="Secure Checkout"
         description="Complete your order securely at PrathamKarigiri."
         noindex={true}
       />
       <Navbar />
-      
+
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[var(--primary)] opacity-[0.03] blur-[120px] rounded-full"></div>
@@ -452,7 +453,7 @@ const Checkout = () => {
 
       <div className="pt-20 md:pt-32 pb-24 max-w-7xl mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
-          
+
           {/* Checkout Steps */}
           <div className="flex-grow space-y-6 md:space-y-8">
             <header className="mb-6 md:mb-10">
@@ -469,7 +470,7 @@ const Checkout = () => {
                   </div>
                   <h2 className="text-xl font-serif text-[var(--text-main)]">Shipping Destination</h2>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowAddressModal(true)}
                   className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)] flex items-center space-x-1 hover:opacity-70"
                 >
@@ -480,7 +481,7 @@ const Checkout = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {addresses.length === 0 ? (
-                  <button 
+                  <button
                     onClick={() => setShowAddressModal(true)}
                     className="col-span-full p-8 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center hover:border-[var(--primary)] hover:bg-[var(--background)] transition-all group"
                   >
@@ -490,14 +491,13 @@ const Checkout = () => {
                   </button>
                 ) : (
                   addresses.map((addr) => (
-                    <div 
+                    <div
                       key={addr.id}
                       onClick={() => setSelectedAddress(addr.id)}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${
-                        selectedAddress === addr.id 
-                          ? 'border-[var(--primary)] bg-[var(--secondary)]/30' 
+                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${selectedAddress === addr.id
+                          ? 'border-[var(--primary)] bg-[var(--secondary)]/30'
                           : 'border-white/40 bg-white/30 hover:border-white/60'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)] bg-white px-2 py-1 rounded-md">{addr.type}</span>
@@ -593,13 +593,12 @@ const Checkout = () => {
                       return (
                         <div
                           key={coupon.couponId}
-                          className={`rounded-2xl border p-4 transition-all ${
-                            isApplied
+                          className={`rounded-2xl border p-4 transition-all ${isApplied
                               ? 'border-emerald-300 bg-emerald-50/90'
                               : coupon.eligibility.valid
                                 ? 'border-emerald-100 bg-white/80'
                                 : 'border-red-100 bg-red-50/60'
-                          }`}
+                            }`}
                         >
                           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div className="min-w-0">
@@ -608,11 +607,10 @@ const Checkout = () => {
                                   {coupon.code}
                                 </span>
                                 <span
-                                  className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                    isApplied || coupon.eligibility.valid
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isApplied || coupon.eligibility.valid
                                       ? 'bg-emerald-100 text-emerald-700'
                                       : 'bg-red-100 text-red-600'
-                                  }`}
+                                    }`}
                                 >
                                   {isApplied ? 'Applied' : coupon.eligibility.valid ? 'Eligible' : 'Criteria'}
                                 </span>
@@ -694,7 +692,7 @@ const Checkout = () => {
           <aside className="w-full lg:w-[400px]">
             <div className="glass-card p-8 premium-shadow sticky top-32">
               <h2 className="text-2xl font-serif text-[var(--primary)] mb-8">Order Summary</h2>
-              
+
               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
                 {items.map((item) => (
                   <div key={item.cartItemId || item.id} className="flex space-x-4 items-center bg-white/30 p-2 rounded-2xl">
@@ -710,24 +708,24 @@ const Checkout = () => {
                     <div className="flex flex-col items-end justify-center space-y-1.5 shrink-0">
                       <p className="text-xs font-bold text-[var(--text-main)]">{formatCurrency(item.price * item.quantity)}</p>
                       <div className="flex items-center border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden">
-                        <button 
+                        <button
                           onClick={() => {
                             if (item.quantity > 1) {
                               updateQuantity(item.cartItemId || item.id, item.quantity - 1);
                             } else {
                               removeItem(item.cartItemId || item.id);
                             }
-                          }} 
+                          }}
                           className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
                         >
-                          {item.quantity === 1 ? <Trash2 size={10} className="text-red-400"/> : <Minus size={10}/>}
+                          {item.quantity === 1 ? <Trash2 size={10} className="text-red-400" /> : <Minus size={10} />}
                         </button>
                         <span className="px-2 text-[10px] font-black text-[var(--primary)]">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item.cartItemId || item.id, item.quantity + 1)} 
+                        <button
+                          onClick={() => updateQuantity(item.cartItemId || item.id, item.quantity + 1)}
                           className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
                         >
-                          <Plus size={10}/>
+                          <Plus size={10} />
                         </button>
                       </div>
                     </div>
@@ -769,7 +767,7 @@ const Checkout = () => {
               </div>
 
               <div className="hidden md:block">
-                <button 
+                <button
                   onClick={handleOrder}
                   disabled={isProcessing || !selectedAddress}
                   className="btn-primary w-full py-4 mt-8 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed group"
@@ -795,26 +793,26 @@ const Checkout = () => {
 
         {/* Mobile Sticky CTA Bar */}
         <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-4 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-           <div className="flex items-center justify-between mb-4">
-               <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase">Total Order</p>
-                  <p className="text-xl font-black text-[var(--primary)]">{formatCurrency(finalTotal)}</p>
-               </div>
-              <button 
-                onClick={handleOrder}
-                disabled={isProcessing || !selectedAddress}
-                className="btn-primary px-6 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg disabled:opacity-50"
-              >
-                {isProcessing ? (
-                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <span>Pay Now</span>
-                    <ChevronRight size={16} />
-                  </>
-                )}
-              </button>
-           </div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-[10px] text-gray-400 font-bold uppercase">Total Order</p>
+              <p className="text-xl font-black text-[var(--primary)]">{formatCurrency(finalTotal)}</p>
+            </div>
+            <button
+              onClick={handleOrder}
+              disabled={isProcessing || !selectedAddress}
+              className="btn-primary px-6 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg disabled:opacity-50"
+            >
+              {isProcessing ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <span>Pay Now</span>
+                  <ChevronRight size={16} />
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -822,12 +820,12 @@ const Checkout = () => {
       <AnimatePresence>
         {showAddressModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <Motion.div 
+            <Motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowAddressModal(false)}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
-            <Motion.div 
+            <Motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl relative z-10"
             >
@@ -837,32 +835,32 @@ const Checkout = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Type</label>
-                    <select value={addressForm.type} onChange={(e) => setAddressForm({...addressForm, type: e.target.value})} className="checkout-input">
+                    <select value={addressForm.type} onChange={(e) => setAddressForm({ ...addressForm, type: e.target.value })} className="checkout-input">
                       <option>Home</option><option>Work</option><option>Other</option>
                     </select>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Phone</label>
-                    <input type="text" required value={addressForm.phone} onChange={(e) => setAddressForm({...addressForm, phone: e.target.value})} className="checkout-input" placeholder="9999999999" />
+                    <input type="text" required value={addressForm.phone} onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })} className="checkout-input" placeholder="9999999999" />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Street Address</label>
-                  <input type="text" required value={addressForm.street} onChange={(e) => setAddressForm({...addressForm, street: e.target.value})} className="checkout-input" placeholder="House No, Street, Area" />
+                  <input type="text" required value={addressForm.street} onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })} className="checkout-input" placeholder="House No, Street, Area" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">City</label>
-                    <input type="text" required value={addressForm.city} onChange={(e) => setAddressForm({...addressForm, city: e.target.value})} className="checkout-input" placeholder="City" />
+                    <input type="text" required value={addressForm.city} onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })} className="checkout-input" placeholder="City" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">State</label>
-                    <input type="text" required value={addressForm.state} onChange={(e) => setAddressForm({...addressForm, state: e.target.value})} className="checkout-input" placeholder="State" />
+                    <input type="text" required value={addressForm.state} onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })} className="checkout-input" placeholder="State" />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Pincode</label>
-                  <input type="text" required value={addressForm.pincode} onChange={(e) => setAddressForm({...addressForm, pincode: e.target.value})} className="checkout-input" placeholder="110001" />
+                  <input type="text" required value={addressForm.pincode} onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })} className="checkout-input" placeholder="110001" />
                 </div>
                 <button type="submit" className="btn-primary w-full mt-4">Save & Use This Address</button>
               </form>
