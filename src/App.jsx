@@ -76,11 +76,20 @@ const AppInner = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       const lastUid = useAuthStore.getState().lastUid;
       if (firebaseUser) {
         if (lastUid && lastUid !== firebaseUser.uid) clearAllStores();
         setUser(firebaseUser);
+        
+        // Sync user to MongoDB immediately upon login
+        try {
+          // Dynamic import to avoid circular dependencies if any
+          const { fetchUserProfile } = await import('./services/api');
+          await fetchUserProfile(firebaseUser.uid);
+        } catch (err) {
+          console.error("Failed to sync user to MongoDB:", err);
+        }
       } else {
         setUser(null);
         clearAllStores();

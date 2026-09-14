@@ -97,6 +97,17 @@ const Profile = () => {
     getOrders();
   }, [user]);
 
+  useEffect(() => {
+    if (selectedOrder) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedOrder]);
+
   const handleLogout = () => {
     firebaseAuth.signOut();
     logout();
@@ -809,7 +820,7 @@ const Profile = () => {
                 </button>
               </div>
 
-              <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar" data-lenis-prevent="true">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 pb-8 border-b border-gray-100">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-gray-50 rounded-xl text-[var(--primary)]"><Clock size={18} /></div>
@@ -822,7 +833,10 @@ const Profile = () => {
                     <div className="p-2 bg-gray-50 rounded-xl text-[var(--primary)]"><Truck size={18} /></div>
                     <div>
                       <p className="text-[10px] font-black uppercase text-[var(--text-muted)]">Status</p>
-                      <p className="text-sm font-bold text-amber-600">{selectedOrder.status}</p>
+                      <p className={`text-sm font-bold ${selectedOrder.status === 'Delivered' ? 'text-emerald-600' : selectedOrder.status === 'Cancelled' ? 'text-red-600' : 'text-amber-600'}`}>{selectedOrder.status}</p>
+                      {selectedOrder.status === 'Cancelled' && selectedOrder.cancellationReason && (
+                        <p className="text-[10px] text-red-500 font-bold max-w-[120px] leading-tight mt-1">{selectedOrder.cancellationReason}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -840,6 +854,21 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Expected Delivery Date Alert */}
+                {selectedOrder.expectedDeliveryDate && selectedOrder.status !== 'Delivered' && selectedOrder.status !== 'Cancelled' && (
+                  <div className="mb-10 p-4 rounded-[1.5rem] bg-blue-50/60 border border-blue-100 flex items-center space-x-4">
+                    <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
+                      <Truck size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-blue-600 tracking-wider">Expected Delivery</p>
+                      <p className="text-sm font-bold text-blue-900">
+                        {new Date(selectedOrder.expectedDeliveryDate).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Suspension Alert if Flagged */}
                 {(selectedOrder.isDeletedByAdmin || selectedOrder.status?.includes('Suspicious')) && (

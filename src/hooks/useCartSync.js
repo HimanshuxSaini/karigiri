@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useCartStore, useAuthStore } from '../store/useStore';
-import { saveCartToFirestore, fetchCartFromFirestore } from '../services/api';
+import { saveCartToDatabase, fetchCartFromDatabase } from '../services/api';
 
 /**
  * Smart hook that automatically keeps the user's local Zustand cart synchronized 
- * with their Firestore document across devices.
+ * with their Database document across devices.
  * Includes automatic guest-cart merging and debounced API writes.
  */
 export const useCartSync = () => {
@@ -19,7 +19,7 @@ export const useCartSync = () => {
     const syncFromDb = async () => {
       if (user?.uid) {
         try {
-          const remoteItems = await fetchCartFromFirestore(user.uid);
+          const remoteItems = await fetchCartFromDatabase(user.uid);
           
           if (remoteItems && remoteItems.length > 0) {
             const localItems = useCartStore.getState().items;
@@ -46,13 +46,13 @@ export const useCartSync = () => {
             
             // If there were guest items, automatically push the merged state immediately
             if (localItems.length > 0) {
-              await saveCartToFirestore(user.uid, mergedList);
+              await saveCartToDatabase(user.uid, mergedList);
             }
           } else {
-            // If database cart was empty but they have guest items, push local to Firestore immediately
+            // If database cart was empty but they have guest items, push local to database immediately
             const localItems = useCartStore.getState().items;
             if (localItems.length > 0) {
-              await saveCartToFirestore(user.uid, localItems);
+              await saveCartToDatabase(user.uid, localItems);
               lastSyncedRef.current = JSON.stringify(localItems);
             }
           }
@@ -71,7 +71,7 @@ export const useCartSync = () => {
     syncFromDb();
   }, [user?.uid, setItems]);
 
-  // 2. Reactively push local cart modifications to Firestore (Debounced)
+  // 2. Reactively push local cart modifications to Database (Debounced)
   useEffect(() => {
     // Ensure user is logged in AND we have already processed the initial sync/merge
     if (!user?.uid || !initialLoadRef.current) return;
@@ -82,7 +82,7 @@ export const useCartSync = () => {
     // Debounce write operation by 1.5 seconds to aggregate rapid quantity toggles
     const handler = setTimeout(async () => {
       try {
-        await saveCartToFirestore(user.uid, items);
+        await saveCartToDatabase(user.uid, items);
         lastSyncedRef.current = currentSerialized;
       } catch (error) {
         console.error("Failed saving cart change:", error);

@@ -1,7 +1,8 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
-const { createOrder } = require('../controllers/orderController');
+const { createOrder, getAllOrders, updateOrderStatus, updateOrderDeliveryDate, deleteOrder } = require('../controllers/orderController');
+const { protectAdmin } = require('../middleware/authMiddleware');
 
 // Validation middleware
 const validateOrder = [
@@ -21,5 +22,17 @@ const validateOrder = [
 
 // POST /api/orders — Create a new order (server-validated)
 router.post('/', validateOrder, createOrder);
+
+// GET /api/orders - Get all orders (Admin)
+router.get('/', protectAdmin, getAllOrders);
+
+// PUT /api/orders/:id/status - Update order status (Admin)
+router.put('/:id/status', protectAdmin, updateOrderStatus);
+
+// PUT /api/orders/:id/delivery-date - Update order delivery date (Admin)
+router.put('/:id/delivery-date', protectAdmin, updateOrderDeliveryDate);
+
+// DELETE /api/orders/:id - Flag order as suspicious/fake (Admin)
+router.delete('/:id', protectAdmin, deleteOrder);
 
 module.exports = router;

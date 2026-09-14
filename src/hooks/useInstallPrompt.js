@@ -3,10 +3,25 @@ import { useState, useEffect } from 'react';
 export const useInstallPrompt = () => {
   const [installPromptEvent, setInstallPromptEvent] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const [isLocallyInstalled, setIsLocallyInstalled] = useState(false);
-  const [isAppleOS, setIsAppleOS] = useState(false);
-  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  });
+  const [isLocallyInstalled, setIsLocallyInstalled] = useState(() => {
+    if (typeof localStorage === 'undefined') return false;
+    return localStorage.getItem('pwa_installed') === '1';
+  });
+  const [isAppleOS] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(userAgent) || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+  });
+  const [isInAppBrowser] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const inAppRules = ['instagram', 'fban', 'fbav', 'tiktok', 'snapchat'];
+    return inAppRules.some(rule => userAgent.includes(rule));
+  });
 
   useEffect(() => {
     // Detect Standalone (already installed)
@@ -16,26 +31,6 @@ export const useInstallPrompt = () => {
       setIsStandalone(isStandaloneQuery || isIOSStandalone);
     };
     checkStandalone();
-    
-    // Check if installed locally (to show "Open App" state in browser)
-    const installed = localStorage.getItem('pwa_installed') === '1';
-    setIsLocallyInstalled(installed);
-
-    // Detect Apple OS
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(userAgent) || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
-    setIsAppleOS(isIOS);
-
-    // Detect In-App Browsers (Instagram, Facebook, TikTok)
-    const inAppRules = [
-      'instagram',
-      'fban', // Facebook
-      'fbav', // Facebook
-      'tiktok',
-      'snapchat'
-    ];
-    const isApp = inAppRules.some(rule => userAgent.includes(rule));
-    setIsInAppBrowser(isApp);
 
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();

@@ -1,6 +1,4 @@
-const admin = require('firebase-admin');
-
-const couponsCollection = () => admin.firestore().collection('coupons');
+const Coupon = require('../models/Coupon');
 
 const normalizeCouponPayload = (payload = {}) => ({
   code: String(payload.code || '').toUpperCase().trim(),
@@ -12,9 +10,8 @@ const normalizeCouponPayload = (payload = {}) => ({
   minOrderAmount: Number(payload.minOrderAmount || 0),
   usageLimit: Number(payload.usageLimit || 0),
   isActive: payload.isActive !== false,
-  expiryDate: payload.expiryDate || null,
-  isAutomatic: Boolean(payload.isAutomatic || false),
-  isFirstOrderOnly: Boolean(payload.isFirstOrderOnly || false),
+  validFrom: payload.validFrom ? new Date(payload.validFrom) : new Date(),
+  validUntil: payload.expiryDate ? new Date(payload.expiryDate) : (payload.validUntil ? new Date(payload.validUntil) : null)
 });
 
 const validateCouponPayload = (payload) => {
@@ -48,24 +45,28 @@ const createCoupon = async (req, res) => {
       return res.status(400).json({ message: validationError });
     }
 
-    const duplicateCoupon = await couponsCollection()
-      .where('code', '==', couponData.code)
-      .limit(1)
-      .get();
-
-    if (!duplicateCoupon.empty) {
+    const duplicateCoupon = await Coupon.findOne({ code: couponData.code });
+    if (duplicateCoupon) {
       return res.status(409).json({ message: 'A coupon with this code already exists' });
     }
 
-    const docRef = await couponsCollection().add({
+    // fallback for validUntil if not provided properly (e.g. valid for 100 years default)
+    if (!couponData.validUntil) {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() + 100);
+      couponData.validUntil = d;
+    }
+
+    const newCoupon = await Coupon.create({
       ...couponData,
-      usedCount: 0,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      usedCount: 0
     });
 
-    const savedCoupon = await docRef.get();
-    return res.status(201).json({ _id: savedCoupon.id, id: savedCoupon.id, ...savedCoupon.data() });
+    return res.status(201).json({ 
+      ...newCoupon.toObject(), 
+      _id: newCoupon._id.toString(), 
+      id: newCoupon._id.toString() 
+    });
   } catch (error) {
     console.error('Create coupon error:', error);
     return res.status(500).json({ message: 'Failed to create coupon', error: error.message });
@@ -75,10 +76,9 @@ const createCoupon = async (req, res) => {
 const updateCoupon = async (req, res) => {
   try {
     const { id } = req.params;
-    const couponRef = couponsCollection().doc(id);
-    const existingSnapshot = await couponRef.get();
+    const coupon = await Coupon.findById(id);
 
-    if (!existingSnapshot.exists) {
+    if (!coupon) {
       return res.status(404).json({ message: 'Coupon not found' });
     }
 
@@ -89,23 +89,27 @@ const updateCoupon = async (req, res) => {
       return res.status(400).json({ message: validationError });
     }
 
-    const duplicateCoupon = await couponsCollection()
-      .where('code', '==', couponData.code)
-      .limit(5)
-      .get();
-
-    const hasDuplicate = duplicateCoupon.docs.some((doc) => doc.id !== id);
-    if (hasDuplicate) {
+    const duplicateCoupon = await Coupon.findOne({ code: couponData.code, _id: { $ne: id } });
+    if (duplicateCoupon) {
       return res.status(409).json({ message: 'Another coupon already uses this code' });
     }
 
-    await couponRef.update({
-      ...couponData,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    if (!couponData.validUntil && !coupon.validUntil) {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() + 100);
+      couponData.validUntil = d;
+    } else if (!couponData.validUntil) {
+       couponData.validUntil = coupon.validUntil;
+    }
 
-    const updatedSnapshot = await couponRef.get();
-    return res.json({ _id: updatedSnapshot.id, id: updatedSnapshot.id, ...updatedSnapshot.data() });
+    Object.assign(coupon, couponData);
+    await coupon.save();
+
+    return res.json({ 
+      ...coupon.toObject(), 
+      _id: coupon._id.toString(), 
+      id: coupon._id.toString() 
+    });
   } catch (error) {
     console.error('Update coupon error:', error);
     return res.status(500).json({ message: 'Failed to update coupon', error: error.message });
@@ -115,14 +119,12 @@ const updateCoupon = async (req, res) => {
 const deleteCoupon = async (req, res) => {
   try {
     const { id } = req.params;
-    const couponRef = couponsCollection().doc(id);
-    const existingSnapshot = await couponRef.get();
+    const deleted = await Coupon.findByIdAndDelete(id);
 
-    if (!existingSnapshot.exists) {
+    if (!deleted) {
       return res.status(404).json({ message: 'Coupon not found' });
     }
 
-    await couponRef.delete();
     return res.json({ success: true });
   } catch (error) {
     console.error('Delete coupon error:', error);
@@ -132,13 +134,16 @@ const deleteCoupon = async (req, res) => {
 
 const getAllCoupons = async (req, res) => {
   try {
-    const snapshot = await couponsCollection().get();
+    const coupons = await Coupon.find({});
     const now = new Date();
     let isAdmin = false;
 
     if (req.query.admin === 'true' && req.headers.authorization?.startsWith('Bearer')) {
       try {
+        // we could just check req.user if this went through authMiddleware, 
+        // but keeping existing logic structure
         const token = req.headers.authorization.split(' ')[1];
+        const admin = require('firebase-admin');
         const decodedToken = await admin.auth().verifyIdToken(token);
         const { isAdminEmail } = require('../config/constants');
         isAdmin = isAdminEmail(decodedToken.email);
@@ -147,56 +152,42 @@ const getAllCoupons = async (req, res) => {
       }
     }
 
-    const coupons = snapshot.docs
-      .map((doc) => ({
-        _id: doc.id,
-        id: doc.id,
-        ...doc.data(),
+    const filteredCoupons = coupons
+      .map(coupon => ({
+        ...coupon.toObject(),
+        _id: coupon._id.toString(),
+        id: coupon._id.toString()
       }))
       .filter((coupon) => {
-        // Admin panel sees all coupons
         if (isAdmin) return true;
-
-        // Hide inactive coupons from users
         if (coupon.isActive === false) return false;
-
-        // Hide expired coupons from users
-        if (coupon.expiryDate && new Date(coupon.expiryDate) < now) return false;
-
-        // Hide coupons that have exhausted their usage limit
+        if (coupon.validUntil && new Date(coupon.validUntil) < now) return false;
         if (coupon.usageLimit > 0 && (coupon.usedCount || 0) >= coupon.usageLimit) return false;
-
         return true;
       });
 
-    return res.json(coupons);
+    return res.json(filteredCoupons);
   } catch (error) {
     console.error('Get all coupons error:', error);
     return res.status(500).json({ message: 'Failed to fetch coupons', error: error.message });
   }
 };
 
-
 const validateCoupon = async (req, res) => {
   try {
     const { code, orderAmount } = req.body;
-    const snapshot = await couponsCollection()
-      .where('code', '==', code.toUpperCase().trim())
-      .limit(1)
-      .get();
+    
+    const coupon = await Coupon.findOne({ code: code.toUpperCase().trim() });
 
-    if (snapshot.empty) {
+    if (!coupon) {
       return res.status(404).json({ message: 'Invalid coupon code' });
     }
-
-    const coupon = snapshot.docs[0].data();
-    coupon.id = snapshot.docs[0].id;
 
     if (!coupon.isActive) {
       return res.status(400).json({ message: 'This coupon is no longer active' });
     }
 
-    if (coupon.expiryDate && new Date() > new Date(coupon.expiryDate)) {
+    if (coupon.validUntil && new Date() > new Date(coupon.validUntil)) {
       return res.status(400).json({ message: 'This coupon has expired' });
     }
 
@@ -214,15 +205,16 @@ const validateCoupon = async (req, res) => {
       if (coupon.maxDiscount > 0 && discount > coupon.maxDiscount) {
         discount = coupon.maxDiscount;
       }
-    } else {
+    } else if (coupon.discountType === 'flat') {
       discount = coupon.discountAmount;
-    }
+    } // free_shipping is handled by frontend delivery calc
 
     return res.json({
       success: true,
       coupon: {
-        ...coupon,
-        _id: coupon.id,
+        ...coupon.toObject(),
+        _id: coupon._id.toString(),
+        id: coupon._id.toString(),
         discountValue: coupon.discountType === 'percentage' ? coupon.discountPercent : coupon.discountAmount,
         discountAmount: discount,
       },
@@ -236,17 +228,14 @@ const validateCoupon = async (req, res) => {
 const incrementCouponUsage = async (req, res) => {
   try {
     const { id } = req.params;
-    const couponRef = couponsCollection().doc(id);
-    const snapshot = await couponRef.get();
+    const coupon = await Coupon.findById(id);
 
-    if (!snapshot.exists) {
+    if (!coupon) {
       return res.status(404).json({ message: 'Coupon not found' });
     }
 
-    await couponRef.update({
-      usedCount: admin.firestore.FieldValue.increment(1),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    coupon.usedCount += 1;
+    await coupon.save();
 
     return res.json({ success: true });
   } catch (error) {

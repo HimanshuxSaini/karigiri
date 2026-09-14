@@ -1,17 +1,15 @@
-const admin = require('firebase-admin');
+const Config = require('../models/Config');
 
 // @desc    Fetch site settings (including announcements)
 // @route   GET /api/settings
 // @access  Public
 const getSettings = async (req, res) => {
   try {
-    const db = admin.firestore();
-    const doc = await db.collection('settings').doc('site_settings').get();
+    const config = await Config.findOne({ key: 'site_settings' });
     
-    if (doc.exists) {
-      res.json(doc.data());
+    if (config && config.data) {
+      res.json(config.data);
     } else {
-      // Return default empty structure if it doesn't exist yet
       res.json({ announcements: [] });
     }
   } catch (error) {
@@ -24,17 +22,55 @@ const getSettings = async (req, res) => {
 // @access  Private/Admin
 const updateSettings = async (req, res) => {
   try {
-    const db = admin.firestore();
     const { announcements } = req.body;
     
-    const settingsRef = db.collection('settings').doc('site_settings');
+    let config = await Config.findOne({ key: 'site_settings' });
+    if (!config) {
+      config = new Config({ key: 'site_settings', data: {} });
+    }
     
-    // Using set with merge: true creates the doc if it doesn't exist
-    await settingsRef.set({ announcements }, { merge: true });
+    config.data = {
+      ...config.data,
+      announcements
+    };
     
-    const updatedDoc = await settingsRef.get();
+    await config.save();
     
-    res.json(updatedDoc.data());
+    res.json(config.data);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// @desc    Fetch any config by key
+// @route   GET /api/settings/config/:key
+// @access  Public
+const getConfig = async (req, res) => {
+  try {
+    const config = await Config.findOne({ key: req.params.key });
+    if (config && config.data) {
+      res.json(config.data);
+    } else {
+      res.json({});
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update any config by key
+// @route   PUT /api/settings/config/:key
+// @access  Private/Admin
+const updateConfig = async (req, res) => {
+  try {
+    let config = await Config.findOne({ key: req.params.key });
+    if (!config) {
+      config = new Config({ key: req.params.key, data: req.body });
+    } else {
+      config.data = req.body;
+    }
+    await config.save();
+    res.json(config.data);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -42,5 +78,7 @@ const updateSettings = async (req, res) => {
 
 module.exports = {
   getSettings,
-  updateSettings
+  updateSettings,
+  getConfig,
+  updateConfig
 };

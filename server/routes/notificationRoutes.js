@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
-
-// Ensure firebase-admin is initialized in index.js before these routes are called.
+const FCMToken = require('../models/FCMToken');
 
 /**
  * POST /api/notifications/subscribe
- * Subscribes a user's device token to Firestore.
+ * Subscribes a user's device token to MongoDB.
  */
 router.post('/subscribe', async (req, res) => {
   try {
@@ -16,16 +15,12 @@ router.post('/subscribe', async (req, res) => {
       return res.status(400).json({ success: false, message: 'FCM Token is required' });
     }
 
-    // Save token to Firestore
-    const db = admin.firestore();
-    const tokenRef = db.collection('fcmTokens').doc(token);
-    
-    // Use set with merge: true to avoid overwriting or duplicates
-    await tokenRef.set({
-      token: token,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      lastActive: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+    // Save token to MongoDB (upsert)
+    await FCMToken.findOneAndUpdate(
+      { token },
+      { lastActive: new Date() },
+      { upsert: true, new: true }
+    );
 
     res.status(200).json({ success: true, message: 'Token subscribed successfully' });
   } catch (error) {
@@ -37,7 +32,6 @@ router.post('/subscribe', async (req, res) => {
 /**
  * POST /api/notifications/send
  * Sends a push notification to all subscribed devices.
- * Requires Admin privileges (could be secured via middleware).
  */
 router.post('/send', async (req, res) => {
   try {
@@ -48,19 +42,14 @@ router.post('/send', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Title and body are required' });
     }
 
-    const db = admin.firestore();
+    // Fetch all tokens from MongoDB
+    const tokensDocs = await FCMToken.find({});
     
-    // Fetch all tokens from Firestore
-    const tokensSnapshot = await db.collection('fcmTokens').get();
-    
-    if (tokensSnapshot.empty) {
+    if (tokensDocs.length === 0) {
       return res.status(200).json({ success: true, message: 'No devices found to send notifications' });
     }
 
-    const tokens = [];
-    tokensSnapshot.forEach(doc => {
-      tokens.push(doc.data().token);
-    });
+    const tokens = tokensDocs.map(doc => doc.token);
 
     // Create the message payload
     const message = {
@@ -105,13 +94,8 @@ router.post('/send', async (req, res) => {
         }
       });
       
-      // Cleanup invalid tokens from Firestore
-      const batch = db.batch();
-      failedTokens.forEach(token => {
-        const tokenRef = db.collection('fcmTokens').doc(token);
-        batch.delete(tokenRef);
-      });
-      await batch.commit();
+      // Cleanup invalid tokens from MongoDB
+      await FCMToken.deleteMany({ token: { $in: failedTokens } });
       console.log(`Cleaned up ${failedTokens.length} invalid tokens.`);
     }
 

@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useWishlistStore, useAuthStore } from '../store/useStore';
-import { saveWishlistToFirestore, fetchWishlistFromFirestore } from '../services/api';
+import { saveWishlistToDatabase, fetchWishlistFromDatabase } from '../services/api';
 
 /**
  * Smart hook that automatically keeps the user's local Zustand wishlist synchronized 
- * with their Firestore document across devices.
+ * with their Database document across devices.
  * Includes automatic guest-wishlist merging and debounced API writes.
  */
 export const useWishlistSync = () => {
@@ -19,7 +19,7 @@ export const useWishlistSync = () => {
     const syncFromDb = async () => {
       if (user?.uid) {
         try {
-          const remoteItems = await fetchWishlistFromFirestore(user.uid);
+          const remoteItems = await fetchWishlistFromDatabase(user.uid);
           
           if (remoteItems && remoteItems.length > 0) {
             const localItems = useWishlistStore.getState().wishlist;
@@ -46,13 +46,13 @@ export const useWishlistSync = () => {
             
             // If there were guest items, automatically push the merged state immediately
             if (localItems.length > 0) {
-              await saveWishlistToFirestore(user.uid, mergedList);
+              await saveWishlistToDatabase(user.uid, mergedList);
             }
           } else {
-            // If database wishlist was empty but they have guest items, push local to Firestore immediately
+            // If database wishlist was empty but they have guest items, push local to database immediately
             const localItems = useWishlistStore.getState().wishlist;
             if (localItems.length > 0) {
-              await saveWishlistToFirestore(user.uid, localItems);
+              await saveWishlistToDatabase(user.uid, localItems);
               lastSyncedRef.current = JSON.stringify(localItems);
             }
           }
@@ -71,7 +71,7 @@ export const useWishlistSync = () => {
     syncFromDb();
   }, [user?.uid, setWishlist]);
 
-  // 2. Reactively push local wishlist modifications to Firestore (Debounced)
+  // 2. Reactively push local wishlist modifications to Database (Debounced)
   useEffect(() => {
     // Ensure user is logged in AND we have already processed the initial sync/merge
     if (!user?.uid || !initialLoadRef.current) return;
@@ -82,7 +82,7 @@ export const useWishlistSync = () => {
     // Debounce write operation by 1.5 seconds to aggregate rapid toggle taps
     const handler = setTimeout(async () => {
       try {
-        await saveWishlistToFirestore(user.uid, wishlist);
+        await saveWishlistToDatabase(user.uid, wishlist);
         lastSyncedRef.current = currentSerialized;
       } catch (error) {
         console.error("Failed saving wishlist change:", error);

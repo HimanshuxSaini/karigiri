@@ -1,4 +1,4 @@
-const admin = require('firebase-admin');
+const Product = require('../models/Product');
 
 // Simple in-memory cache for products
 let productsCache = null;
@@ -10,7 +10,7 @@ const invalidateProductsCache = () => {
   productsCacheTime = 0;
 };
 
-// @desc    Fetch all products from Firestore
+// @desc    Fetch all products
 // @route   GET /api/products
 // @access  Public
 const getProducts = async (req, res) => {
@@ -19,32 +19,32 @@ const getProducts = async (req, res) => {
       return res.json(productsCache);
     }
 
-    const db = admin.firestore();
-    const snapshot = await db.collection('products').orderBy('createdAt', 'desc').get();
-    const products = snapshot.docs.map(doc => ({
-      _id: doc.id,
-      id: doc.id,
-      ...doc.data()
+    const products = await Product.find({ isArchived: false }).sort({ createdAt: -1 });
+
+    // Format to include both _id and id for backwards compatibility
+    const formattedProducts = products.map(product => ({
+      ...product.toObject(),
+      id: product._id.toString()
     }));
 
-    productsCache = products;
+    productsCache = formattedProducts;
     productsCacheTime = Date.now();
     
-    res.json(products);
+    res.json(formattedProducts);
   } catch (error) {
+    console.error('Error in getProducts:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Fetch single product from Firestore
+// @desc    Fetch single product
 // @route   GET /api/products/:id
 // @access  Public
 const getProductById = async (req, res) => {
   try {
-    const db = admin.firestore();
-    const doc = await db.collection('products').doc(req.params.id).get();
-    if (doc.exists) {
-      res.json({ _id: doc.id, id: doc.id, ...doc.data() });
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      res.json({ ...product.toObject(), id: product._id.toString() });
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
@@ -53,19 +53,16 @@ const getProductById = async (req, res) => {
   }
 };
 
-// @desc    Delete a product from Firestore
+// @desc    Delete a product
 // @route   DELETE /api/products/:id
 // @access  Private/Admin
 const deleteProduct = async (req, res) => {
   try {
-    const db = admin.firestore();
-    const productRef = db.collection('products').doc(req.params.id);
-    const doc = await productRef.get();
+    const product = await Product.findByIdAndDelete(req.params.id);
     
-    if (doc.exists) {
-      await productRef.delete();
+    if (product) {
       invalidateProductsCache();
-      res.json({ message: 'Product removed from Firestore' });
+      res.json({ message: 'Product removed from MongoDB' });
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
@@ -74,12 +71,11 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-// @desc    Create a product in Firestore
+// @desc    Create a product
 // @route   POST /api/products
 // @access  Private/Admin
 const createProduct = async (req, res) => {
   try {
-    const db = admin.firestore();
     const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, sizePrices, deliveryCharge, badge, stockCount, isReturnable, returnDays } = req.body;
     
     let finalInStock = inStock !== undefined ? inStock : true;
@@ -104,80 +100,60 @@ const createProduct = async (req, res) => {
       stockCount: stockCount !== undefined ? Number(stockCount) : 0,
       badge: badge || 'none',
       isReturnable: isReturnable || false,
-      returnDays: returnDays ? Number(returnDays) : 7,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      returnDays: returnDays ? Number(returnDays) : 7
     };
 
-    const docRef = await db.collection('products').add(productData);
-    const savedProduct = await docRef.get();
-    
+    const newProduct = await Product.create(productData);
     invalidateProductsCache();
     
     res.status(201).json({
-      _id: docRef.id,
-      id: docRef.id,
-      ...savedProduct.data()
+      ...newProduct.toObject(),
+      id: newProduct._id.toString()
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// @desc    Update a product in Firestore
+// @desc    Update a product
 // @route   PUT /api/products/:id
 // @access  Private/Admin
 const updateProduct = async (req, res) => {
   try {
-    const db = admin.firestore();
     const { name, price, description, image, images, brand, category, inStock, subCategory, sizeType, sizes, sizePrices, deliveryCharge, badge, stockCount, isReturnable, returnDays } = req.body;
     
-    const productRef = db.collection('products').doc(req.params.id);
-    const doc = await productRef.get();
+    const product = await Product.findById(req.params.id);
 
-    if (doc.exists) {
-      let finalInStock = inStock !== undefined ? inStock : doc.data().inStock;
+    if (product) {
+      let finalInStock = inStock !== undefined ? inStock : product.inStock;
       if (stockCount !== undefined) {
         finalInStock = Number(stockCount) > 0;
       }
 
-      const updateData = {
-        name: name || doc.data().name,
-        price: price !== undefined ? Number(price) : doc.data().price,
-        description: description || doc.data().description,
-        image: image || doc.data().image,
-        images: images || doc.data().images || [],
-        brand: brand || doc.data().brand,
-        category: category || doc.data().category,
-        subCategory: subCategory || doc.data().subCategory || '',
-        sizeType: sizeType !== undefined ? sizeType : (doc.data().sizeType || 'none'),
-        sizes: sizes !== undefined ? sizes : (doc.data().sizes || []),
-        sizePrices: sizePrices !== undefined ? sizePrices : (doc.data().sizePrices || {}),
-        deliveryCharge: deliveryCharge !== undefined ? Number(deliveryCharge) : (doc.data().deliveryCharge || 0),
-        inStock: finalInStock,
-        ...(stockCount !== undefined && { stockCount: Number(stockCount) }),
-        badge: badge !== undefined ? badge : (doc.data().badge || 'none'),
-        isReturnable: isReturnable !== undefined ? isReturnable : (doc.data().isReturnable || false),
-        returnDays: returnDays !== undefined ? Number(returnDays) : (doc.data().returnDays || 7),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      };
+      product.name = name || product.name;
+      product.price = price !== undefined ? Number(price) : product.price;
+      product.description = description || product.description;
+      product.image = image || product.image;
+      product.images = images || product.images;
+      product.brand = brand || product.brand;
+      product.category = category || product.category;
+      product.subCategory = subCategory || product.subCategory;
+      product.sizeType = sizeType !== undefined ? sizeType : product.sizeType;
+      product.sizes = sizes !== undefined ? sizes : product.sizes;
+      product.sizePrices = sizePrices !== undefined ? sizePrices : product.sizePrices;
+      product.deliveryCharge = deliveryCharge !== undefined ? Number(deliveryCharge) : product.deliveryCharge;
+      product.inStock = finalInStock;
+      if (stockCount !== undefined) product.stockCount = Number(stockCount);
+      product.badge = badge !== undefined ? badge : product.badge;
+      product.isReturnable = isReturnable !== undefined ? isReturnable : product.isReturnable;
+      product.returnDays = returnDays !== undefined ? Number(returnDays) : product.returnDays;
 
-      // Firestore rejects undefined values, so we must strip them out
-      Object.keys(updateData).forEach(key => {
-        if (updateData[key] === undefined) {
-          delete updateData[key];
-        }
-      });
-
-      await productRef.update(updateData);
-      const updatedDoc = await productRef.get();
-      
+      const updatedProduct = await product.save();
       invalidateProductsCache();
       
       res.json({
-        _id: updatedDoc.id,
-        id: updatedDoc.id,
-        ...updatedDoc.data()
+        ...updatedProduct.toObject(),
+        id: updatedProduct._id.toString()
       });
     } else {
       res.status(404).json({ message: 'Product not found' });
@@ -194,4 +170,3 @@ module.exports = {
   createProduct,
   updateProduct
 };
-

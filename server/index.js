@@ -6,7 +6,8 @@ const admin = require('firebase-admin');
 const dns = require('dns');
 
 // Force IPv4 globally to prevent ENETUNREACH errors on cloud providers like Render...
-if (dns.setDefaultResultOrder) {
+// (Only in production, as it can break local MongoDB SRV resolution on Windows)
+if (process.env.NODE_ENV === 'production' && dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder('ipv4first');
 }
 
@@ -24,6 +25,10 @@ const saleRoutes = require('./routes/saleRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const seoRoutes = require('./routes/seoRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const connectDB = require('./config/db');
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 
@@ -105,6 +110,9 @@ app.use((req, res, next) => {
 });
 
 // Routes
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
 
 // Strict protection for high-value endpoints (OTP SMS/Email spam & Coupon brute-forcing)
 app.use('/api/otp', strictLimiter, otpRoutes);
@@ -118,6 +126,9 @@ app.use('/api/sale', generalLimiter, saleRoutes);
 app.use('/api/orders', generalLimiter, require('./routes/orderRoutes'));
 app.use('/api/payment', generalLimiter, require('./routes/paymentRoutes'));
 app.use('/api/settings', generalLimiter, settingsRoutes);
+app.use('/api/users', generalLimiter, require('./routes/userRoutes'));
+app.use('/api/reels', generalLimiter, require('./routes/reelRoutes'));
+app.use('/api/reviews', generalLimiter, require('./routes/reviewRoutes'));
 app.use('/api', generalLimiter, seoRoutes);
 app.use('/api/notifications', generalLimiter, notificationRoutes);
 app.use('/', generalLimiter, seoRoutes);

@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const crypto = require('crypto');
 const { sendEmail } = require('../utils/emailService');
+const OTP = require('../models/OTP');
 
 exports.sendOtp = async (req, res) => {
   const { email } = req.body;
@@ -8,25 +9,20 @@ exports.sendOtp = async (req, res) => {
     if (!email) return res.status(400).json({ message: 'Email is required' });
 
     console.log(`Starting OTP process for: ${email}`);
-    const db = admin.firestore();
     
     // Generate 6-digit OTP securely
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpCode = crypto.randomInt(100000, 999999).toString();
 
-    // Save to Firestore with a timeout
-    console.log(`Step 1: Saving OTP to Firestore for ${email}`);
-    const savePromise = db.collection('otps').doc(email).set({
-      otp,
-      attempts: 0,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Firestore operation timed out. Check your Firebase credentials/connection.')), 10000)
+    console.log(`Step 1: Saving OTP to MongoDB for ${email}`);
+    
+    // UPSERT OTP document
+    await OTP.findOneAndUpdate(
+      { email },
+      { otp: otpCode, attempts: 0, createdAt: new Date() },
+      { upsert: true, new: true }
     );
-
-    await Promise.race([savePromise, timeoutPromise]);
-    console.log(`Step 2: Firestore Save Successful`);
+    
+    console.log(`Step 2: MongoDB Save Successful`);
 
     // Send Email
     const mailOptions = {
@@ -42,7 +38,7 @@ exports.sendOtp = async (req, res) => {
           <p style="color: #333; font-size: 16px;">Welcome back!</p>
           <p style="color: #666; font-size: 14px; line-height: 1.6;">Use the verification code below to sign in to your PrathamKarigiri account.</p>
           <div style="background: #fdf5e6; padding: 30px; text-align: center; border-radius: 15px; margin: 30px 0; border: 1px dashed #d2b48c;">
-            <h1 style="color: #5C4033; letter-spacing: 8px; margin: 0; font-size: 36px; font-weight: 800;">${otp}</h1>
+            <h1 style="color: #5C4033; letter-spacing: 8px; margin: 0; font-size: 36px; font-weight: 800;">${otpCode}</h1>
           </div>
           <p style="color: #999; font-size: 12px; text-align: center;">This code expires in 5 minutes. If you didn't request this, you can safely ignore this email.</p>
           <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
@@ -54,7 +50,7 @@ exports.sendOtp = async (req, res) => {
 
     console.log(`Step 3: Attempting to send SMTP email to: ${email}`);
     const info = await sendEmail(mailOptions);
-    console.log('Step 4: OTP Email Sent Successfully:', info.messageId);
+    console.log('Step 4: OTP Email Sent Successfully:', info?.messageId || 'Success');
     res.status(200).json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
     console.error('OTP Controller Failure:', error);
@@ -63,48 +59,44 @@ exports.sendOtp = async (req, res) => {
     });
   }
 };
-;
 
 exports.verifyOtp = async (req, res) => {
   try {
-    const db = admin.firestore();
     const { email, otp } = req.body;
     if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
 
-    const otpDoc = await db.collection('otps').doc(email).get();
+    const otpDoc = await OTP.findOne({ email });
 
-    if (!otpDoc.exists) {
+    if (!otpDoc) {
       return res.status(400).json({ success: false, message: 'OTP not found or expired' });
     }
 
-    const data = otpDoc.data();
-    
     // Check if OTP matches
-    if (data.otp !== otp) {
-      const attempts = (data.attempts || 0) + 1;
+    if (otpDoc.otp !== otp) {
+      otpDoc.attempts = (otpDoc.attempts || 0) + 1;
       
-      if (attempts >= 3) {
+      if (otpDoc.attempts >= 3) {
         // Lockout: Delete the OTP document after 3 failed attempts
-        await db.collection('otps').doc(email).delete();
+        await OTP.deleteOne({ email });
         return res.status(400).json({ success: false, message: 'Too many failed attempts. Please request a new OTP.' });
       } else {
         // Increment attempts counter
-        await db.collection('otps').doc(email).update({ attempts });
+        await otpDoc.save();
         return res.status(400).json({ success: false, message: 'Invalid OTP' });
       }
     }
 
     // Check expiry (5 minutes)
     const now = Date.now();
-    const created = data.createdAt.toDate().getTime();
+    const created = otpDoc.createdAt.getTime();
     
     if (now - created > 5 * 60 * 1000) {
-      await db.collection('otps').doc(email).delete();
+      await OTP.deleteOne({ email });
       return res.status(400).json({ success: false, message: 'OTP has expired' });
     }
 
     // Delete after use
-    await db.collection('otps').doc(email).delete();
+    await OTP.deleteOne({ email });
 
     // Create Firebase custom token
     let userRecord;

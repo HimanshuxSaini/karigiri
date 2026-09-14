@@ -440,7 +440,7 @@ const Home = () => {
               ]).map((reel, i) => (
                 <a 
                   key={i} 
-                  href={BRAND.social.instagram}
+                  href={reel.url || "https://www.instagram.com/prathamkarigiri.in/"}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`View ${reel.tag} on Instagram`}

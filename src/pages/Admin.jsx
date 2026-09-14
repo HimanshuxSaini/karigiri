@@ -42,6 +42,7 @@ import {
   updateProduct,
   fetchOrders,
   updateOrderStatus,
+  updateOrderDeliveryDate,
   deleteOrder,
   uploadProductImage,
   fetchReels,
@@ -59,7 +60,9 @@ import {
   fetchSettings,
   updateSettings,
   fetchHeroSlides,
-  updateHeroSlides
+  updateHeroSlides,
+  getDeliverySettings,
+  updateDeliverySettings
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
@@ -159,6 +162,11 @@ const Admin = () => {
   const [pushData, setPushData] = useState({ title: '', body: '', image: '', url: '' });
   const [isSendingPush, setIsSendingPush] = useState(false);
 
+  const [deliverySettings, setDeliverySettings] = useState({ defaultDays: 7, overrides: [] });
+  const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
+  const [newOverridePincode, setNewOverridePincode] = useState('');
+  const [newOverrideDays, setNewOverrideDays] = useState(7);
+
   const handleSendPush = async (e) => {
     e.preventDefault();
     if (!pushData.title || !pushData.body) {
@@ -203,6 +211,7 @@ const Admin = () => {
     { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'sale', label: 'Flash Sale', icon: Clock },
     { id: 'announcements', label: 'Banner Offers', icon: Megaphone },
+    { id: 'delivery', label: 'Delivery', icon: Truck },
     { id: 'hero', label: 'Hero Slides', icon: Presentation },
     { id: 'push', label: 'Push Notifications', icon: Smartphone },
   ];
@@ -285,7 +294,7 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes, deliveryRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
@@ -293,7 +302,8 @@ const Admin = () => {
         fetchFlashSale(),
         fetchReelsConfig(),
         fetchSettings(),
-        fetchHeroSlides()
+        fetchHeroSlides(),
+        getDeliverySettings()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
@@ -303,6 +313,7 @@ const Admin = () => {
       if (reelResConfig) setReelsConfig(reelResConfig);
       if (settingsRes && settingsRes.announcements) setAnnouncements(settingsRes.announcements);
       if (heroRes) setHeroSlides(heroRes.sort((a,b) => a.order - b.order));
+      if (deliveryRes) setDeliverySettings(deliveryRes);
 
       const defaultHeroSlides = [
         {
@@ -585,6 +596,43 @@ const Admin = () => {
     }
   };
 
+  const handleExportOrdersCSV = () => {
+    if (!filteredOrders || filteredOrders.length === 0) {
+      showNotification('No orders to export', 'error');
+      return;
+    }
+
+    const headers = ['Order ID', 'Date', 'Customer Name', 'Email', 'Phone', 'Address', 'Total Price', 'Status', 'Items'];
+    const rows = filteredOrders.map(order => {
+      const id = String(order?._id || order?.id || '');
+      const date = formatDate(order?.createdAt);
+      const name = order?.shippingAddress?.name || 'N/A';
+      const email = order?.email || 'N/A';
+      const phone = order?.shippingAddress?.phone || 'N/A';
+      const address = `${order?.shippingAddress?.address || ''} ${order?.shippingAddress?.city || ''} ${order?.shippingAddress?.state || ''} ${order?.shippingAddress?.pincode || ''}`.replace(/,/g, '');
+      const price = order?.totalPrice || 0;
+      const status = order?.status || 'Pending';
+      const items = (order?.orderItems || []).map(item => `${item.name} (Qty: ${item.quantity})`).join(' | ');
+
+      return [
+        id, date, `"${name}"`, email, phone, `"${address}"`, price, status, `"${items}"`
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders_export_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification('Export successful');
+  };
+
   const handleUpdateProductStock = async (id, newStock) => {
     try {
       const updatedProduct = await updateProduct(id, { stockCount: newStock });
@@ -595,14 +643,25 @@ const Admin = () => {
     }
   };
 
-  const handleUpdateOrderStatus = async (id, status) => {
+  const handleUpdateOrderStatus = async (id, status, cancellationReason = null) => {
     try {
-      await updateOrderStatus(id, status);
-      setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, status } : o));
-      setSelectedOrder(prev => prev && (prev._id === id || prev.id === id) ? { ...prev, status } : prev);
+      await updateOrderStatus(id, status, cancellationReason);
+      setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, status, cancellationReason } : o));
+      setSelectedOrder(prev => prev && (prev._id === id || prev.id === id) ? { ...prev, status, cancellationReason } : prev);
       showNotification(`Order status updated to ${status}`);
     } catch {
       showNotification('Failed to update status', 'error');
+    }
+  };
+
+  const handleUpdateDeliveryDate = async (id, dateStr) => {
+    try {
+      await updateOrderDeliveryDate(id, dateStr);
+      setOrders(orders.map(o => (o._id === id || o.id === id) ? { ...o, expectedDeliveryDate: dateStr } : o));
+      setSelectedOrder(prev => prev && (prev._id === id || prev.id === id) ? { ...prev, expectedDeliveryDate: dateStr } : prev);
+      showNotification('Delivery date updated successfully');
+    } catch {
+      showNotification('Failed to update delivery date', 'error');
     }
   };
 
@@ -1510,15 +1569,23 @@ const Admin = () => {
                       ))}
                     </div>
 
-                    <div className="relative flex-grow max-w-md">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input
-                        type="text"
-                        placeholder="Search by ID or Phone..."
-                        value={orderSearch}
-                        onChange={(e) => setOrderSearch(e.target.value)}
-                        className="w-full pl-12 pr-6 py-2.5 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
-                      />
+                    <div className="flex gap-3 items-center">
+                      <div className="relative flex-grow md:max-w-md">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                          type="text"
+                          placeholder="Search by ID or Phone..."
+                          value={orderSearch}
+                          onChange={(e) => setOrderSearch(e.target.value)}
+                          className="w-full pl-12 pr-6 py-2.5 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
+                        />
+                      </div>
+                      <button 
+                        onClick={handleExportOrdersCSV}
+                        className="px-6 py-2.5 bg-black text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-gray-800 transition-all shadow-md whitespace-nowrap text-sm"
+                      >
+                        Export CSV
+                      </button>
                     </div>
                   </div>
 
@@ -2078,6 +2145,107 @@ const Admin = () => {
                       >
                         Add Offer
                       </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'delivery' && (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-gray-900">Delivery Settings</h2>
+                      <p className="text-gray-500 mt-2">Configure default delivery days and pincode-specific overrides</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setIsUpdatingDelivery(true);
+                        try {
+                          await updateDeliverySettings(deliverySettings);
+                          addToast('Delivery settings updated successfully', 'success');
+                        } catch (err) {
+                          addToast(err.message || 'Failed to update delivery settings', 'error');
+                        } finally {
+                          setIsUpdatingDelivery(false);
+                        }
+                      }}
+                      disabled={isUpdatingDelivery}
+                      className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      {isUpdatingDelivery ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+
+                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="text-xl font-bold mb-6">Default Delivery Option</h3>
+                    <div className="mb-8">
+                      <label className="text-sm font-bold text-gray-700 block mb-2">Default Delivery Days</label>
+                      <input 
+                        type="number"
+                        min="1"
+                        value={deliverySettings.defaultDays || 7}
+                        onChange={(e) => setDeliverySettings({ ...deliverySettings, defaultDays: Number(e.target.value) })}
+                        className="w-full md:w-1/3 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">Used for all pincodes that do not have specific overrides.</p>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold mb-6 border-t border-gray-100 pt-8">Pincode Overrides</h3>
+                    <div className="flex gap-4 mb-6">
+                      <input 
+                        type="text" 
+                        placeholder="Pincodes (e.g. 110001, 110002)" 
+                        className="flex-1 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none"
+                        value={newOverridePincode}
+                        onChange={e => setNewOverridePincode(e.target.value)}
+                      />
+                      <input 
+                        type="number" 
+                        placeholder="Days" 
+                        min="1"
+                        className="w-24 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none"
+                        value={newOverrideDays}
+                        onChange={e => setNewOverrideDays(Number(e.target.value))}
+                      />
+                      <button
+                        onClick={() => {
+                          if(!newOverridePincode.trim()) return addToast('Please enter pincodes', 'error');
+                          setDeliverySettings({
+                            ...deliverySettings,
+                            overrides: [
+                              ...(deliverySettings.overrides || []),
+                              { pincodes: newOverridePincode, days: newOverrideDays }
+                            ]
+                          });
+                          setNewOverridePincode('');
+                        }}
+                        className="bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-[var(--primary)]/90"
+                      >
+                        Add
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {(deliverySettings.overrides || []).map((override, index) => (
+                        <div key={index} className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
+                          <div>
+                            <span className="text-sm font-bold block mb-1">Pincodes: {override.pincodes}</span>
+                            <span className="text-xs text-[var(--primary)] font-black uppercase tracking-wider">Delivery: {override.days} days</span>
+                          </div>
+                          <button
+                            onClick={() => setDeliverySettings({
+                              ...deliverySettings,
+                              overrides: deliverySettings.overrides.filter((_, i) => i !== index)
+                            })}
+                            className="text-red-500 hover:text-red-700 p-2 bg-red-50 rounded-lg"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))}
+                      {(deliverySettings.overrides || []).length === 0 && (
+                        <p className="text-gray-500 italic text-sm">No overrides configured. All pincodes will use default days.</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2980,6 +3148,7 @@ const Admin = () => {
             order={selectedOrder}
             onClose={() => setSelectedOrder(null)}
             onUpdateStatus={handleUpdateOrderStatus}
+            onUpdateDeliveryDate={handleUpdateDeliveryDate}
             onDeleteOrder={handleDeleteOrder}
             onPrintBill={handlePrintBill}
           />
@@ -3239,10 +3408,15 @@ const Admin = () => {
 };
 
 // Sub-components for Admin
-const OrderDetailModal = ({ order, onClose, onUpdateStatus, onDeleteOrder, onPrintBill }) => {
+const OrderDetailModal = ({ order, onClose, onUpdateStatus, onUpdateDeliveryDate, onDeleteOrder, onPrintBill }) => {
+  const [showCancelOptions, setShowCancelOptions] = React.useState(false);
+  const [cancelReason, setCancelReason] = React.useState('');
+  const [customReason, setCustomReason] = React.useState('');
+  const [customDeliveryDate, setCustomDeliveryDate] = React.useState(
+    order?.expectedDeliveryDate ? new Date(order.expectedDeliveryDate).toISOString().split('T')[0] : ''
+  );
+
   if (!order) return null;
-
-
 
   const orderId = String(order?._id || order?.id || '').toUpperCase();
 
@@ -3293,8 +3467,11 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onDeleteOrder, onPri
               <div className="p-2 bg-gray-50 rounded-xl text-[var(--primary)]"><Truck size={18} /></div>
               <div>
                 <p className="text-[10px] font-black uppercase text-gray-400">Status</p>
-                <p className={`text-sm font-bold ${order?.status === 'Delivered' ? 'text-emerald-600' : 'text-amber-600'
+                <p className={`text-sm font-bold ${order?.status === 'Delivered' ? 'text-emerald-600' : order?.status === 'Cancelled' ? 'text-red-600' : 'text-amber-600'
                   }`}>{order?.status || 'Processing'}</p>
+                {order?.status === 'Cancelled' && order?.cancellationReason && (
+                  <p className="text-[10px] text-red-500 font-bold max-w-[120px] leading-tight mt-1">{order.cancellationReason}</p>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -3351,6 +3528,28 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onDeleteOrder, onPri
             ))}
           </div>
 
+          <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100 mb-6">
+            <h4 className="text-xs font-black uppercase tracking-widest text-blue-800 mb-4">Expected Delivery Date</h4>
+            <div className="flex items-center space-x-3">
+              <input
+                type="date"
+                value={customDeliveryDate}
+                onChange={(e) => setCustomDeliveryDate(e.target.value)}
+                className="px-4 py-2 rounded-xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
+              />
+              <button
+                onClick={() => {
+                  if (customDeliveryDate) {
+                    onUpdateDeliveryDate(order?._id || order?.id, customDeliveryDate);
+                  }
+                }}
+                className="px-6 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all"
+              >
+                Update Date
+              </button>
+            </div>
+          </div>
+
           <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
             <h4 className="text-xs font-black uppercase tracking-widest text-emerald-800 mb-4">Update Status</h4>
             <div className="flex flex-wrap gap-2">
@@ -3367,12 +3566,69 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onDeleteOrder, onPri
                 </button>
               ))}
               <button
+                onClick={() => setShowCancelOptions(!showCancelOptions)}
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${order?.status === 'Cancelled' ? 'bg-red-600 text-white shadow-lg' : 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-100'}`}
+              >
+                Cancel Order
+              </button>
+              <button
                 onClick={() => onDeleteOrder(order?._id || order?.id)}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold transition-all bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 md:ml-auto"
               >
                 Mark as Fake
               </button>
             </div>
+            
+            {/* Cancellation Options Section */}
+            {showCancelOptions && (
+              <div className="mt-4 p-4 bg-white rounded-2xl border border-red-100 shadow-sm animate-in fade-in slide-in-from-top-2">
+                <h5 className="text-xs font-bold text-red-800 mb-3 uppercase tracking-wider">Select Cancellation Reason</h5>
+                <select 
+                  className="w-full p-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500/20 mb-3 text-sm"
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                >
+                  <option value="">-- Choose a reason --</option>
+                  <option value="Not in stock">Not in stock</option>
+                  <option value="Customer requested cancellation">Customer requested cancellation</option>
+                  <option value="Invalid address/contact info">Invalid address/contact info</option>
+                  <option value="Payment not received / failed">Payment not received / failed</option>
+                  <option value="Suspected fraud/fake order">Suspected fraud/fake order</option>
+                  <option value="Custom">Custom (Type below)</option>
+                </select>
+                
+                {cancelReason === 'Custom' && (
+                  <input 
+                    type="text" 
+                    placeholder="Enter custom cancellation reason"
+                    className="w-full p-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500/20 mb-3 text-sm"
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                  />
+                )}
+                
+                <div className="flex justify-end gap-2">
+                  <button 
+                    onClick={() => setShowCancelOptions(false)}
+                    className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700"
+                  >
+                    Abort
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (!cancelReason) return alert("Please select a cancellation reason");
+                      if (cancelReason === 'Custom' && !customReason.trim()) return alert("Please enter the custom reason");
+                      const finalReason = cancelReason === 'Custom' ? customReason : cancelReason;
+                      onUpdateStatus(order?._id || order?.id, 'Cancelled', finalReason);
+                      setShowCancelOptions(false);
+                    }}
+                    className="px-4 py-2 text-xs font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-md"
+                  >
+                    Confirm Cancellation
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Motion.div>

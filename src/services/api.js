@@ -1,28 +1,16 @@
-import { 
-  collection, 
-  getDocs, 
-  getDoc, 
-  setDoc,
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  query, 
-  where, 
-  orderBy,
-  serverTimestamp,
-  increment
-} from 'firebase/firestore';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
-  sendPasswordResetEmail 
-} from 'firebase/auth';
-import { db, auth } from '../firebase/config';
+import { auth } from '../firebase/config';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 const formatCurrency = (amount) => `\u20B9${Number(amount || 0).toLocaleString('en-IN')}`;
+
+const getAuthToken = async () => {
+  await auth.authStateReady();
+  const user = auth.currentUser;
+  if (!user) {
+    return null; // Return null instead of throwing for public routes
+  }
+  return user.getIdToken();
+};
 
 const getAdminToken = async () => {
   await auth.authStateReady();
@@ -30,19 +18,23 @@ const getAdminToken = async () => {
   if (!user) {
     throw new Error('Please log in again to continue');
   }
-
   return user.getIdToken();
 };
 
-const fetchAdminCouponApi = async (path, options = {}) => {
-  const token = await getAdminToken();
-  const response = await fetch(`${API_URL}/coupons${path}`, {
+const authenticatedFetch = async (path, options = {}) => {
+  const token = await getAuthToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...(options.headers || {})
-    }
+    headers
   });
 
   let payload = null;
@@ -53,7 +45,34 @@ const fetchAdminCouponApi = async (path, options = {}) => {
   }
 
   if (!response.ok) {
-    throw new Error(payload?.message || 'Coupon request failed');
+    throw new Error(payload?.message || 'Request failed');
+  }
+
+  return payload;
+};
+
+const adminFetch = async (path, options = {}) => {
+  const token = await getAdminToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+    'Authorization': `Bearer ${token}`
+  };
+
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(payload?.message || 'Admin request failed');
   }
 
   return payload;
@@ -62,58 +81,29 @@ const fetchAdminCouponApi = async (path, options = {}) => {
 // Products
 export const fetchProducts = async () => {
   try {
-    const productsCol = collection(db, 'products');
-    const snapshot = await getDocs(productsCol);
-    const products = snapshot.docs.map(doc => ({
-      _id: doc.id,
-      id: doc.id,
-      ...doc.data()
-    }));
-    
-    return products.sort((a, b) => {
-      const dateA = a.createdAt?.toDate?.() || new Date(0);
-      const dateB = b.createdAt?.toDate?.() || new Date(0);
-      return dateB - dateA;
-    });
+    const products = await authenticatedFetch('/products');
+    return products;
   } catch (error) {
-    console.error("Error fetching products from Firestore:", error);
+    console.error("Error fetching products:", error);
     return [];
   }
 };
 
-
 export const fetchProductById = async (id) => {
   try {
-    const productDoc = doc(db, 'products', id);
-    const snapshot = await getDoc(productDoc);
-    if (snapshot.exists()) {
-      return { _id: snapshot.id, id: snapshot.id, ...snapshot.data() };
-    }
-    throw new Error('Product not found');
+    return await authenticatedFetch(`/products/${id}`);
   } catch (error) {
-    console.error("Error fetching product by ID from Firestore:", error);
+    console.error("Error fetching product by ID:", error);
     throw error;
   }
 };
 
 export const createProduct = async (productData) => {
   try {
-    const token = await getAdminToken();
-    const response = await fetch(`${API_URL}/products`, {
+    return await adminFetch('/products', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
       body: JSON.stringify(productData)
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create product');
-    }
-
-    return await response.json();
   } catch (error) {
     console.error("Error creating product:", error);
     throw error;
@@ -122,36 +112,19 @@ export const createProduct = async (productData) => {
 
 export const updateProduct = async (id, productData) => {
   try {
-    const token = await getAdminToken();
-    const response = await fetch(`${API_URL}/products/${id}`, {
+    return await adminFetch(`/products/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
       body: JSON.stringify(productData)
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update product');
-    }
-
-    return await response.json();
   } catch (error) {
     console.error("Error updating product:", error);
     throw error;
   }
 };
 
-
 export const deleteProductImage = async (imageUrl) => {
   try {
-    await auth.authStateReady();
-    const user = auth.currentUser;
-    if (!user) throw new Error("Unauthorized");
-    const token = await user.getIdToken();
-
+    const token = await getAdminToken(); // Admin only action
     const response = await fetch(`${API_URL}/upload`, {
       method: 'DELETE',
       headers: {
@@ -169,57 +142,30 @@ export const deleteProductImage = async (imageUrl) => {
     return await response.json();
   } catch (error) {
     console.error("Error deleting product image:", error);
-    // Don't throw here to allow product deletion even if image deletion fails
     return null;
   }
 };
 
 export const deleteProduct = async (id) => {
   try {
-    const token = await getAdminToken();
-    
-    // 1. Fetch product to get image URL/public_id if needed
-    // (Optional: The backend could handle image deletion too, but we keep it separate for now or integrate it)
     const product = await fetchProductById(id);
-    
-    // 2. Delete image if it exists
-    if (product && product.image) {
-      await deleteProductImage(product.image);
+    if (product && product.image && product.image.includes('/uploads/')) {
+       // Only try to delete from cloudinary if it seems to be our own upload. Or always try.
+       await deleteProductImage(product.image);
     }
-
-    // 3. Delete from Backend (which deletes from Firestore)
-    const response = await fetch(`${API_URL}/products/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to delete product');
-    }
-
-    return await response.json();
+    return await adminFetch(`/products/${id}`, { method: 'DELETE' });
   } catch (error) {
     console.error("Error deleting product:", error);
     throw error;
   }
 };
 
-
-
-
 export const uploadProductImage = async (file) => {
   try {
     const formData = new FormData();
     formData.append('image', file);
 
-    // Get current user's Firebase token for auth
-    await auth.authStateReady();
-    const user = auth.currentUser;
-    if (!user) throw new Error("User not authenticated. Please log in again.");
-    const token = await user.getIdToken();
+    const token = await getAdminToken();
 
     const response = await fetch(`${API_URL}/upload`, {
       method: 'POST',
@@ -242,19 +188,13 @@ export const uploadProductImage = async (file) => {
   }
 };
 
-// Orders — Server-side validated
+// Orders
 export const createRazorpayOrder = async (amount) => {
   try {
-    const response = await fetch(`${API_URL}/payment/create-razorpay-order`, {
+    return await authenticatedFetch('/payment/create-razorpay-order', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount })
     });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create payment order');
-    }
-    return await response.json();
   } catch (error) {
     console.error('Error creating razorpay order:', error);
     throw error;
@@ -263,16 +203,10 @@ export const createRazorpayOrder = async (amount) => {
 
 export const createOrder = async (orderData) => {
   try {
-    const response = await fetch(`${API_URL}/orders`, {
+    return await authenticatedFetch('/orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData)
     });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create order');
-    }
-    return await response.json();
   } catch (error) {
     console.error('Error creating order:', error);
     throw error;
@@ -281,129 +215,66 @@ export const createOrder = async (orderData) => {
 
 export const fetchOrders = async () => {
   try {
-    const ordersCol = collection(db, 'orders');
-    const orderSnapshot = await getDocs(ordersCol);
-    const orders = orderSnapshot.docs.map(doc => ({
-      _id: doc.id,
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    return orders.sort((a, b) => {
-      const dateA = a.createdAt?.toDate?.() || new Date(0);
-      const dateB = b.createdAt?.toDate?.() || new Date(0);
-      return dateB - dateA;
-    });
+    return await adminFetch('/orders');
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching admin orders:", error);
     return [];
   }
 };
 
-export const fetchUserOrders = async (uid, email) => {
-  if (!uid) return [];
+export const fetchUserOrders = async () => {
   try {
-    const ordersCol = collection(db, 'orders');
+    // We now just use the /users/orders endpoint for the authenticated user
+    // The backend uses req.user.uid
+    const token = await getAuthToken();
+    if (!token) return [];
     
-    // 1. Fetch orders linked directly to user UID
-    const qUid = query(ordersCol, where('user', '==', uid));
-    const snapshotUid = await getDocs(qUid);
-    
-    const orderMap = new Map();
-    
-    snapshotUid.docs.forEach(doc => {
-      const data = doc.data();
-      orderMap.set(doc.id, { _id: doc.id, id: doc.id, ...data });
-    });
-
-    // 2. Also fetch orders linked to user email (covers checkouts that occurred via guest flow)
-    if (email) {
-      const qEmail = query(ordersCol, where('email', '==', email));
-      const snapshotEmail = await getDocs(qEmail);
-      snapshotEmail.docs.forEach(doc => {
-        const data = doc.data();
-        orderMap.set(doc.id, { _id: doc.id, id: doc.id, ...data });
-      });
-    }
-
-    const orders = Array.from(orderMap.values());
-
-    return orders.sort((a, b) => {
-      const dateA = a.createdAt?.toDate?.() || (a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(a.date || 0));
-      const dateB = b.createdAt?.toDate?.() || (b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(b.date || 0));
-      return dateB - dateA;
-    });
+    return await authenticatedFetch('/users/orders');
   } catch (error) {
     console.error("Error fetching user orders:", error);
     return [];
   }
 };
 
-
-export const updateOrderStatus = async (id, status) => {
+export const updateOrderStatus = async (id, status, cancellationReason = null) => {
   try {
-    const orderDoc = doc(db, 'orders', id);
-    await updateDoc(orderDoc, { status });
-    const snapshot = await getDoc(orderDoc);
-    return { _id: snapshot.id, id: snapshot.id, ...snapshot.data() };
+    return await adminFetch(`/orders/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, cancellationReason })
+    });
   } catch (error) {
     console.error("Error updating order status:", error);
     throw error;
   }
 };
 
+export const updateOrderDeliveryDate = async (id, expectedDeliveryDate) => {
+  try {
+    return await adminFetch(`/orders/${id}/delivery-date`, {
+      method: 'PUT',
+      body: JSON.stringify({ expectedDeliveryDate })
+    });
+  } catch (error) {
+    console.error("Error updating order delivery date:", error);
+    throw error;
+  }
+};
+
 export const deleteOrder = async (id) => {
   try {
-    const orderDoc = doc(db, 'orders', id);
-    
-    // Fetch the order to restore stock
-    const snapshot = await getDoc(orderDoc);
-    if (snapshot.exists()) {
-      const orderData = snapshot.data();
-      if (orderData.orderItems && Array.isArray(orderData.orderItems)) {
-        for (const item of orderData.orderItems) {
-          if (item.product) {
-            const productRef = doc(db, 'products', item.product);
-            const prodSnap = await getDoc(productRef);
-            if (prodSnap.exists()) {
-              const currentStock = prodSnap.data().stockCount;
-              if (currentStock !== undefined) {
-                await updateDoc(productRef, {
-                  stockCount: increment(item.quantity || 1),
-                  inStock: true,
-                  updatedAt: serverTimestamp()
-                });
-              }
-            }
-          }
-        }
-      }
-    }
-
-    await updateDoc(orderDoc, { 
-      status: 'Cancelled (Suspicious)', 
-      isDeletedByAdmin: true,
-      flaggedAt: serverTimestamp() 
-    });
-    return { success: true };
+    return await adminFetch(`/orders/${id}`, { method: 'DELETE' });
   } catch (error) {
     console.error("Error deleting order:", error);
     throw error;
   }
 };
 
-// Auth
-
-
 // User Profile
-export const fetchUserProfile = async (uid) => {
+export const fetchUserProfile = async () => {
   try {
-    const userDoc = doc(db, 'users', uid);
-    const snapshot = await getDoc(userDoc);
-    if (snapshot.exists()) {
-      return snapshot.data();
-    }
-    return null;
+    const token = await getAuthToken();
+    if (!token) return null;
+    return await authenticatedFetch('/users/profile');
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return null;
@@ -412,23 +283,11 @@ export const fetchUserProfile = async (uid) => {
 
 export const saveUserProfile = async (uid, profileData) => {
   try {
-    const userDoc = doc(db, 'users', uid);
-    await updateDoc(userDoc, {
-      ...profileData,
-      updatedAt: serverTimestamp()
-    }).catch(async (err) => {
-      // If document doesn't exist, create it
-      if (err.code === 'not-found') {
-        const { setDoc } = await import('firebase/firestore');
-        await setDoc(userDoc, {
-          ...profileData,
-          uid,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-      } else {
-        throw err;
-      }
+    const token = await getAuthToken();
+    if (!token) throw new Error("Not logged in");
+    await authenticatedFetch('/users/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData)
     });
     return { success: true };
   } catch (error) {
@@ -437,60 +296,50 @@ export const saveUserProfile = async (uid, profileData) => {
   }
 };
 
-// Cart Synchronization for Cross-Device persistence
-export const saveCartToFirestore = async (uid, cartItems) => {
+// Cart
+export const saveCartToDatabase = async (uid, cartItems) => {
   if (!uid) return;
   try {
-    const cartDoc = doc(db, 'carts', uid);
-    await setDoc(cartDoc, {
-      items: cartItems,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    await authenticatedFetch('/users/cart', {
+      method: 'PUT',
+      body: JSON.stringify({ items: cartItems })
+    });
   } catch (error) {
-    console.error("Error syncing cart to Firestore:", error);
+    console.error("Error syncing cart to MongoDB:", error);
   }
 };
 
-export const fetchCartFromFirestore = async (uid) => {
+export const fetchCartFromDatabase = async (uid) => {
   if (!uid) return [];
   try {
-    const cartDoc = doc(db, 'carts', uid);
-    const snapshot = await getDoc(cartDoc);
-    if (snapshot.exists()) {
-      return snapshot.data().items || [];
-    }
-    return [];
+    const data = await authenticatedFetch('/users/cart');
+    return data?.items || [];
   } catch (error) {
-    console.error("Error fetching cart from Firestore:", error);
+    console.error("Error fetching cart from MongoDB:", error);
     return [];
   }
 };
 
-// Wishlist Synchronization for Cross-Device persistence
-export const saveWishlistToFirestore = async (uid, wishlistItems) => {
+// Wishlist
+export const saveWishlistToDatabase = async (uid, wishlistItems) => {
   if (!uid) return;
   try {
-    const wishlistDoc = doc(db, 'wishlists', uid);
-    await setDoc(wishlistDoc, {
-      items: wishlistItems,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    await authenticatedFetch('/users/wishlist', {
+      method: 'PUT',
+      body: JSON.stringify({ items: wishlistItems })
+    });
   } catch (error) {
-    console.error("Error syncing wishlist to Firestore:", error);
+    console.error("Error syncing wishlist to MongoDB:", error);
   }
 };
 
-export const fetchWishlistFromFirestore = async (uid) => {
+export const fetchWishlistFromDatabase = async (uid) => {
   if (!uid) return [];
   try {
-    const wishlistDoc = doc(db, 'wishlists', uid);
-    const snapshot = await getDoc(wishlistDoc);
-    if (snapshot.exists()) {
-      return snapshot.data().items || [];
-    }
-    return [];
+    const data = await authenticatedFetch('/users/wishlist');
+    return data?.items || [];
   } catch (error) {
-    console.error("Error fetching wishlist from Firestore:", error);
+    console.error("Error fetching wishlist from MongoDB:", error);
     return [];
   }
 };
@@ -498,14 +347,10 @@ export const fetchWishlistFromFirestore = async (uid) => {
 // OTP Services
 export const sendOtp = async (email) => {
   try {
-    const response = await fetch(`${API_URL}/otp/send-otp`, {
+    return await authenticatedFetch('/otp/send-otp', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
-    return data;
   } catch (error) {
     console.error('Error sending OTP:', error);
     throw error;
@@ -514,14 +359,10 @@ export const sendOtp = async (email) => {
 
 export const verifyOtp = async (email, otp) => {
   try {
-    const response = await fetch(`${API_URL}/otp/verify-otp`, {
+    return await authenticatedFetch('/otp/verify-otp', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp })
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Verification failed');
-    return data;
   } catch (error) {
     console.error('Error verifying OTP:', error);
     throw error;
@@ -530,31 +371,20 @@ export const verifyOtp = async (email, otp) => {
 
 export const requestPasswordReset = async (email) => {
   try {
-    const response = await fetch(`${API_URL}/otp/forgot-password`, {
+    return await authenticatedFetch('/otp/forgot-password', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to send reset link');
-    return data;
   } catch (error) {
     console.error('Error requesting password reset:', error);
     throw error;
   }
 };
 
-
 // Reels
 export const fetchReels = async () => {
   try {
-    const reelsCol = collection(db, 'reels');
-    const snapshot = await getDocs(reelsCol);
-    return snapshot.docs.map(doc => ({
-      _id: doc.id,
-      id: doc.id,
-      ...doc.data()
-    })).sort((a, b) => (a.order || 0) - (b.order || 0));
+    return await authenticatedFetch('/reels');
   } catch (error) {
     console.error("Error fetching reels:", error);
     return [];
@@ -563,12 +393,7 @@ export const fetchReels = async () => {
 
 export const fetchReelById = async (id) => {
   try {
-    const reelDoc = doc(db, 'reels', id);
-    const snapshot = await getDoc(reelDoc);
-    if (snapshot.exists()) {
-      return { _id: snapshot.id, id: snapshot.id, ...snapshot.data() };
-    }
-    return null;
+    return await authenticatedFetch(`/reels/${id}`);
   } catch (error) {
     console.error("Error fetching reel by ID:", error);
     throw error;
@@ -577,12 +402,10 @@ export const fetchReelById = async (id) => {
 
 export const createReel = async (reelData) => {
   try {
-    const reelsCol = collection(db, 'reels');
-    const docRef = await addDoc(reelsCol, {
-      ...reelData,
-      createdAt: serverTimestamp()
+    return await adminFetch('/reels', {
+      method: 'POST',
+      body: JSON.stringify(reelData)
     });
-    return { _id: docRef.id, id: docRef.id, ...reelData };
   } catch (error) {
     console.error("Error creating reel:", error);
     throw error;
@@ -591,12 +414,10 @@ export const createReel = async (reelData) => {
 
 export const updateReel = async (id, reelData) => {
   try {
-    const reelDoc = doc(db, 'reels', id);
-    const cleanData = { ...reelData };
-    delete cleanData._id;
-    delete cleanData.id;
-    await updateDoc(reelDoc, cleanData);
-    return { _id: id, id, ...reelData };
+    return await adminFetch(`/reels/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(reelData)
+    });
   } catch (error) {
     console.error("Error updating reel:", error);
     throw error;
@@ -605,33 +426,18 @@ export const updateReel = async (id, reelData) => {
 
 export const deleteReel = async (id) => {
   try {
-    // 1. Fetch reel to get preview image URL
-    const reel = await fetchReelById(id);
-    
-    // 2. Delete image if it exists and is local
-    if (reel && reel.image && reel.image.includes('/uploads/')) {
-      await deleteProductImage(reel.image);
-    }
-
-    // 3. Delete Firestore document
-    const reelDoc = doc(db, 'reels', id);
-    await deleteDoc(reelDoc);
-    return { success: true };
+    return await adminFetch(`/reels/${id}`, { method: 'DELETE' });
   } catch (error) {
     console.error("Error deleting reel:", error);
     throw error;
   }
 };
 
+// Config Settings
 export const fetchReelsConfig = async () => {
   try {
-    const docRef = doc(db, 'config', 'reelsConfig');
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      return snapshot.data();
-    }
-    // Default config if document doesn't exist yet
-    return { isVisible: true };
+    const data = await authenticatedFetch('/settings/config/reelsConfig');
+    return Object.keys(data).length > 0 ? data : { isVisible: true };
   } catch (error) {
     console.error("Error fetching reels config:", error);
     return { isVisible: true };
@@ -640,28 +446,20 @@ export const fetchReelsConfig = async () => {
 
 export const updateReelsConfig = async (config) => {
   try {
-    const docRef = doc(db, 'config', 'reelsConfig');
-    await setDoc(docRef, { 
-      ...config, 
-      updatedAt: serverTimestamp() 
-    }, { merge: true });
-    return { success: true };
+    return await adminFetch('/settings/config/reelsConfig', {
+      method: 'PUT',
+      body: JSON.stringify(config)
+    });
   } catch (error) {
     console.error("Error updating reels config:", error);
     throw error;
   }
 };
 
-// Automatic Coupons Config
 export const fetchAutomaticCouponsConfig = async () => {
   try {
-    const docRef = doc(db, 'config', 'automaticCoupons');
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      return snapshot.data();
-    }
-    // Default config
-    return {
+    const data = await authenticatedFetch('/settings/config/automaticCoupons');
+    return Object.keys(data).length > 0 ? data : {
       firstOrderFreeDelivery: { isActive: true },
       freeDeliveryOverAmount: { isActive: true, amount: 1000 }
     };
@@ -676,27 +474,20 @@ export const fetchAutomaticCouponsConfig = async () => {
 
 export const updateAutomaticCouponsConfig = async (config) => {
   try {
-    const docRef = doc(db, 'config', 'automaticCoupons');
-    await setDoc(docRef, { 
-      ...config, 
-      updatedAt: serverTimestamp() 
-    }, { merge: true });
-    return { success: true };
+    return await adminFetch('/settings/config/automaticCoupons', {
+      method: 'PUT',
+      body: JSON.stringify(config)
+    });
   } catch (error) {
     console.error("Error updating automatic coupons config:", error);
     throw error;
   }
 };
 
-// Hero Slides
 export const fetchHeroSlides = async () => {
   try {
-    const docRef = doc(db, 'config', 'heroSlides');
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      return snapshot.data().slides || [];
-    }
-    return [];
+    const data = await authenticatedFetch('/settings/config/heroSlides');
+    return data.slides || [];
   } catch (error) {
     console.error("Error fetching hero slides:", error);
     return [];
@@ -705,12 +496,10 @@ export const fetchHeroSlides = async () => {
 
 export const updateHeroSlides = async (slides) => {
   try {
-    const docRef = doc(db, 'config', 'heroSlides');
-    await setDoc(docRef, { 
-      slides, 
-      updatedAt: serverTimestamp() 
-    }, { merge: true });
-    return { success: true };
+    return await adminFetch('/settings/config/heroSlides', {
+      method: 'PUT',
+      body: JSON.stringify({ slides })
+    });
   } catch (error) {
     console.error("Error updating hero slides:", error);
     throw error;
@@ -720,34 +509,25 @@ export const updateHeroSlides = async (slides) => {
 // Coupons
 export const fetchCoupons = async () => {
   try {
-    const response = await fetch(`${API_URL}/coupons`);
-    if (!response.ok) throw new Error('Failed to fetch coupons');
-    return await response.json();
+    return await authenticatedFetch('/coupons');
   } catch (error) {
     console.error("Error fetching coupons:", error);
     return [];
   }
 };
 
-// Admin-only: fetches ALL coupons including expired/inactive ones
 export const fetchAdminCoupons = async () => {
   try {
-    const token = await getAdminToken();
-    const response = await fetch(`${API_URL}/coupons?admin=true`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!response.ok) throw new Error('Failed to fetch coupons');
-    return await response.json();
+    return await adminFetch('/coupons?admin=true');
   } catch (error) {
     console.error("Error fetching admin coupons:", error);
     return [];
   }
 };
 
-
 export const createCoupon = async (couponData) => {
   try {
-    return await fetchAdminCouponApi('', {
+    return await adminFetch('/coupons', {
       method: 'POST',
       body: JSON.stringify(couponData)
     });
@@ -759,7 +539,7 @@ export const createCoupon = async (couponData) => {
 
 export const updateCoupon = async (id, couponData) => {
   try {
-    return await fetchAdminCouponApi(`/${id}`, {
+    return await adminFetch(`/coupons/${id}`, {
       method: 'PUT',
       body: JSON.stringify(couponData)
     });
@@ -771,7 +551,7 @@ export const updateCoupon = async (id, couponData) => {
 
 export const deleteCoupon = async (id) => {
   try {
-    return await fetchAdminCouponApi(`/${id}`, { method: 'DELETE' });
+    return await adminFetch(`/coupons/${id}`, { method: 'DELETE' });
   } catch (error) {
     console.error("Error deleting coupon:", error);
     throw error;
@@ -810,6 +590,10 @@ export const getCouponEligibility = (coupon, cartTotal, isFirstOrder = false) =>
   if (coupon.expiryDate && new Date() > new Date(coupon.expiryDate)) {
     return { valid: false, discount: 0, isFreeShipping: false, message: 'This coupon has expired' };
   }
+  
+  if (coupon.validUntil && new Date() > new Date(coupon.validUntil)) {
+    return { valid: false, discount: 0, isFreeShipping: false, message: 'This coupon has expired' };
+  }
 
   if (coupon.usageLimit && (coupon.usedCount || 0) >= coupon.usageLimit) {
     return { valid: false, discount: 0, isFreeShipping: false, message: 'Coupon usage limit has been reached' };
@@ -843,44 +627,19 @@ export const getCouponEligibility = (coupon, cartTotal, isFirstOrder = false) =>
 
 export const validateCoupon = async (code, orderAmount) => {
   try {
-    const response = await fetch(`${API_URL}/coupons/validate`, {
+    return await authenticatedFetch('/coupons/validate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code, orderAmount })
     });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      return { valid: false, message: data.message || 'Invalid coupon' };
-    }
-
-    return { 
-      valid: true, 
-      coupon: data.coupon, 
-      discount: data.coupon.discountAmount,
-      message: 'Coupon applied successfully!'
-    };
   } catch (error) {
     console.error("Error validating coupon:", error);
-    return { valid: false, message: 'Error connecting to coupon service' };
+    return { valid: false, message: error.message || 'Error connecting to coupon service' };
   }
 };
 
 export const incrementCouponUsage = async (couponId) => {
   try {
-    const token = await getAdminToken().catch(() => null);
-    const headers = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    const response = await fetch(`${API_URL}/coupons/${couponId}/increment`, {
-      method: 'POST',
-      headers
-    });
-    if (!response.ok) {
-      console.warn('Failed to increment coupon on backend');
-    }
+    await adminFetch(`/coupons/${couponId}/increment`, { method: 'POST' });
   } catch (error) {
     console.error('Error connecting to increment coupon endpoint:', error);
   }
@@ -889,9 +648,7 @@ export const incrementCouponUsage = async (couponId) => {
 // Flash Sale
 export const fetchFlashSale = async () => {
   try {
-    const response = await fetch(`${API_URL}/sale`);
-    if (!response.ok) throw new Error('Failed to fetch sale configuration');
-    return await response.json();
+    return await authenticatedFetch('/sale');
   } catch (error) {
     console.error("Error fetching flash sale:", error);
     return { isActive: false };
@@ -900,22 +657,10 @@ export const fetchFlashSale = async () => {
 
 export const updateFlashSale = async (saleConfig) => {
   try {
-    const token = await getAdminToken();
-    const response = await fetch(`${API_URL}/sale`, {
+    return await adminFetch('/sale', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
       body: JSON.stringify(saleConfig)
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update flash sale');
-    }
-
-    return await response.json();
   } catch (error) {
     console.error("Error updating flash sale:", error);
     throw error;
@@ -925,13 +670,7 @@ export const updateFlashSale = async (saleConfig) => {
 // Reviews
 export const fetchReviews = async (productId) => {
   try {
-    const q = query(
-      collection(db, 'reviews'),
-      where('productId', '==', productId),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    return await authenticatedFetch(`/reviews/${productId}`);
   } catch (error) {
     console.error('Error fetching reviews:', error);
     return [];
@@ -940,15 +679,10 @@ export const fetchReviews = async (productId) => {
 
 export const addReview = async ({ productId, name, rating, comment }) => {
   try {
-    const reviewsCol = collection(db, 'reviews');
-    const docRef = await addDoc(reviewsCol, {
-      productId,
-      name: name || 'Anonymous',
-      rating: Number(rating),
-      comment,
-      createdAt: serverTimestamp(),
+    return await authenticatedFetch(`/reviews/${productId}`, {
+      method: 'POST',
+      body: JSON.stringify({ name, rating, comment })
     });
-    return { id: docRef.id, productId, name, rating, comment };
   } catch (error) {
     console.error('Error adding review:', error);
     throw error;
@@ -958,9 +692,7 @@ export const addReview = async ({ productId, name, rating, comment }) => {
 // Settings / Announcements
 export const fetchSettings = async () => {
   try {
-    const response = await fetch(`${API_URL}/settings`);
-    if (!response.ok) throw new Error('Failed to fetch settings');
-    return await response.json();
+    return await authenticatedFetch('/settings');
   } catch (error) {
     console.error("Error fetching settings:", error);
     return { announcements: [] };
@@ -969,24 +701,39 @@ export const fetchSettings = async () => {
 
 export const updateSettings = async (settingsData) => {
   try {
-    const token = await getAdminToken();
-    const response = await fetch(`${API_URL}/settings`, {
+    return await adminFetch('/settings', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
       body: JSON.stringify(settingsData)
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update settings');
-    }
-
-    return await response.json();
   } catch (error) {
     console.error("Error updating settings:", error);
     throw error;
   }
 };
+
+export const getDeliverySettings = async () => {
+  try {
+    const response = await fetch(`${API_URL}/settings/config/deliverySettings`);
+    if (response.ok) {
+      const data = await response.json();
+      return data?.data || { defaultDays: 7, overrides: [] };
+    }
+    return { defaultDays: 7, overrides: [] };
+  } catch (error) {
+    console.error("Error fetching delivery settings:", error);
+    return { defaultDays: 7, overrides: [] };
+  }
+};
+
+export const updateDeliverySettings = async (deliveryData) => {
+  try {
+    return await adminFetch('/settings/config/deliverySettings', {
+      method: 'PUT',
+      body: JSON.stringify({ data: deliveryData })
+    });
+  } catch (error) {
+    console.error("Error updating delivery settings:", error);
+    throw error;
+  }
+};
+

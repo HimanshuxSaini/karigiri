@@ -1,8 +1,5 @@
 const express = require('express');
-const router = express.Router();
-const admin = require('firebase-admin');
-
-const baseUrl = 'https://www.prathamkarigiri.in';
+const router = express.Router();const baseUrl = 'https://www.prathamkarigiri.in';
 
 // @desc    Generate sitemap index
 // @route   GET /api/sitemap.xml
@@ -89,29 +86,30 @@ router.get('/sitemap/categories.xml', (req, res) => {
 // @access  Public
 router.get('/sitemap/products/:page.xml', async (req, res) => {
   try {
-    const db = admin.firestore();
-    const snapshot = await db.collection('products').get();
+    const Product = require('../models/Product');
+    // Fetch visible products from MongoDB
+    const products = await Product.find({ isHidden: { $ne: true } });
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
 
-    snapshot.docs.forEach((doc) => {
-      const product = doc.data();
+    products.forEach((product) => {
       if (product.inStock !== false) {
         xml += `  <url>\n`;
-        xml += `    <loc>${baseUrl}/product/${doc.id}</loc>\n`;
+        xml += `    <loc>${baseUrl}/product/${product._id}</loc>\n`;
         xml += `    <changefreq>weekly</changefreq>\n`;
         xml += `    <priority>0.8</priority>\n`;
         
         if (product.updatedAt) {
-           const date = product.updatedAt.toDate ? product.updatedAt.toDate().toISOString() : new Date().toISOString();
+           const date = new Date(product.updatedAt).toISOString();
            xml += `    <lastmod>${date}</lastmod>\n`;
         }
         
-        if (product.image) {
-          const safeName = (product.name || 'Product').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        if (product.image || product.images?.[0]) {
+          const imgUrl = product.image || product.images[0];
+          const safeName = (product.title || product.name || 'Product').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           xml += `    <image:image>\n`;
-          xml += `      <image:loc>${product.image.replace(/&/g, '&amp;')}</image:loc>\n`;
+          xml += `      <image:loc>${imgUrl.replace(/&/g, '&amp;')}</image:loc>\n`;
           xml += `      <image:title>${safeName}</image:title>\n`;
           xml += `    </image:image>\n`;
         }

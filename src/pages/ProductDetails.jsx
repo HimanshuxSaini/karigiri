@@ -2,9 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import { useCartStore, useWishlistStore, useAuthStore, useActivityStore } from '../store/useStore';
-import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle, Share2, Copy, Check, Star, ChevronRight, ShieldCheck, Scissors } from 'lucide-react';
+import { ShoppingBag, Heart, Truck, RotateCcw, Edit3, MessageCircle, Share2, Copy, Check, Star, ChevronRight, ShieldCheck, Scissors, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchProductById, fetchReviews, addReview } from '../services/api';
+import { fetchProductById, fetchReviews, addReview, getDeliverySettings } from '../services/api';
 import RecommendedProducts from '../components/RecommendedProducts';
 import SimilarProducts from '../components/SimilarProducts';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
@@ -57,6 +57,12 @@ const ProductDetails = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
+  // Delivery settings
+  const [deliverySettings, setDeliverySettings] = useState(null);
+  const [pincode, setPincode] = useState('');
+  const [deliveryResult, setDeliveryResult] = useState('');
+  const [isCheckingPincode, setIsCheckingPincode] = useState(false);
+
   useEffect(() => {
     setActiveImageIndex(0);
   }, [id]);
@@ -72,30 +78,85 @@ const ProductDetails = () => {
     }
   }, [product]);
 
-  useEffect(() => {
-    const getProduct = async () => {
-      setLoading(true);
-      try {
-        // Try Firestore first
-        const data = await fetchProductById(id);
-        if (data) {
-          setProduct(data);
-          trackViewItem({ product: data });
-        } else {
-          setProduct(null);
+  const fetchProduct = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await fetchProductById(id);
+      if (data) {
+        setProduct(data);
+        if (user) {
+          trackProductVisit(id);
+          trackViewItem({
+            id: data._id,
+            name: data.name,
+            category: data.category,
+            price: data.price
+          });
         }
-      } catch (err) {
-        console.error('Product fetch failed:', err);
+      } else {
         setProduct(null);
-      } finally {
-        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Error fetching product:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, user, trackProductVisit]);
+
+  useEffect(() => {
+    fetchProduct();
+    window.scrollTo(0, 0);
+  }, [fetchProduct]);
+
+  useEffect(() => {
+    const loadDeliverySettings = async () => {
+      const savedPincode = localStorage.getItem('pk_delivery_pincode');
+      if (savedPincode) setPincode(savedPincode);
+      
+      const res = await getDeliverySettings();
+      setDeliverySettings(res);
+      if (savedPincode && res) {
+        calculateDeliveryDate(savedPincode, res);
       }
     };
-    getProduct();
-    if (id) {
-      trackProductVisit(id);
+    loadDeliverySettings();
+  }, []);
+
+  const calculateDeliveryDate = (code, settings) => {
+    if (!code || code.length !== 6) return;
+    
+    let days = settings.defaultDays || 7;
+    if (settings.overrides && settings.overrides.length > 0) {
+      for (const override of settings.overrides) {
+        if (!override.pincodes) continue;
+        const pins = override.pincodes.split(',').map(p => p.trim());
+        if (pins.includes(code)) {
+          days = override.days;
+          break;
+        }
+      }
     }
-  }, [id, trackProductVisit]);
+    
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + days);
+    
+    const options = { day: 'numeric', month: 'short' };
+    setDeliveryResult(`Expected delivery by ${deliveryDate.toLocaleDateString('en-IN', options)}`);
+  };
+
+  const handleCheckPincode = () => {
+    if (pincode.length !== 6) {
+      setDeliveryResult('Please enter a valid 6-digit pincode');
+      return;
+    }
+    setIsCheckingPincode(true);
+    localStorage.setItem('pk_delivery_pincode', pincode);
+    
+    setTimeout(() => {
+      if (deliverySettings) calculateDeliveryDate(pincode, deliverySettings);
+      setIsCheckingPincode(false);
+    }, 400);
+  };
 
   // Stable callback — must be defined before any early returns (Rules of Hooks)
   const handleSimilarLoaded = useCallback((ids) => {
@@ -524,6 +585,34 @@ const ProductDetails = () => {
                   <p className="text-xs text-slate-400">
                     {product.deliveryCharge > 0 ? 'Individual delivery charge applicable for this handcrafted product' : 'On all prepaid orders over ₹1,000'}
                   </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <MapPin className="text-slate-400" size={24} />
+                <div className="w-full">
+                  <h5 className="font-bold text-sm mb-2">Check Delivery Time</h5>
+                  <div className="flex gap-2 mb-2 max-w-[280px]">
+                    <input 
+                      type="text" 
+                      maxLength="6"
+                      placeholder="Enter Pincode" 
+                      className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 font-medium"
+                      value={pincode}
+                      onChange={(e) => setPincode(e.target.value.replace(/[^0-9]/g, ''))}
+                    />
+                    <button 
+                      onClick={handleCheckPincode}
+                      disabled={isCheckingPincode}
+                      className="px-5 py-2 bg-slate-100 font-bold text-[10px] uppercase tracking-wider rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+                    >
+                      {isCheckingPincode ? '...' : 'Check'}
+                    </button>
+                  </div>
+                  {deliveryResult && (
+                    <p className={`text-[11px] font-bold tracking-wide uppercase ${deliveryResult.includes('Expected') ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {deliveryResult}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-start space-x-4">

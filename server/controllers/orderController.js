@@ -1,6 +1,9 @@
-const admin = require('firebase-admin');
 const crypto = require('crypto');
+const Razorpay = require('razorpay');
 const { sendEmail } = require('../utils/emailService');
+const Order = require('../models/Order');
+const Product = require('../models/Product');
+const Coupon = require('../models/Coupon');
 
 // Create a new order (server-side validated)
 const createOrder = async (req, res) => {
@@ -32,8 +35,7 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: 'Please provide a valid 6-digit pincode' });
     }
 
-    // Server-side price validation: fetch real product prices from Firestore
-    const db = admin.firestore();
+    // Server-side price validation: fetch real product prices from MongoDB
     let calculatedSubtotal = 0;
     let calculatedDelivery = 0;
     const validatedItems = [];
@@ -44,15 +46,14 @@ const createOrder = async (req, res) => {
         return res.status(400).json({ message: `Invalid product reference for item: ${item.name}` });
       }
 
-      const productDoc = await db.collection('products').doc(productId).get();
-      if (!productDoc.exists) {
+      const productData = await Product.findById(productId);
+      if (!productData) {
         return res.status(400).json({ message: `Product not found: ${item.name}` });
       }
 
-      const productData = productDoc.data();
       let realPrice = Number(productData.price) || 0;
-      if (item.size && productData.sizePrices && productData.sizePrices[item.size]) {
-        realPrice = Number(productData.sizePrices[item.size]);
+      if (item.size && productData.sizePrices && productData.sizePrices.get(item.size)) {
+        realPrice = Number(productData.sizePrices.get(item.size));
       }
       
       const quantity = Math.max(1, Math.min(Number(item.quantity) || 1, 50)); // Cap at 50 per item
@@ -72,7 +73,7 @@ const createOrder = async (req, res) => {
       calculatedDelivery += deliveryCharge * quantity;
 
       validatedItems.push({
-        name: productData.name,
+        title: productData.name,
         quantity,
         image: productData.image,
         price: realPrice,
@@ -84,11 +85,8 @@ const createOrder = async (req, res) => {
     }
 
     // Check if first order for free delivery
-    const existingOrders = await db.collection('orders')
-      .where('email', '==', email.toLowerCase())
-      .limit(1)
-      .get();
-    const isFirstOrder = existingOrders.empty;
+    const existingOrders = await Order.find({ email: email.toLowerCase() }).limit(1);
+    const isFirstOrder = existingOrders.length === 0;
     const finalDelivery = isFirstOrder ? 0 : calculatedDelivery;
 
     // Apply coupon discount (trust the validated amount from the coupon service)
@@ -111,53 +109,84 @@ const createOrder = async (req, res) => {
       if (expectedSignature !== razorpay_signature) {
         return res.status(400).json({ message: 'Invalid payment signature' });
       }
+      
+      // Fetch extended payment details from Razorpay
+      try {
+        const razorpayInstance = new Razorpay({
+          key_id: process.env.RAZORPAY_KEY_ID,
+          key_secret: process.env.RAZORPAY_KEY_SECRET,
+        });
+        const paymentInfo = await razorpayInstance.payments.fetch(razorpay_payment_id);
+        
+        req.extendedPaymentDetails = {
+          method: paymentInfo.method,
+          card_network: paymentInfo.card?.network || null,
+          bank: paymentInfo.bank || null,
+          wallet: paymentInfo.wallet || null,
+          upi_id: paymentInfo.vpa || null,
+          payment_time: paymentInfo.created_at ? new Date(paymentInfo.created_at * 1000) : null,
+          fee: paymentInfo.fee ? (paymentInfo.fee / 100) : null,
+          tax: paymentInfo.tax ? (paymentInfo.tax / 100) : null
+        };
+      } catch (err) {
+        console.error('Failed to fetch extended Razorpay details:', err);
+      }
     }
 
     // Create the order document
     const orderData = {
       orderItems: validatedItems,
       shippingAddress: {
-        address: shippingAddress.address || shippingAddress.street,
+        line1: shippingAddress.address || shippingAddress.street,
+        line2: '',
         city: shippingAddress.city,
         state: shippingAddress.state,
-        postalCode: pincode,
-        phone: phone
+        pincode: pincode
       },
+      name: shippingAddress.name || email.split('@')[0],
+      phone: phone,
       paymentMethod: paymentMethod || 'WhatsApp / QR Code',
+      paymentDetails: {
+        razorpay_payment_id: razorpay_payment_id || null,
+        razorpay_order_id: razorpay_order_id || null,
+        razorpay_signature: razorpay_signature || null,
+        ...(req.extendedPaymentDetails || {})
+      },
       subtotal: calculatedSubtotal,
-      couponCode: couponCode || null,
-      couponDiscount: validatedCouponDiscount,
-      deliveryCharges: finalDelivery,
-      totalPrice,
+      appliedCoupon: couponCode ? {
+        code: couponCode,
+        discountAmount: validatedCouponDiscount
+      } : null,
+      discount: validatedCouponDiscount,
+      deliveryCharge: finalDelivery,
+      totalAmount: totalPrice,
       user: userId,
       email: email.toLowerCase(),
       status: paymentMethod === 'Razorpay' ? 'Paid' : 'Processing',
-      razorpay_payment_id: razorpay_payment_id || null,
-      razorpay_order_id: razorpay_order_id || null,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      statusHistory: [{
+        status: paymentMethod === 'Razorpay' ? 'Paid' : 'Processing',
+        comment: paymentMethod === 'Razorpay' ? 'Payment successful via Razorpay' : 'Order placed',
+        timestamp: new Date()
+      }],
+      deviceInfo: {
+        ip: req.ip || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent']
+      }
     };
 
-    const docRef = await db.collection('orders').add(orderData);
+    const newOrder = await Order.create(orderData);
 
     // Update stock counts
     try {
-      const batch = db.batch();
       for (const item of validatedItems) {
-        const productRef = db.collection('products').doc(item.product);
-        const productDoc = await productRef.get();
-        if (productDoc.exists) {
-          const currentStock = productDoc.data().stockCount;
-          if (currentStock !== undefined) {
-            const newStock = Math.max(0, currentStock - item.quantity);
-            batch.update(productRef, {
-              stockCount: newStock,
-              inStock: newStock > 0,
-              updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
-          }
+        const product = await Product.findById(item.product);
+        if (product && product.stockCount !== undefined) {
+          const newStock = Math.max(0, product.stockCount - item.quantity);
+          product.stockCount = newStock;
+          product.inStock = newStock > 0;
+          await product.save();
         }
       }
-      await batch.commit();
     } catch (stockErr) {
       console.error('Failed to update stock counts:', stockErr);
     }
@@ -165,17 +194,10 @@ const createOrder = async (req, res) => {
     // Automatically increment coupon usage server-side if a valid coupon was used
     if (couponCode) {
       try {
-        const couponSnapshot = await db.collection('coupons')
-          .where('code', '==', couponCode.toUpperCase().trim())
-          .limit(1)
-          .get();
-          
-        if (!couponSnapshot.empty) {
-          const couponDoc = couponSnapshot.docs[0];
-          await couponDoc.ref.update({
-            usedCount: admin.firestore.FieldValue.increment(1),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp()
-          });
+        const coupon = await Coupon.findOne({ code: couponCode.toUpperCase().trim() });
+        if (coupon) {
+          coupon.usedCount += 1;
+          await coupon.save();
         }
       } catch (couponErr) {
         // Don't fail the whole order if just updating the coupon usage stat fails
@@ -187,14 +209,14 @@ const createOrder = async (req, res) => {
     try {
       const itemsHtml = validatedItems.map(item => `
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name} (x${item.quantity})</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.title} (x${item.quantity})</td>
           <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price * item.quantity}</td>
         </tr>
       `).join('');
 
       const mailOptions = {
         to: email.toLowerCase(),
-        subject: `Order Confirmation - PrathamKarigiri (#${docRef.id.slice(-6).toUpperCase()})`,
+        subject: `Order Confirmation - PrathamKarigiri (#${newOrder._id.toString().slice(-6).toUpperCase()})`,
         html: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; padding: 30px; background-color: #fff; border: 1px solid #eee; border-radius: 10px;">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -205,7 +227,7 @@ const createOrder = async (req, res) => {
             
             <div style="margin: 30px 0; background-color: #fcfcfc; padding: 20px; border-radius: 8px;">
               <h3 style="color: #5C4033; margin-top: 0;">Order Details</h3>
-              <p style="margin: 5px 0; color: #666;"><strong>Order ID:</strong> ${docRef.id}</p>
+              <p style="margin: 5px 0; color: #666;"><strong>Order ID:</strong> ${newOrder._id}</p>
               <p style="margin: 5px 0; color: #666;"><strong>Payment Method:</strong> ${paymentMethod || 'WhatsApp / QR Code'}</p>
               
               <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;">
@@ -261,10 +283,8 @@ const createOrder = async (req, res) => {
     }
 
     res.status(201).json({
-      _id: docRef.id,
-      id: docRef.id,
-      ...orderData,
-      status: paymentMethod === 'Razorpay' ? 'Paid' : 'Processing'
+      ...newOrder.toObject(),
+      id: newOrder._id.toString()
     });
   } catch (error) {
     console.error('Order creation error:', error);
@@ -272,4 +292,98 @@ const createOrder = async (req, res) => {
   }
 };
 
-module.exports = { createOrder };
+// Get all orders (Admin)
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ isDeletedByAdmin: false }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// Update order status (Admin)
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { status, cancellationReason } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.status = status;
+    order.statusHistory.push({
+      status,
+      comment: status === 'Cancelled' ? (cancellationReason || 'Cancelled by admin') : `Status updated to ${status}`,
+      timestamp: new Date()
+    });
+
+    if (status === 'Cancelled' && cancellationReason) {
+      order.cancellationReason = cancellationReason;
+    }
+
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// Delete order / Flag as Suspicious (Admin)
+const deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    order.isDeletedByAdmin = true;
+    order.status = 'Cancelled (Suspicious)';
+    order.statusHistory.push({
+      status: 'Cancelled (Suspicious)',
+      comment: 'Flagged as suspicious/fake order by admin',
+      timestamp: new Date()
+    });
+    
+    await order.save();
+    res.json({ message: 'Order flagged as suspicious' });
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// Update expected delivery date (Admin)
+const updateOrderDeliveryDate = async (req, res) => {
+  try {
+    const { expectedDeliveryDate } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.expectedDeliveryDate = expectedDeliveryDate;
+    
+    // Also record it in status history for audit trail
+    if (expectedDeliveryDate) {
+      const formattedDate = new Date(expectedDeliveryDate).toLocaleDateString('en-IN');
+      order.statusHistory.push({
+        status: order.status,
+        comment: `Expected delivery date updated to ${formattedDate}`,
+        timestamp: new Date()
+      });
+    }
+
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error('Error updating delivery date:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+module.exports = { createOrder, getAllOrders, updateOrderStatus, updateOrderDeliveryDate, deleteOrder };

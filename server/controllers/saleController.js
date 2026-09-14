@@ -1,14 +1,13 @@
-const admin = require('firebase-admin');
+const Config = require('../models/Config');
 
 // @desc    Fetch flash sale configuration
 // @route   GET /api/sale
 // @access  Public
 const getFlashSale = async (req, res) => {
   try {
-    const db = admin.firestore();
-    const doc = await db.collection('config').doc('flashSale').get();
+    const config = await Config.findOne({ key: 'flashSale' });
     
-    if (!doc.exists) {
+    if (!config || !config.data) {
       // Default fallback structure
       return res.json({
         isActive: false,
@@ -18,7 +17,7 @@ const getFlashSale = async (req, res) => {
       });
     }
 
-    res.json(doc.data());
+    res.json(config.data);
   } catch (error) {
     console.error('Error fetching flash sale:', error);
     res.status(500).json({ message: 'Server Error fetching configurations' });
@@ -31,19 +30,22 @@ const getFlashSale = async (req, res) => {
 const updateFlashSale = async (req, res) => {
   try {
     const { isActive, endTime, text, discountText } = req.body;
-    const db = admin.firestore();
     
-    const updatedData = {
+    let config = await Config.findOne({ key: 'flashSale' });
+    if (!config) {
+      config = new Config({ key: 'flashSale', data: {} });
+    }
+    
+    config.data = {
       isActive: Boolean(isActive),
       endTime: endTime || null, // ISO format expect
       text: text || 'Flash Sale is live!',
-      discountText: discountText || 'Up to 50% OFF',
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      discountText: discountText || 'Up to 50% OFF'
     };
 
-    await db.collection('config').doc('flashSale').set(updatedData, { merge: true });
+    await config.save();
 
-    res.json({ success: true, data: updatedData });
+    res.json({ success: true, data: config.data });
   } catch (error) {
     console.error('Error updating flash sale:', error);
     res.status(500).json({ message: 'Failed to update flash sale configuration' });

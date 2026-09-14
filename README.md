@@ -30,13 +30,15 @@
 ## ✨ Features
 
 - **🛍️ Modern Shop Interface**: Elegant, smooth filtering by categories, price range, and subcategories, fully synced with URL state.
-- **🔍 Robust Search**: High-performance search across product names, brands, categories, and subcategories.
+- **🔍 Robust Search**: High-performance, fuzzy search across product names, brands, categories, and subcategories powered by **Fuse.js**.
+- **📱 Progressive Web App (PWA)**: Installable on mobile devices with offline capabilities and a native app-like experience.
 - **📱 Mobile-First Design**: App-like navigation with bottom nav, horizontal scrolling categories, and responsive layouts.
-- **✨ Premium UI/UX**: Smooth micro-interactions powered by Framer Motion, glassmorphism, and a carefully curated aesthetic.
+- **✨ Premium UI/UX**: Smooth micro-interactions powered by **Framer Motion**, glassmorphism, and a carefully curated aesthetic. Features buttery smooth scrolling via **Lenis**.
 - **🛡️ Secure Authentication**: Powered by Firebase Auth for seamless login and session management.
-- **🛒 Real-time Cart & Wishlist**: Instantly synchronized cart and wishlist state using Zustand.
+- **🛒 Real-time Cart & Wishlist**: Instantly synchronized cart and wishlist state using **Zustand**.
 - **⚙️ Admin Dashboard**: Comprehensive internal tools for managing products, orders, categories, and promotional reels.
 - **💬 Custom Orders**: Integrated WhatsApp ordering for bespoke artisanal requests and support.
+- **📈 SEO Optimized**: Dynamic meta tags and SEO management using **React Helmet Async**.
 
 ## 🚀 Tech Stack
 
@@ -44,16 +46,19 @@
 - **Framework**: [React.js](https://reactjs.org/) (v19) powered by [Vite](https://vitejs.dev/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) for utility-first styling
 - **Animations**: [Framer Motion](https://www.framer.com/motion/) for fluid transitions
+- **Smooth Scrolling**: [Lenis](https://lenis.studiofreight.com/)
 - **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Search**: [Fuse.js](https://fusejs.io/) for fuzzy search
+- **SEO**: [React Helmet Async](https://github.com/staylor/react-helmet-async)
+- **PWA**: [Vite PWA Plugin](https://vite-pwa-org.netlify.app/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Routing**: [React Router](https://reactrouter.com/) (v7)
 
 ### Backend & Infrastructure
 - **Server**: [Node.js](https://nodejs.org/) & [Express.js](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) (interfacing via Firebase Firestore)
+- **Database**: [MongoDB](https://www.mongodb.com/) (interfacing via Mongoose)
 - **Authentication**: [Firebase Auth](https://firebase.google.com/products/auth)
-- **Storage**: [Firebase Storage](https://firebase.google.com/products/storage)
-- **Hosting**: Configured for Vercel & Firebase Hosting
+- **Hosting**: Configured for Vercel (Frontend) and Render/Vercel (Backend)
 
 ## 📦 Getting Started
 
@@ -109,18 +114,29 @@ The app will be available at `http://localhost:5173`.
 ```text
 prathamkarigiri/
 ├── src/
+│   ├── assets/           # Static media assets (images, fonts)
 │   ├── components/       # Reusable UI components (Buttons, Nav, Cards)
-│   ├── pages/            # Top-level route components (Home, Shop, Cart)
-│   ├── store/            # Zustand global state (Cart, Wishlist, Auth)
-│   ├── hooks/            # Custom React hooks (useCartSync, etc.)
-│   ├── utils/            # Helper functions
+│   ├── config/           # Configuration files
+│   ├── data/             # Static or mock data files
 │   ├── firebase/         # Firebase initialization and config
+│   ├── hooks/            # Custom React hooks (useCartSync, etc.)
+│   ├── pages/            # Top-level route components (Home, Shop, Cart)
+│   ├── services/         # API and external service calls
+│   ├── store/            # Zustand global state (Cart, Wishlist, Auth)
+│   ├── utils/            # Helper functions
+│   ├── App.jsx           # Root application component
 │   └── main.jsx          # Entry point
 ├── server/
-│   ├── index.js          # Express server entry
+│   ├── config/           # Server configurations
 │   ├── controllers/      # API controllers
-│   └── routes/           # Express routes
-├── public/               # Static assets
+│   ├── middleware/       # Express middlewares
+│   ├── models/           # Database models
+│   ├── routes/           # Express routes
+│   ├── scripts/          # Server utility scripts
+│   ├── uploads/          # Uploaded media directory
+│   ├── utils/            # Server helper functions
+│   └── index.js          # Express server entry
+├── public/               # Public static assets
 └── tailwind.config.js    # Tailwind theme configuration
 ```
 

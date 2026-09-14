@@ -9,7 +9,7 @@ const BackToTop = () => {
   const [showAppText, setShowAppText] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const location = useLocation();
-  const { isInstallable, promptInstall, isStandalone, isAppleOS, isInAppBrowser, isLocallyInstalled } = useInstallPrompt();
+  const { isInstallable, promptInstall, isStandalone, isAppleOS, isLocallyInstalled } = useInstallPrompt();
 
   // Determine if we are on a page with a sticky bottom bar on mobile
   const isCartPage = location.pathname === '/cart';
@@ -18,9 +18,7 @@ const BackToTop = () => {
   const hasMobileStickyBar = isCartPage || isProductPage || isCheckoutPage;
 
   const [isHovered, setIsHovered] = useState(false);
-  const [hasDismissed, setHasDismissed] = useState(
-    localStorage.getItem('pwa_dismissed') === '1'
-  );
+  const hasDismissed = localStorage.getItem('pwa_dismissed') === '1';
   
   // If the browser tells us it can be installed, it means it is definitely not downloaded
   const isDownloaded = (isLocallyInstalled || hasDismissed) && !isInstallable;
