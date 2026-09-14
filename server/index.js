@@ -92,6 +92,10 @@ try {
         storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET
       });
       console.log('✅ Firebase Admin initialized successfully');
+      // Fix for firebase-admin v14 removing admin.auth()
+      if (!admin.auth) {
+        admin.auth = require('firebase-admin/auth').getAuth;
+      }
     } else {
       console.error('❌ Firebase Admin: No credentials found! Admin routes will fail.');
     }
