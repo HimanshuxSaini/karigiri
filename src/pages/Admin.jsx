@@ -156,7 +156,7 @@ const Admin = () => {
   const [heroSlides, setHeroSlides] = useState([]);
   const [showHeroModal, setShowHeroModal] = useState(false);
   const [editingHeroIndex, setEditingHeroIndex] = useState(null);
-  const [heroFormData, setHeroFormData] = useState({ title: '', head: '', img: '', link: '/shop' });
+  const [heroFormData, setHeroFormData] = useState({ title: '', head: '', img: '', link: '/shop', pos: 'object-center', fit: 'contain' });
   const [isUpdatingHero, setIsUpdatingHero] = useState(false);
 
   const [pushData, setPushData] = useState({ title: '', body: '', image: '', url: '' });
@@ -320,25 +320,41 @@ const Admin = () => {
           title: "Floral Collection",
           head: "Artisanal\nCrochet Bouquet.",
           img: "/bookey.webp",
-          link: "/shop"
+          link: "/shop",
+          pos: "object-center",
+          fit: "contain"
         },
         {
           title: "Kids Collection",
           head: "Warmth for\nSmall Wonders.",
           img: "/item4.webp",
-          link: "/shop"
+          link: "/shop",
+          pos: "object-center",
+          fit: "contain"
         },
         {
           title: "Women's Luxe",
           head: "Handcrafted\nBracelets & Bags.",
           img: "/bracelet.webp",
-          link: "/shop"
+          link: "/shop",
+          pos: "object-center",
+          fit: "contain"
         },
         {
           title: "Artisanal Comfort",
           head: "Premium\nWoolen Blankets.",
           img: "/blanket.webp",
-          link: "/shop"
+          link: "/shop",
+          pos: "object-center",
+          fit: "contain"
+        },
+        {
+          title: "Heritage Yarn",
+          head: "Pure Organic\nWool Yarn.",
+          img: "/yarn.webp", // Assuming they moved it to public, or they will just upload a new image
+          link: "/shop",
+          pos: "object-center",
+          fit: "contain"
         }
       ];
       setHeroSlides((heroRes && heroRes.length > 0) ? heroRes : defaultHeroSlides);
@@ -2260,7 +2276,7 @@ const Admin = () => {
                     <button
                       onClick={() => {
                         setEditingHeroIndex(null);
-                        setHeroFormData({ title: '', head: '', img: '', link: '/shop' });
+                        setHeroFormData({ title: '', head: '', img: '', link: '/shop', pos: 'object-center', fit: 'contain' });
                         setShowHeroModal(true);
                       }}
                       className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-gray-800 transition-colors shadow-lg"
