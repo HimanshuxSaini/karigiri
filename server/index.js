@@ -17,6 +17,58 @@ if (fs.existsSync(envPath)) {
   require('dotenv').config({ path: envPath });
 }
 
+// Initialize Firebase Admin
+try {
+  if (!admin.apps.length) {
+    const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
+    const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+    let credential;
+
+    if (serviceAccountVar) {
+      // Support JSON string from environment variable (Best for Render/Vercel)
+      try {
+        const serviceAccount = JSON.parse(serviceAccountVar);
+        // Fix for private key newlines in environment variables
+        if (serviceAccount.private_key) {
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+        credential = admin.credential.cert(serviceAccount);
+      } catch (parseError) {
+        console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', parseError.message);
+      }
+    } else {
+      // Support local file path or Render secret path
+      const pathsToTry = [
+        serviceAccountPath ? path.resolve(__dirname, '..', serviceAccountPath) : null,
+        '/etc/secrets/serviceAccountKey.json',
+        './serviceAccountKey.json'
+      ].filter(Boolean);
+
+      for (const p of pathsToTry) {
+        if (fs.existsSync(p)) {
+          credential = admin.credential.cert(p);
+          console.log(`Firebase Admin: Using credentials from ${p}`);
+          break;
+        }
+      }
+    }
+
+    if (credential) {
+      admin.initializeApp({
+        credential,
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+        storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET
+      });
+      console.log('✅ Firebase Admin initialized successfully');
+    } else {
+      console.error('❌ Firebase Admin: No credentials found! Admin routes will fail.');
+    }
+  }
+} catch (error) {
+  console.error('❌ Firebase Admin initialization error:', error);
+}
+
 const otpRoutes = require('./routes/otpRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const couponRoutes = require('./routes/couponRoutes');
@@ -138,58 +190,6 @@ app.use('/', generalLimiter, seoRoutes);
 app.get('/', (req, res) => {
   res.json({ status: 'active', message: 'PrathamKarigiri API is running' });
 });
-
-// Initialize Firebase Admin
-try {
-  if (!admin.apps.length) {
-    const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
-    const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-    let credential;
-
-    if (serviceAccountVar) {
-      // Support JSON string from environment variable (Best for Render/Vercel)
-      try {
-        const serviceAccount = JSON.parse(serviceAccountVar);
-        // Fix for private key newlines in environment variables
-        if (serviceAccount.private_key) {
-          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-        }
-        credential = admin.credential.cert(serviceAccount);
-      } catch (parseError) {
-        console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', parseError.message);
-      }
-    } else {
-      // Support local file path or Render secret path
-      const pathsToTry = [
-        serviceAccountPath ? path.resolve(__dirname, '..', serviceAccountPath) : null,
-        '/etc/secrets/serviceAccountKey.json',
-        './serviceAccountKey.json'
-      ].filter(Boolean);
-
-      for (const p of pathsToTry) {
-        if (fs.existsSync(p)) {
-          credential = admin.credential.cert(p);
-          console.log(`Firebase Admin: Using credentials from ${p}`);
-          break;
-        }
-      }
-    }
-
-    if (credential) {
-      admin.initializeApp({
-        credential,
-        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-        storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET
-      });
-      console.log('✅ Firebase Admin initialized successfully');
-    } else {
-      console.error('❌ Firebase Admin: No credentials found! Admin routes will fail.');
-    }
-  }
-} catch (error) {
-  console.error('❌ Firebase Admin initialization error:', error);
-}
 
 // Global Error Handler
 app.use((err, req, res, _next) => {

@@ -19,7 +19,7 @@ router.post('/subscribe', async (req, res) => {
     await FCMToken.findOneAndUpdate(
       { token },
       { lastActive: new Date() },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     res.status(200).json({ success: true, message: 'Token subscribed successfully' });

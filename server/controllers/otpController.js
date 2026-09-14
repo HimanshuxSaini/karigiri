@@ -19,7 +19,7 @@ exports.sendOtp = async (req, res) => {
     await OTP.findOneAndUpdate(
       { email },
       { otp: otpCode, attempts: 0, createdAt: new Date() },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
     
     console.log(`Step 2: MongoDB Save Successful`);
