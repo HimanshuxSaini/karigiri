@@ -19,7 +19,7 @@ if (fs.existsSync(envPath)) {
 
 // Initialize Firebase Admin
 try {
-  if (!admin.apps.length) {
+  if (!(admin.apps?.length || (admin.getApps && admin.getApps().length))) {
     const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
     const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
@@ -29,7 +29,7 @@ try {
       try {
         const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
         const serviceAccount = JSON.parse(decoded);
-        credential = admin.credential.cert(serviceAccount);
+        credential = admin.credential ? admin.credential.cert(serviceAccount) : admin.cert(serviceAccount);
         console.log('✅ Firebase Admin: Initialized using Base64 environment variable.');
       } catch (e) {
         console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT_BASE64:', e.message);
@@ -63,7 +63,7 @@ try {
           }
           serviceAccount.private_key = key;
         }
-        credential = admin.credential.cert(serviceAccount);
+        credential = admin.credential ? admin.credential.cert(serviceAccount) : admin.cert(serviceAccount);
       } catch (parseError) {
         console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON or initialize credential:', parseError.message);
         console.error('💡 Tip: Ensure your FIREBASE_SERVICE_ACCOUNT env variable is a valid JSON string and the private_key contains actual newlines or escaped \\n without corruption. Alternatively, use FIREBASE_SERVICE_ACCOUNT_BASE64.');
@@ -78,7 +78,7 @@ try {
 
       for (const p of pathsToTry) {
         if (fs.existsSync(p)) {
-          credential = admin.credential.cert(p);
+          credential = admin.credential ? admin.credential.cert(p) : admin.cert(p);
           console.log(`Firebase Admin: Using credentials from ${p}`);
           break;
         }
