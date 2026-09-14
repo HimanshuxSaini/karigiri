@@ -25,7 +25,16 @@ try {
 
     let credential;
 
-    if (serviceAccountVar) {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+      try {
+        const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+        const serviceAccount = JSON.parse(decoded);
+        credential = admin.credential.cert(serviceAccount);
+        console.log('✅ Firebase Admin: Initialized using Base64 environment variable.');
+      } catch (e) {
+        console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT_BASE64:', e.message);
+      }
+    } else if (serviceAccountVar) {
       // Support JSON string from environment variable (Best for Render/Vercel)
       try {
         let cleanVar = serviceAccountVar.trim();
@@ -57,7 +66,7 @@ try {
         credential = admin.credential.cert(serviceAccount);
       } catch (parseError) {
         console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON or initialize credential:', parseError.message);
-        console.error('💡 Tip: Ensure your FIREBASE_SERVICE_ACCOUNT env variable is a valid JSON string and the private_key contains actual newlines or escaped \\n without corruption.');
+        console.error('💡 Tip: Ensure your FIREBASE_SERVICE_ACCOUNT env variable is a valid JSON string and the private_key contains actual newlines or escaped \\n without corruption. Alternatively, use FIREBASE_SERVICE_ACCOUNT_BASE64.');
       }
     } else {
       // Support local file path or Render secret path
