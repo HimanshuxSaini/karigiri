@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 
 const reelSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  link: { type: String, required: true },
+  tag: { type: String, required: true },
+  handle: { type: String, required: true },
+  url: { type: String },
   image: { type: String },
   order: { type: Number, default: 0 }
 }, { timestamps: true });
