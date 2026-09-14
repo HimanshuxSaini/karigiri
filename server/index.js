@@ -35,11 +35,29 @@ try {
         const serviceAccount = JSON.parse(cleanVar);
         // Fix for private key newlines in environment variables
         if (serviceAccount.private_key) {
-          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+          // 1. Replace literal \n with actual newline
+          let key = serviceAccount.private_key.replace(/\\n/g, '\n');
+          // 2. Remove any surrounding quotes
+          key = key.replace(/^"|"$/g, '');
+          // 3. Fix missing newlines between headers if copy-pasted with spaces
+          if (!key.includes('\n') && key.includes('-----BEGIN PRIVATE KEY-----')) {
+            key = key.replace('-----BEGIN PRIVATE KEY----- ', '-----BEGIN PRIVATE KEY-----\n');
+            key = key.replace(' -----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+            key = key.replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----'); // just in case
+            
+            // split and remove spaces from base64 body
+            const parts = key.split('\n');
+            if (parts.length >= 3) {
+               parts[1] = parts[1].replace(/\s+/g, '');
+               key = parts.join('\n');
+            }
+          }
+          serviceAccount.private_key = key;
         }
         credential = admin.credential.cert(serviceAccount);
       } catch (parseError) {
-        console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', parseError.message);
+        console.error('❌ Firebase Admin: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON or initialize credential:', parseError.message);
+        console.error('💡 Tip: Ensure your FIREBASE_SERVICE_ACCOUNT env variable is a valid JSON string and the private_key contains actual newlines or escaped \\n without corruption.');
       }
     } else {
       // Support local file path or Render secret path
