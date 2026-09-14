@@ -28,7 +28,11 @@ try {
     if (serviceAccountVar) {
       // Support JSON string from environment variable (Best for Render/Vercel)
       try {
-        const serviceAccount = JSON.parse(serviceAccountVar);
+        let cleanVar = serviceAccountVar.trim();
+        if (cleanVar.startsWith("'") && cleanVar.endsWith("'")) {
+          cleanVar = cleanVar.slice(1, -1);
+        }
+        const serviceAccount = JSON.parse(cleanVar);
         // Fix for private key newlines in environment variables
         if (serviceAccount.private_key) {
           serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
