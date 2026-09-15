@@ -25,19 +25,19 @@ exports.sendOtp = async (req, res) => {
     console.log(`Step 2: MongoDB Save Successful`);
 
     // Send Email
-    const mailOptions = {
-      from: `"PrathamKarigiri" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
-      to: email,
-      subject: 'Login OTP for PrathamKarigiri',
-      html: `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: auto; padding: 40px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">PrathamKarigiri</h1>
-            <p style="color: #A0522D; font-size: 12px; text-transform: uppercase; letter-spacing: 4px; margin-top: 5px;">Handcrafted Excellence</p>
-          </div>
-          <p style="color: #333; font-size: 16px;">Welcome back!</p>
-          <p style="color: #666; font-size: 14px; line-height: 1.6;">Use the verification code below to sign in to your PrathamKarigiri account.</p>
-          <div style="background: #fdf5e6; padding: 30px; text-align: center; border-radius: 15px; margin: 30px 0; border: 1px dashed #d2b48c;">
+      const mailOptions = {
+        from: `"PrathamKarigiri" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Your OTP for PrathamKarigiri',
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: auto; padding: 40px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">PrathamKarigiri</h1>
+              <p style="color: #A0522D; font-size: 12px; text-transform: uppercase; letter-spacing: 4px; margin-top: 5px;">Handcrafted Excellence</p>
+            </div>
+            <p style="color: #333; font-size: 16px;">Welcome!</p>
+            <p style="color: #666; font-size: 14px; line-height: 1.6;">Use the verification code below to access your PrathamKarigiri account.</p>
+            <div style="background: #fdf5e6; padding: 30px; text-align: center; border-radius: 15px; margin: 30px 0; border: 1px dashed #d2b48c;">
             <h1 style="color: #5C4033; letter-spacing: 8px; margin: 0; font-size: 36px; font-weight: 800;">${otpCode}</h1>
           </div>
           <p style="color: #999; font-size: 12px; text-align: center;">This code expires in 5 minutes. If you didn't request this, you can safely ignore this email.</p>

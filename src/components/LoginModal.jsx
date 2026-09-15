@@ -20,7 +20,8 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   signInWithCustomToken,
-  getAdditionalUserInfo
+  getAdditionalUserInfo,
+  updatePassword
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { useAuthStore, useToastStore } from '../store/useStore';
@@ -141,30 +142,75 @@ const LoginModal = ({ isOpen, onClose }) => {
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
+    
+    if (view === 'signup') {
+      setLoading(true);
+      setSlowConnection(false);
+      const slowTimer = setTimeout(() => setSlowConnection(true), 5000);
+
+      try {
+        await sendOtp(email.trim().toLowerCase());
+        setStep('verify-signup');
+        setResendTimer(60);
+        showToast('OTP sent to verify your email!');
+      } catch (err) {
+        console.error('OTP send error:', err);
+        showToast(getFriendlyErrorMessage(err), 'error');
+      } finally {
+        clearTimeout(slowTimer);
+        setSlowConnection(false);
+        setLoading(false);
+      }
+      return;
+    }
+
     setLoading(true);
-
     try {
-      let userCredential;
-      if (view === 'login') {
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: name });
-      }
-      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
-
-      // GA4 Track Login / Signup
-      if (view === 'login') {
-        trackLogin({ method: 'Email' });
-      } else {
-        trackSignup({ method: 'Email' });
-      }
-
+      trackLogin({ method: 'Email' });
       onClose();
       navigate('/profile');
     } catch (error) {
       showToast(getFriendlyErrorMessage(error), 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifySignupOtp = async () => {
+    if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
+    if (otp.length !== 6) return showToast('Enter 6-digit code', 'error');
+    
+    setLoading(true);
+
+    try {
+      const verification = await verifyOtp(email.trim().toLowerCase(), otp);
+      if (!verification.success) throw new Error(verification.message || 'Invalid code');
+
+      const userCredential = await signInWithCustomToken(auth, verification.token);
+      const user = userCredential.user;
+
+      await updatePassword(user, password);
+      await updateProfile(user, { displayName: name });
+
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: name || user.email.split('@')[0],
+        photoURL: user.photoURL,
+        phoneNumber: user.phoneNumber,
+        lastLogin: new Date().toISOString(),
+        provider: 'password'
+      };
+      
+      setUser(userData);
+      trackSignup({ method: 'Email' });
+
+      onClose();
+      navigate('/profile');
+    } catch (err) {
+      showToast(getFriendlyErrorMessage(err), 'error');
     } finally {
       setLoading(false);
     }
@@ -355,6 +401,39 @@ const LoginModal = ({ isOpen, onClose }) => {
                       <span>{loading ? 'Sending...' : 'Send Reset Link'}</span>
                     </button>
                   </form>
+                ) : view === 'signup' && step === 'verify-signup' ? (
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 text-center block">Verify Email to Create Account</label>
+                      <input
+                        type="text" maxLength="6" placeholder="000000"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                        className="w-full py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
+                      />
+                    </div>
+                    <button 
+                      onClick={handleVerifySignupOtp}
+                      disabled={loading}
+                      className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                    >
+                      <span>{loading ? 'Creating Account...' : 'Verify & Create Account'}</span>
+                    </button>
+                    
+                    <div className="flex flex-col space-y-4">
+                      <button 
+                        onClick={(e) => handleEmailAuth(e || { preventDefault: () => {} })}
+                        disabled={loading || resendTimer > 0}
+                        className="w-full text-xs font-bold text-[var(--primary)] hover:underline disabled:opacity-50 disabled:no-underline"
+                      >
+                        {resendTimer > 0 ? `Resend Code in ${resendTimer}s` : 'Resend OTP Code'}
+                      </button>
+                      
+                      <button onClick={() => setStep('number')} className="w-full text-gray-400 text-xs font-bold hover:text-[var(--primary)] transition-all uppercase tracking-widest">
+                        Back to Signup Details
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <form onSubmit={handleEmailAuth} className="space-y-4">
                     {view === 'signup' && (

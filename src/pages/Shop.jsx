@@ -290,6 +290,12 @@ const Shop = () => {
       />
       <Navbar />
       
+      {/* SEO H1 and Description (visually hidden but crawlable) */}
+      <div className="sr-only">
+        <h1>{title}</h1>
+        <p>Welcome to Pratham Karigiri (pk), your ultimate shop for authentic handcrafted woolen cloths, exquisite crochet items, winter wear, and handmade woolen products. Explore our premium collection crafted by master artisans.</p>
+      </div>
+
       <div className="pt-16 md:pt-28 max-w-[1440px] mx-auto">
         {/* Mobile Horizontal Categories */}
         <div className="lg:hidden sticky top-14 z-40 bg-white shadow-sm border-b border-gray-50 overflow-hidden">

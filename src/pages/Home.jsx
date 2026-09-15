@@ -181,8 +181,8 @@ const Home = () => {
   return (
     <div className="bg-white overflow-hidden">
       <SEO 
-        title="Premium Handcrafted Woolen Masterpieces"
-        description="Discover PrathamKarigiri's premium handcrafted woolen masterpieces. Ethically sourced, traditionally knitted, and delivered directly to you."
+        title="Pratham Karigiri — Handcrafted Woolen Cloths & Crochet Items"
+        description="Discover Pratham Karigiri (pk) - your premier destination for premium handcrafted woolen cloths, beautiful crochet items, and woolen products. Ethically sourced and traditionally knitted."
         canonicalUrl="https://www.prathamkarigiri.in/"
         schema={[organizationSchema, websiteSchema]}
       />
@@ -303,7 +303,7 @@ const Home = () => {
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 md:mb-16 text-center md:text-left">
           <div>
             <span className="text-[var(--primary)] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-[10px] md:text-xs mb-2 md:mb-4 block">Our Favorites</span>
-            <h2 className="text-3xl md:text-5xl font-black text-[var(--primary)]">Woolen Masterpieces</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-[var(--primary)]">Woolen Cloths & Crochet Items</h2>
           </div>
           <Link to="/shop" className="hidden md:block text-xs md:text-sm font-black uppercase border-b-2 border-[var(--primary)] pb-1 text-[var(--primary)] hover:opacity-70 transition-all mt-4 md:mt-0">View All Collections</Link>
         </div>
