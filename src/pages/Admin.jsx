@@ -33,7 +33,8 @@ import {
   ArrowRight,
   Presentation,
   Image as ImageIcon,
-  Upload
+  Upload,
+  Loader2
 } from 'lucide-react';
 
 import {
