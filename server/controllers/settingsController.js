@@ -68,6 +68,7 @@ const updateConfig = async (req, res) => {
       config = new Config({ key: req.params.key, data: req.body });
     } else {
       config.data = req.body;
+      config.markModified('data');
     }
     await config.save();
     res.json(config.data);

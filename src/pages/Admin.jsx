@@ -2499,7 +2499,7 @@ const Admin = () => {
                         await updateMidBanner(midBannerConfig);
                         showNotification('Middle banner updated successfully!');
                       } catch (error) {
-                        showNotification('Failed to update banner', 'error');
+                        showNotification(error.message || 'Failed to update banner', 'error');
                       } finally {
                         setIsUpdatingMidBanner(false);
                       }
@@ -2705,7 +2705,7 @@ const Admin = () => {
                                   await updateCategoriesConfig(categoriesConfig);
                                   showNotification('Categories updated successfully!');
                                 } catch (error) {
-                                  showNotification('Failed to update categories', 'error');
+                                  showNotification(error.message || 'Failed to update categories', 'error');
                                 } finally {
                                   setIsUpdatingCategories(false);
                                 }
