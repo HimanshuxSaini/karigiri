@@ -130,14 +130,14 @@ const updateProduct = async (req, res) => {
         finalInStock = Number(stockCount) > 0;
       }
 
-      product.name = name || product.name;
+      product.name = name !== undefined ? name : product.name;
       product.price = price !== undefined ? Number(price) : product.price;
-      product.description = description || product.description;
-      product.image = image || product.image;
-      product.images = images || product.images;
-      product.brand = brand || product.brand;
-      product.category = category || product.category;
-      product.subCategory = subCategory || product.subCategory;
+      product.description = description !== undefined ? description : product.description;
+      product.image = image !== undefined ? image : product.image;
+      product.images = images !== undefined ? images : product.images;
+      product.brand = brand !== undefined ? brand : product.brand;
+      product.category = category !== undefined ? category : product.category;
+      product.subCategory = subCategory !== undefined ? subCategory : product.subCategory;
       product.sizeType = sizeType !== undefined ? sizeType : product.sizeType;
       product.sizes = sizes !== undefined ? sizes : product.sizes;
       product.sizePrices = sizePrices !== undefined ? sizePrices : product.sizePrices;

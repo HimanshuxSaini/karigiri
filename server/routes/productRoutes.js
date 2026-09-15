@@ -12,11 +12,11 @@ const { protectAdmin } = require('../middleware/authMiddleware');
 
 // Validation middleware
 const validateProduct = [
-  body('name').trim().notEmpty().withMessage('Product name is required').escape(),
+  body('name').trim().notEmpty().withMessage('Product name is required'),
   body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
-  body('description').optional().trim().escape(),
-  body('category').optional().trim().escape(),
-  body('brand').optional().trim().escape(),
+  body('description').optional().trim(),
+  body('category').optional().trim(),
+  body('brand').optional().trim(),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
