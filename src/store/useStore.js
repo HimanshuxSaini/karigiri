@@ -178,3 +178,10 @@ export const useActivityStore = create(
     { name: 'activity-storage' }
   )
 );
+
+export const useConfigStore = create((set) => ({
+  categoriesConfig: null,
+  midBannerConfig: null,
+  setCategoriesConfig: (config) => set({ categoriesConfig: config }),
+  setMidBannerConfig: (config) => set({ midBannerConfig: config }),
+}));

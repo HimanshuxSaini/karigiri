@@ -98,6 +98,25 @@ const AppInner = () => {
     return () => unsubscribe();
   }, [setUser]);
 
+  useEffect(() => {
+    // Fetch global configs
+    const loadConfigs = async () => {
+      try {
+        const { fetchCategoriesConfig, fetchMidBanner } = await import('./services/api');
+        const [catConfig, midConfig] = await Promise.all([
+          fetchCategoriesConfig(),
+          fetchMidBanner()
+        ]);
+        const { useConfigStore } = await import('./store/useStore');
+        if (catConfig) useConfigStore.getState().setCategoriesConfig(catConfig);
+        if (midConfig) useConfigStore.getState().setMidBannerConfig(midConfig);
+      } catch (err) {
+        console.error("Failed to load global configs:", err);
+      }
+    };
+    loadConfigs();
+  }, []);
+
   return (
     <SmoothScroll>
       <ScrollToTop />

@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fetchProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import RecommendedProducts from '../components/RecommendedProducts';
-import { categoryStructure } from '../data/categories';
-import { useActivityStore } from '../store/useStore';
+import { categoryStructure as defaultCategoryStructure } from '../data/categories';
+import { useActivityStore, useConfigStore } from '../store/useStore';
 import { WHATSAPP } from '../config/constants';
 import { trackPageView, trackViewItemList, trackSearch as trackGaSearch } from '../utils/analytics';
 import SEO from '../components/SEO';
@@ -59,8 +59,13 @@ const ShopSearchBar = ({ value, onChange, onSubmit, onClear }) => (
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { trackSearch } = useActivityStore();
+  const { categoriesConfig } = useConfigStore();
   
-  const categories = ['All', ...Object.keys(categoryStructure)];
+  const categories = useMemo(() => {
+    const configToUse = categoriesConfig || defaultCategoryStructure;
+    return ['All', ...Object.keys(configToUse)];
+  }, [categoriesConfig]);
+
   
   const urlCategory = searchParams.get('category') || 'All';
   const urlSubCategory = searchParams.get('sub');

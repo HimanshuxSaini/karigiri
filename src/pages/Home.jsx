@@ -4,15 +4,16 @@ import ProductCard from '../components/ProductCard';
 import FlashSaleTimer from '../components/FlashSaleTimer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import FAQ from '../components/FAQ';
 import { fetchProducts, fetchReels, fetchFlashSale, fetchReelsConfig } from '../services/api';
-import { categoryStructure } from '../data/categories';
+import { categoryStructure as defaultCategoryStructure } from '../data/categories';
 import CustomizationSection from '../components/CustomizationSection';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackViewItemList } from '../utils/analytics';
 import SEO from '../components/SEO';
 import { BRAND } from '../config/constants';
+import { useConfigStore } from '../store/useStore';
 
 
 const Home = () => {
@@ -25,7 +26,13 @@ const Home = () => {
   const [reelsConfig, setReelsConfig] = useState({ isVisible: true });
   const [saleConfig, setSaleConfig] = useState({ isActive: false });
   const [loading, setLoading] = useState(true);
-  const categories = ['All', ...Object.keys(categoryStructure).filter(cat => cat !== 'Yarn')];
+
+  const { categoriesConfig, midBannerConfig } = useConfigStore();
+  
+  const categories = useMemo(() => {
+    const configToUse = categoriesConfig || defaultCategoryStructure;
+    return ['All', ...Object.keys(configToUse).filter(cat => cat !== 'Yarn')];
+  }, [categoriesConfig]);
 
 
   useEffect(() => {
@@ -296,6 +303,21 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Mid Banner */}
+      {midBannerConfig?.isVisible && midBannerConfig?.imageUrl && (
+        <section className="py-4 md:py-8 px-4 md:px-12 max-w-[1440px] mx-auto">
+          <Link to={midBannerConfig.linkUrl || '/shop'} className="block rounded-[2rem] md:rounded-[3rem] overflow-hidden relative shadow-lg group">
+            <img 
+              src={midBannerConfig.imageUrl} 
+              alt="Promotional Banner" 
+              className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-1000" 
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500"></div>
+          </Link>
+        </section>
+      )}
 
 
       {/* Featured Grid */}

@@ -6,13 +6,17 @@ import { auth as firebaseAuth } from '../firebase/config';
 import { useState, useEffect, useRef } from 'react';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import LoginModal from './LoginModal';
-import { categoryStructure, navLinks } from '../data/categories';
+import { categoryStructure as defaultCategoryStructure, navLinks } from '../data/categories';
 import { isAdminEmail, WHATSAPP } from '../config/constants';
+import { useConfigStore } from '../store/useStore';
 
 const Navbar = () => {
   const { user } = useAuthStore();
   const { items } = useCartStore();
   const { wishlist } = useWishlistStore();
+  const { categoriesConfig } = useConfigStore();
+  const categoryStructure = categoriesConfig || defaultCategoryStructure;
+  
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState(null);

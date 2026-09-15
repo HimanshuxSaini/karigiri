@@ -737,3 +737,57 @@ export const updateDeliverySettings = async (deliveryData) => {
   }
 };
 
+// Mid Banner Settings
+export const fetchMidBanner = async () => {
+  try {
+    const response = await fetch(`${API_URL}/settings/config/midBanner`);
+    if (response.ok) {
+      const data = await response.json();
+      return data?.data || { isVisible: false, imageUrl: '', linkUrl: '' };
+    }
+    return { isVisible: false, imageUrl: '', linkUrl: '' };
+  } catch (error) {
+    console.error("Error fetching mid banner config:", error);
+    return { isVisible: false, imageUrl: '', linkUrl: '' };
+  }
+};
+
+export const updateMidBanner = async (bannerData) => {
+  try {
+    return await adminFetch('/settings/config/midBanner', {
+      method: 'PUT',
+      body: JSON.stringify({ data: bannerData })
+    });
+  } catch (error) {
+    console.error("Error updating mid banner config:", error);
+    throw error;
+  }
+};
+
+// Categories Config
+export const fetchCategoriesConfig = async () => {
+  try {
+    const response = await fetch(`${API_URL}/settings/config/categoriesConfig`);
+    if (response.ok) {
+      const data = await response.json();
+      return data?.data || null;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching categories config:", error);
+    return null;
+  }
+};
+
+export const updateCategoriesConfig = async (categoriesData) => {
+  try {
+    return await adminFetch('/settings/config/categoriesConfig', {
+      method: 'PUT',
+      body: JSON.stringify({ data: categoriesData })
+    });
+  } catch (error) {
+    console.error("Error updating categories config:", error);
+    throw error;
+  }
+};
+

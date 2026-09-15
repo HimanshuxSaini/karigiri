@@ -32,7 +32,8 @@ import {
   AlertTriangle,
   ArrowRight,
   Presentation,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
 
 import {
@@ -62,13 +63,17 @@ import {
   fetchHeroSlides,
   updateHeroSlides,
   getDeliverySettings,
-  updateDeliverySettings
+  updateDeliverySettings,
+  fetchMidBanner,
+  updateMidBanner,
+  fetchCategoriesConfig,
+  updateCategoriesConfig
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
-import { getFriendlyErrorMessage } from '../utils/errorMessages';
+import { getOptimizedImage } from '../utils/imageHelpers';
+import { categoryStructure as defaultCategoryStructure } from '../data/categories';
 import { isAdminEmail } from '../config/constants';
-
 
 const formatDate = (dateObj) => {
   if (!dateObj) return 'N/A';
@@ -164,6 +169,14 @@ const Admin = () => {
 
   const [deliverySettings, setDeliverySettings] = useState({ defaultDays: 7, overrides: [] });
   const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
+
+  const [midBannerConfig, setMidBannerConfig] = useState({ isVisible: false, imageUrl: '', linkUrl: '' });
+  const [isUpdatingMidBanner, setIsUpdatingMidBanner] = useState(false);
+
+  const [categoriesConfig, setCategoriesConfig] = useState(null);
+  const [isUpdatingCategories, setIsUpdatingCategories] = useState(false);
+  const [selectedCategoryKey, setSelectedCategoryKey] = useState('');
+  
   const [newOverridePincode, setNewOverridePincode] = useState('');
   const [newOverrideDays, setNewOverrideDays] = useState(7);
 
@@ -204,6 +217,7 @@ const Admin = () => {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products', label: 'Inventory', icon: Package },
+    { id: 'categories', label: 'Categories', icon: LayoutDashboard },
     { id: 'stock', label: 'Stock', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingBag },
     { id: 'billing', label: 'Billing', icon: Printer },
@@ -211,6 +225,7 @@ const Admin = () => {
     { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'sale', label: 'Flash Sale', icon: Clock },
     { id: 'announcements', label: 'Banner Offers', icon: Megaphone },
+    { id: 'midbanner', label: 'Mid Banner', icon: ImageIcon },
     { id: 'delivery', label: 'Delivery', icon: Truck },
     { id: 'hero', label: 'Hero Slides', icon: Presentation },
     { id: 'push', label: 'Push Notifications', icon: Smartphone },
@@ -294,7 +309,7 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes, deliveryRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes, deliveryRes, midBannerRes, categoriesRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
@@ -303,7 +318,9 @@ const Admin = () => {
         fetchReelsConfig(),
         fetchSettings(),
         fetchHeroSlides(),
-        getDeliverySettings()
+        getDeliverySettings(),
+        fetchMidBanner(),
+        fetchCategoriesConfig()
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
@@ -314,6 +331,16 @@ const Admin = () => {
       if (settingsRes && settingsRes.announcements) setAnnouncements(settingsRes.announcements);
       if (heroRes) setHeroSlides(heroRes.sort((a,b) => a.order - b.order));
       if (deliveryRes) setDeliverySettings(deliveryRes);
+      if (midBannerRes) setMidBannerConfig(midBannerRes);
+      
+      if (categoriesRes) {
+        setCategoriesConfig(categoriesRes);
+      } else {
+        // If categoriesConfig doesn't exist in DB, fallback to the default static structure
+        setCategoriesConfig(defaultCategoryStructure);
+        // Automatically save it to DB for the first time
+        await updateCategoriesConfig(defaultCategoryStructure).catch(console.error);
+      }
 
       const defaultHeroSlides = [
         {
@@ -2453,6 +2480,253 @@ const Admin = () => {
                   </div>
                 </div>
               )}
+
+              {activeTab === 'midbanner' && (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-gray-900">Middle Banner</h2>
+                      <p className="text-gray-500 mt-2">Manage the promotional banner displayed in the middle of the homepage.</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      setIsUpdatingMidBanner(true);
+                      try {
+                        await updateMidBanner(midBannerConfig);
+                        showNotification('Middle banner updated successfully!');
+                      } catch (error) {
+                        showNotification('Failed to update banner', 'error');
+                      } finally {
+                        setIsUpdatingMidBanner(false);
+                      }
+                    }} className="space-y-6">
+                      
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div>
+                          <p className="font-bold text-gray-900">Banner Visibility</p>
+                          <p className="text-xs text-gray-500">Show or hide the banner on the homepage</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setMidBannerConfig(prev => ({ ...prev, isVisible: !prev.isVisible }))}
+                          className={`w-12 h-6 rounded-full transition-colors relative ${midBannerConfig.isVisible ? 'bg-green-500' : 'bg-gray-300'}`}
+                        >
+                          <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${midBannerConfig.isVisible ? 'translate-x-7' : 'translate-x-1'}`} />
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Banner Image URL</label>
+                        <div className="flex gap-4">
+                          <input
+                            type="text"
+                            placeholder="e.g. /offers.webp or https://..."
+                            className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                            value={midBannerConfig.imageUrl}
+                            onChange={(e) => setMidBannerConfig(prev => ({ ...prev, imageUrl: e.target.value }))}
+                          />
+                          <label className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl cursor-pointer flex items-center justify-center transition-colors">
+                            <Upload size={20} />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                try {
+                                  const url = await uploadProductImage(file);
+                                  setMidBannerConfig(prev => ({ ...prev, imageUrl: url }));
+                                  showNotification('Image uploaded successfully');
+                                } catch (err) {
+                                  showNotification('Failed to upload image', 'error');
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                        {midBannerConfig.imageUrl && (
+                          <div className="mt-4 rounded-xl overflow-hidden border border-gray-200">
+                            <img src={midBannerConfig.imageUrl} alt="Mid Banner Preview" className="w-full h-auto object-cover" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Target Link URL</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. /shop?category=Women or /product/123"
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          value={midBannerConfig.linkUrl}
+                          onChange={(e) => setMidBannerConfig(prev => ({ ...prev, linkUrl: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="pt-4">
+                        <button
+                          type="submit"
+                          disabled={isUpdatingMidBanner}
+                          className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2"
+                        >
+                          {isUpdatingMidBanner ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle size={20} />}
+                          <span>{isUpdatingMidBanner ? 'Saving...' : 'Save Banner Settings'}</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'categories' && categoriesConfig && (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-gray-900">Categories & Subcategories</h2>
+                      <p className="text-gray-500 mt-2">Manage the subcategories shown in dropdowns and the navigation menu.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="md:col-span-1 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 h-fit">
+                      <h3 className="font-bold text-gray-900 mb-4 px-2">Main Categories</h3>
+                      <div className="space-y-1">
+                        {Object.keys(categoriesConfig).map(cat => (
+                          <button
+                            key={cat}
+                            onClick={() => setSelectedCategoryKey(cat)}
+                            className={`w-full text-left px-4 py-3 rounded-xl transition-all font-medium ${selectedCategoryKey === cat ? 'bg-gray-900 text-white shadow-md' : 'hover:bg-gray-50 text-gray-700'}`}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                      {selectedCategoryKey ? (
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h3 className="text-xl font-bold text-gray-900">{selectedCategoryKey} Subcategories</h3>
+                            <button
+                              onClick={() => {
+                                const newConfig = { ...categoriesConfig };
+                                newConfig[selectedCategoryKey].sections.push({ title: 'New Section', items: [] });
+                                setCategoriesConfig(newConfig);
+                              }}
+                              className="text-sm font-bold bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                            >
+                              <Plus size={16} /> <span>Add Section</span>
+                            </button>
+                          </div>
+
+                          <div className="space-y-8">
+                            {categoriesConfig[selectedCategoryKey].sections.map((section, sIdx) => (
+                              <div key={sIdx} className="bg-gray-50 p-6 rounded-xl border border-gray-100 relative group">
+                                <button
+                                  onClick={() => {
+                                    if(window.confirm('Remove this entire section?')) {
+                                      const newConfig = { ...categoriesConfig };
+                                      newConfig[selectedCategoryKey].sections.splice(sIdx, 1);
+                                      setCategoriesConfig(newConfig);
+                                    }
+                                  }}
+                                  className="absolute top-4 right-4 p-2 text-red-500 hover:bg-red-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                                
+                                <div className="mb-4 space-y-1">
+                                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Section Title</label>
+                                  <input 
+                                    type="text" 
+                                    value={section.title}
+                                    onChange={(e) => {
+                                      const newConfig = { ...categoriesConfig };
+                                      newConfig[selectedCategoryKey].sections[sIdx].title = e.target.value;
+                                      setCategoriesConfig(newConfig);
+                                    }}
+                                    className="w-full bg-white border border-gray-200 px-3 py-2 rounded-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Subcategories (Items)</label>
+                                  <div className="flex flex-wrap gap-2">
+                                    {section.items.map((item, iIdx) => (
+                                      <div key={iIdx} className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden group/item">
+                                        <input
+                                          type="text"
+                                          value={item}
+                                          onChange={(e) => {
+                                            const newConfig = { ...categoriesConfig };
+                                            newConfig[selectedCategoryKey].sections[sIdx].items[iIdx] = e.target.value;
+                                            setCategoriesConfig(newConfig);
+                                          }}
+                                          className="px-3 py-1.5 w-32 focus:outline-none text-sm text-gray-700 font-medium"
+                                        />
+                                        <button
+                                          onClick={() => {
+                                            const newConfig = { ...categoriesConfig };
+                                            newConfig[selectedCategoryKey].sections[sIdx].items.splice(iIdx, 1);
+                                            setCategoriesConfig(newConfig);
+                                          }}
+                                          className="px-2 py-1.5 bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-400 transition-colors"
+                                        >
+                                          <X size={14} />
+                                        </button>
+                                      </div>
+                                    ))}
+                                    <button
+                                      onClick={() => {
+                                        const newConfig = { ...categoriesConfig };
+                                        newConfig[selectedCategoryKey].sections[sIdx].items.push('New Subcategory');
+                                        setCategoriesConfig(newConfig);
+                                      }}
+                                      className="flex items-center justify-center px-3 py-1.5 border border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-100 rounded-lg text-sm text-gray-500 font-medium transition-colors"
+                                    >
+                                      <Plus size={14} className="mr-1" /> Add
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="pt-4 border-t border-gray-100 mt-6 flex justify-end">
+                            <button
+                              onClick={async () => {
+                                setIsUpdatingCategories(true);
+                                try {
+                                  await updateCategoriesConfig(categoriesConfig);
+                                  showNotification('Categories updated successfully!');
+                                } catch (error) {
+                                  showNotification('Failed to update categories', 'error');
+                                } finally {
+                                  setIsUpdatingCategories(false);
+                                }
+                              }}
+                              disabled={isUpdatingCategories}
+                              className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50"
+                            >
+                              {isUpdatingCategories ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} />}
+                              <span>Save Changes</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-20 text-gray-400 flex flex-col items-center">
+                          <LayoutDashboard size={48} className="mb-4 opacity-50" />
+                          <p>Select a category from the left to edit its subcategories.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </Motion.div>
           )}
         </Motion.div>
@@ -2672,10 +2946,10 @@ const Admin = () => {
                     <select
                       className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value, subCategory: '' })}
                     >
                       <option value="">Select Category</option>
-                      {['Women', 'Kids', 'Men', 'Bouquet', 'Laddu Gopal', 'Yarn'].map(cat => (
+                      {Object.keys(categoriesConfig || {}).map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
@@ -2693,165 +2967,22 @@ const Admin = () => {
                     </select>
                   </div>
 
-                  {formData.category === 'Kids' && (
+                  {formData.category && categoriesConfig?.[formData.category] && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Kids Sub-Category</label>
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{formData.category} Sub-Category</label>
                       <select
                         className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                         value={formData.subCategory}
                         onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
                       >
                         <option value="">Select Sub-Category</option>
-                        <optgroup label="Clothing">
-                          {['Handmade Sweaters', 'Frocks', 'Poncho', 'Vests', 'Rompers / Jumpsuits', 'Winterwear Sets'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Girls (2-12 Years)">
-                          {['Crochet Tops', 'Casual Dresses', 'Co-ords', 'Party Dresses', 'Ethnic Wear'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Accessories">
-                          {['Booties', 'Cap Mitten Set', 'Caps', 'Mufflers', 'Headband', 'Socks', 'Hair Accessories'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Photoprops">
-                          {['Mermaid', 'Beach Theme', 'Jungle Theme', 'Christmas Theme', 'Sports'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    </div>
-                  )}
-
-                  {formData.category === 'Women' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Women Sub-Category</label>
-                      <select
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                        value={formData.subCategory}
-                        onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
-                      >
-                        <option value="">Select Sub-Category</option>
-                        <optgroup label="Winterwear">
-                          {['Sweaters', 'Ponchos', 'Caps, Hats, Beanies', 'Neckwarmers', 'Mufflers', 'Socks'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Beachwear">
-                          {['Bralettes', 'Cover Ups', 'Sarongs'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Resortwear">
-                          {['Crochet Tops', 'Dresses', 'Co-ord Sets', 'Crochet Shorts', 'Crochet Skirts', 'Jeans'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Accessories">
-                          {['Earrings', 'Bracelets', 'Crochet Scarf', 'Neckwarmers', 'Macrame Belts', 'Socks'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Bags">
-                          {['Crochet Handbags', 'Tote Bags', 'Sling Bags', 'Clutches'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    </div>
-                  )}
-
-                  {formData.category === 'Men' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Men Sub-Category</label>
-                      <select
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                        value={formData.subCategory}
-                        onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
-                      >
-                        <option value="">Select Sub-Category</option>
-                        <optgroup label="Winterwear">
-                          {['Sweaters'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Topwear">
-                          {['Handmade Shirts', 'Pullovers', 'Knitted Tees'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Accessories">
-                          {['Mufflers', 'Caps & Beanies', 'Handmade Gloves', 'Woolen Socks', 'Neck Warmers', 'Belts'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Gifting">
-                          {['Gift Sets', 'Winter Combos'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    </div>
-                  )}
-
-                  {formData.category === 'Bouquet' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Bouquet Sub-Category</label>
-                      <select
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                        value={formData.subCategory}
-                        onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
-                      >
-                        <option value="">Select Sub-Category</option>
-                        <optgroup label="Floral">
-                          {['Rose Bouquets', 'Tulip Bouquets', 'Sunflower Bouquets', 'Lavender Bunches'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Occasions">
-                          {['Birthday Special', 'Anniversary'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    </div>
-                  )}
-
-                  {formData.category === 'Laddu Gopal' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Laddu Gopal Sub-Category</label>
-                      <select
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                        value={formData.subCategory}
-                        onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
-                      >
-                        <option value="">Select Sub-Category</option>
-                        <optgroup label="Collection">
-                          {['Handmade Dresses', 'Mukut & Shringar', 'Bedding & Pillows'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    </div>
-                  )}
-
-                  {formData.category === 'Yarn' && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Yarn Sub-Category</label>
-                      <select
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                        value={formData.subCategory}
-                        onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
-                      >
-                        <option value="">Select Sub-Category</option>
-                        <optgroup label="Collection">
-                          {['Organic Woolen Yarn', 'Cotton Yarn', 'Milk Cotton Yarn'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </optgroup>
+                        {categoriesConfig[formData.category].sections?.map((section, sIdx) => (
+                          <optgroup key={sIdx} label={section.title}>
+                            {section.items?.map((item, iIdx) => (
+                              <option key={`${sIdx}-${iIdx}`} value={item}>{item}</option>
+                            ))}
+                          </optgroup>
+                        ))}
                       </select>
                     </div>
                   )}
