@@ -15,12 +15,24 @@ const protectAdmin = async (req, res, next) => {
     // Verify token
     const decodedToken = await admin.auth().verifyIdToken(token);
     
-    // Check if user is admin using centralized config
-    if (!isAdminEmail(decodedToken.email)) {
+    // Lazy load User model to avoid circular dependency if any
+    const User = require('../models/User');
+    const user = await User.findOne({ email: decodedToken.email });
+
+    const isHardcodedAdmin = isAdminEmail(decodedToken.email);
+    const isDbAdmin = user && user.role === 'admin';
+
+    // Check if user is admin (DB or fallback)
+    if (!isDbAdmin && !isHardcodedAdmin) {
       return res.status(403).json({ message: 'Forbidden: Admin access required' });
     }
 
-    req.user = decodedToken;
+    // Inject permissions into request. Hardcoded admins act as superadmins.
+    req.user = {
+      ...decodedToken,
+      dbUser: user,
+      permissions: isHardcodedAdmin ? ['superadmin'] : (user?.permissions || [])
+    };
     next();
   } catch (error) {
     console.error('Auth Middleware Error:', error.message);
@@ -55,4 +67,15 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect, protectAdmin };
+const protectSuperAdmin = async (req, res, next) => {
+  // First run protectAdmin to inject dbUser and permissions
+  protectAdmin(req, res, () => {
+    if (req.user && req.user.permissions && req.user.permissions.includes('superadmin')) {
+      next();
+    } else {
+      res.status(403).json({ message: 'Forbidden: Super Admin access required' });
+    }
+  });
+};
+
+module.exports = { protect, protectAdmin, protectSuperAdmin };

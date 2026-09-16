@@ -44,6 +44,17 @@ const ProductDetails = () => {
   const { trackProductVisit } = useActivityStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showSizeChart, setShowSizeChart] = useState(false);
+
+  useEffect(() => {
+    if (showSizeChart) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showSizeChart]);
   const [similarIds, setSimilarIds] = useState([]);
   // Share
   const [copied, setCopied] = useState(false);

@@ -55,7 +55,13 @@ const LoginModal = ({ isOpen, onClose }) => {
       setLoading(false);
       setSlowConnection(false);
       setShowPassword(false);
+      document.body.style.overflow = 'unset';
+    } else {
+      document.body.style.overflow = 'hidden';
     }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   // Resend Timer logic

@@ -7,10 +7,32 @@ const {
   updateCart, 
   getWishlist, 
   updateWishlist,
-  getMyOrders
+  getMyOrders,
+  getAdmins,
+  grantAdmin,
+  updateAdminPermissions,
+  revokeAdmin
 } = require('../controllers/userController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, protectSuperAdmin } = require('../middleware/authMiddleware');
 
+// ==========================================
+// Admin Management (Super Admin only)
+// ==========================================
+router.route('/admins')
+  .get(protectSuperAdmin, getAdmins);
+
+router.route('/admins/grant')
+  .post(protectSuperAdmin, grantAdmin);
+
+router.route('/admins/revoke')
+  .post(protectSuperAdmin, revokeAdmin);
+
+router.route('/admins/:uid/permissions')
+  .put(protectSuperAdmin, updateAdminPermissions);
+
+// ==========================================
+// User Routes
+// ==========================================
 router.route('/profile')
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);

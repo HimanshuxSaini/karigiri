@@ -130,6 +130,90 @@ const getMyOrders = async (req, res) => {
   }
 };
 
+// ==========================================
+// Admin Management (Super Admin only)
+// ==========================================
+
+// @desc    Get all admins
+// @route   GET /api/users/admins
+// @access  Private/SuperAdmin
+const getAdmins = async (req, res) => {
+  try {
+    const admins = await User.find({ role: 'admin' }).select('-addresses');
+    res.json(admins);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Grant admin access to a user by email
+// @route   POST /api/users/admins/grant
+// @access  Private/SuperAdmin
+const grantAdmin = async (req, res) => {
+  const { email, permissions } = req.body;
+  if (!email) return res.status(400).json({ message: 'Email is required' });
+
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found. They must sign in once before being made an admin.' });
+    }
+
+    user.role = 'admin';
+    user.permissions = permissions || [];
+    await user.save();
+    
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update admin permissions
+// @route   PUT /api/users/admins/:uid/permissions
+// @access  Private/SuperAdmin
+const updateAdminPermissions = async (req, res) => {
+  const { uid } = req.params;
+  const { permissions } = req.body;
+
+  try {
+    const user = await User.findOne({ uid });
+    if (!user || user.role !== 'admin') {
+      return res.status(404).json({ message: 'Admin user not found' });
+    }
+
+    user.permissions = permissions || [];
+    await user.save();
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Revoke admin access
+// @route   POST /api/users/admins/revoke
+// @access  Private/SuperAdmin
+const revokeAdmin = async (req, res) => {
+  const { uid } = req.body;
+  if (!uid) return res.status(400).json({ message: 'User ID (uid) is required' });
+
+  try {
+    const user = await User.findOne({ uid });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.role = 'customer';
+    user.permissions = [];
+    await user.save();
+
+    res.json({ message: 'Admin access revoked successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
@@ -137,5 +221,9 @@ module.exports = {
   updateCart,
   getWishlist,
   updateWishlist,
-  getMyOrders
+  getMyOrders,
+  getAdmins,
+  grantAdmin,
+  updateAdminPermissions,
+  revokeAdmin
 };

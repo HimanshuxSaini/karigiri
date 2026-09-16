@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
+import { useLenis } from 'lenis/react';
 import {
   Plus,
   Trash2,
@@ -68,7 +69,11 @@ import {
   fetchMidBanner,
   updateMidBanner,
   fetchCategoriesConfig,
-  updateCategoriesConfig
+  updateCategoriesConfig,
+  fetchAdmins,
+  grantAdmin,
+  updateAdminPermissions,
+  revokeAdmin
 } from '../services/api';
 import { useAuthStore, useToastStore } from '../store/useStore';
 import { Navigate, Link, useLocation } from 'react-router-dom';
@@ -118,6 +123,7 @@ const Admin = () => {
 
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [adminsList, setAdminsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orderFilter, setOrderFilter] = useState('All');
@@ -215,7 +221,7 @@ const Admin = () => {
   };
 
 
-  const tabs = [
+  const allTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products', label: 'Inventory', icon: Package },
     { id: 'categories', label: 'Categories', icon: LayoutDashboard },
@@ -230,7 +236,21 @@ const Admin = () => {
     { id: 'delivery', label: 'Delivery', icon: Truck },
     { id: 'hero', label: 'Hero Slides', icon: Presentation },
     { id: 'push', label: 'Push Notifications', icon: Smartphone },
+    { id: 'admins', label: 'Manage Admins', icon: Users },
   ];
+
+  // Admin Check
+  const isHardcodedAdmin = isAdminEmail(user?.email);
+  const isSuperAdmin = isHardcodedAdmin || user?.permissions?.includes('superadmin');
+  const isAdmin = isHardcodedAdmin || user?.role === 'admin';
+  const userPermissions = isSuperAdmin ? ['superadmin'] : (user?.permissions || []);
+
+  const tabs = allTabs.filter(tab => {
+    if (isSuperAdmin) return true;
+    if (tab.id === 'dashboard') return true;
+    if (tab.id === 'admins') return false; // Only superadmin can manage admins
+    return userPermissions.includes(tab.id);
+  });
 
   // Form State
   const [formData, setFormData] = useState({
@@ -253,12 +273,18 @@ const Admin = () => {
     returnDays: 7
   });
 
-  // Admin Check
-  const isAdmin = isAdminEmail(user?.email);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState(null);
+  const [adminFormData, setAdminFormData] = useState({
+    email: '',
+    role: 'admin',
+    permissions: ['dashboard']
+  });
+  const [isSubmittingAdmin, setIsSubmittingAdmin] = useState(false);
 
   // Lock body scroll when any modal is open
   useEffect(() => {
-    if (showProductModal || showReelModal || showCouponModal || showHeroModal) {
+    if (showProductModal || showReelModal || showCouponModal || showHeroModal || showAdminModal || selectedOrder) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -266,7 +292,7 @@ const Admin = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showProductModal, showReelModal, showCouponModal, showHeroModal]);
+  }, [showProductModal, showReelModal, showCouponModal, showHeroModal, showAdminModal, selectedOrder]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -310,7 +336,7 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes, deliveryRes, midBannerRes, categoriesRes] = await Promise.all([
+      const [prodRes, orderRes, reelRes, couponRes, saleRes, reelResConfig, settingsRes, heroRes, deliveryRes, midBannerRes, categoriesRes, adminsRes] = await Promise.all([
         fetchProducts(),
         fetchOrders(),
         fetchReels(),
@@ -321,12 +347,14 @@ const Admin = () => {
         fetchHeroSlides(),
         getDeliverySettings(),
         fetchMidBanner(),
-        fetchCategoriesConfig()
+        fetchCategoriesConfig(),
+        isSuperAdmin ? fetchAdmins() : Promise.resolve([])
       ]);
       setProducts(prodRes || []);
       setOrders(orderRes || []);
       setReels(reelRes || []);
       setCoupons(couponRes || []);
+      setAdminsList(adminsRes || []);
       if (saleRes) setSaleConfig(saleRes);
       if (reelResConfig) setReelsConfig(reelResConfig);
       if (settingsRes && settingsRes.announcements) setAnnouncements(settingsRes.announcements);
@@ -2482,6 +2510,107 @@ const Admin = () => {
                 </div>
               )}
 
+              {activeTab === 'admins' && isSuperAdmin && (
+                <div className="space-y-8">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-gray-900">Manage Admins</h2>
+                      <p className="text-gray-500 mt-2">Grant or revoke admin access and configure their permissions.</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingAdmin(null);
+                        setAdminFormData({ email: '', role: 'admin', permissions: ['dashboard'] });
+                        setShowAdminModal(true);
+                      }}
+                      className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center space-x-2 hover:bg-gray-800 transition-colors shadow-lg"
+                    >
+                      <Plus size={20} />
+                      <span>Add Admin</span>
+                    </button>
+                  </div>
+
+                  <div className="bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    {adminsList.length === 0 ? (
+                      <div className="text-center py-12 text-gray-400">
+                        <Users size={48} className="mx-auto mb-4 opacity-50" />
+                        <p>No admins configured.</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left min-w-[800px]">
+                          <thead className="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                              <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Admin Email</th>
+                              <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Role</th>
+                              <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400">Permissions</th>
+                              <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-50">
+                            {adminsList.map((adm, idx) => (
+                              <tr key={adm._id || idx} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-6 py-4">
+                                  <p className="font-bold text-gray-900">{adm.email}</p>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold capitalize">
+                                    {adm.role}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-wrap gap-1">
+                                    {adm.permissions && adm.permissions.length > 0 ? (
+                                      adm.permissions.map(p => (
+                                        <span key={p} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                                          {p}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="text-gray-400 text-xs italic">No specific permissions</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <button
+                                    onClick={() => {
+                                      setEditingAdmin(adm);
+                                      setAdminFormData({ email: adm.email, role: adm.role, permissions: adm.permissions || [] });
+                                      setShowAdminModal(true);
+                                    }}
+                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors inline-block"
+                                    title="Edit Permissions"
+                                  >
+                                    <Edit3 size={18} />
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      if (window.confirm(`Revoke admin access for ${adm.email}?`)) {
+                                        try {
+                                          await revokeAdmin(adm.uid);
+                                          setAdminsList(prev => prev.filter(a => a.uid !== adm.uid));
+                                          showNotification(`Admin access revoked for ${adm.email}`);
+                                        } catch (err) {
+                                          showNotification(err.message || 'Failed to revoke admin', 'error');
+                                        }
+                                      }
+                                    }}
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors inline-block ml-2"
+                                    title="Revoke Admin"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {activeTab === 'midbanner' && (
                 <div className="space-y-8">
                   <div className="flex justify-between items-center">
@@ -3411,6 +3540,111 @@ const Admin = () => {
             </Motion.div>
           </div>
         )}
+
+        {/* Admin Modal */}
+        <AnimatePresence>
+          {showAdminModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <Motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowAdminModal(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              />
+              <Motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                className="bg-white w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
+              >
+                <div className="bg-black p-5 flex justify-between items-center flex-shrink-0">
+                  <h3 className="text-white font-serif text-xl">{editingAdmin ? 'Edit Admin Permissions' : 'Add New Admin'}</h3>
+                  <button onClick={() => setShowAdminModal(false)} className="text-white hover:opacity-70">
+                    <XCircle size={24} />
+                  </button>
+                </div>
+                <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setIsSubmittingAdmin(true);
+                    try {
+                      if (editingAdmin) {
+                        await updateAdminPermissions(editingAdmin.uid, adminFormData.permissions);
+                        setAdminsList(prev => prev.map(a => a.uid === editingAdmin.uid ? { ...a, permissions: adminFormData.permissions } : a));
+                        showNotification('Permissions updated successfully!');
+                      } else {
+                        const newAdmin = await grantAdmin(adminFormData.email, adminFormData.permissions);
+                        setAdminsList(prev => [...prev, newAdmin]);
+                        showNotification('Admin added successfully!');
+                      }
+                      setShowAdminModal(false);
+                    } catch (err) {
+                      showNotification(err.message || 'Failed to save admin', 'error');
+                    } finally {
+                      setIsSubmittingAdmin(false);
+                    }
+                  }} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        disabled={!!editingAdmin}
+                        className={`w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1 ${editingAdmin ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50'}`}
+                        value={adminFormData.email}
+                        onChange={(e) => setAdminFormData({ ...adminFormData, email: e.target.value })}
+                        placeholder="admin@example.com"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2 pt-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1 mb-2 block">Permissions</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {allTabs.filter(t => t.id !== 'admins').map(tab => (
+                          <label key={tab.id} className="flex items-center p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 accent-black rounded"
+                              checked={adminFormData.permissions.includes(tab.id)}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setAdminFormData(prev => ({
+                                  ...prev,
+                                  permissions: checked 
+                                    ? [...prev.permissions, tab.id]
+                                    : prev.permissions.filter(p => p !== tab.id)
+                                }));
+                              }}
+                            />
+                            <span className="ml-2 text-sm font-bold text-gray-700 capitalize">{tab.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-4 pt-4 mt-4 border-t border-gray-100">
+                      <button
+                        type="submit"
+                        disabled={isSubmittingAdmin || adminFormData.permissions.length === 0}
+                        className="flex-grow bg-black text-white py-4 rounded-2xl font-black tracking-widest text-xs hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50"
+                      >
+                        {isSubmittingAdmin ? 'Saving...' : (editingAdmin ? 'Update Permissions' : 'Grant Access')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminModal(false)}
+                        className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </Motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Coupon Modal */}
         {showCouponModal && (

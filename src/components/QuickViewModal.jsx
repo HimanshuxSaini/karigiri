@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Heart, MessageCircle, CheckCircle } from 'lucide-react';
 import { useCartStore, useWishlistStore } from '../store/useStore';
@@ -12,6 +12,13 @@ const QuickViewModal = ({ product, onClose }) => {
     product.sizes?.length ? product.sizes[0] : 'One Size'
   );
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
 
   const productId = product._id || product.id;
   const isWishlisted = isInWishlist(productId);

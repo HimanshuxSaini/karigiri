@@ -45,6 +45,17 @@ const Checkout = () => {
   // Modal states for adding new data during checkout
   const [showAddressModal, setShowAddressModal] = useState(false);
 
+  useEffect(() => {
+    if (showAddressModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddressModal]);
+
   // Form states
   const [addressForm, setAddressForm] = useState({ type: 'Home', street: '', city: '', state: '', pincode: '', phone: '' });
 

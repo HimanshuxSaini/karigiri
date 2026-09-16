@@ -296,6 +296,52 @@ export const saveUserProfile = async (uid, profileData) => {
   }
 };
 
+// Admin Management
+export const fetchAdmins = async () => {
+  try {
+    return await adminFetch('/users/admins');
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    return [];
+  }
+};
+
+export const grantAdmin = async (email, permissions) => {
+  try {
+    return await adminFetch('/users/admins/grant', {
+      method: 'POST',
+      body: JSON.stringify({ email, permissions })
+    });
+  } catch (error) {
+    console.error("Error granting admin access:", error);
+    throw error;
+  }
+};
+
+export const updateAdminPermissions = async (uid, permissions) => {
+  try {
+    return await adminFetch(`/users/admins/${uid}/permissions`, {
+      method: 'PUT',
+      body: JSON.stringify({ permissions })
+    });
+  } catch (error) {
+    console.error("Error updating admin permissions:", error);
+    throw error;
+  }
+};
+
+export const revokeAdmin = async (uid) => {
+  try {
+    return await adminFetch('/users/admins/revoke', {
+      method: 'POST',
+      body: JSON.stringify({ uid })
+    });
+  } catch (error) {
+    console.error("Error revoking admin access:", error);
+    throw error;
+  }
+};
+
 // Cart
 export const saveCartToDatabase = async (uid, cartItems) => {
   if (!uid) return;
@@ -790,4 +836,3 @@ export const updateCategoriesConfig = async (categoriesData) => {
     throw error;
   }
 };
-

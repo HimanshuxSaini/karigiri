@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   displayName: { type: String },
   phone: { type: String },
   role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  permissions: [{ type: String }], // e.g., 'manage_products', 'manage_orders', 'superadmin'
   addresses: [addressSchema]
 }, { timestamps: true });
 

@@ -98,7 +98,7 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
-    if (selectedOrder) {
+    if (selectedOrder || showAddressModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -106,7 +106,7 @@ const Profile = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [selectedOrder]);
+  }, [selectedOrder, showAddressModal]);
 
   const handleLogout = () => {
     firebaseAuth.signOut();

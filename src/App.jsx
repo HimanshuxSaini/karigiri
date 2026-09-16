@@ -55,7 +55,9 @@ const PageWrapper = ({ children }) => (
 
 const ProtectedRoute = ({ children, isAdmin = false }) => {
   const { user } = useAuthStore();
-  const isUserAdmin = isAdminEmail(user?.email);
+  const isHardcodedAdmin = isAdminEmail(user?.email);
+  const isDbAdmin = user?.role === 'admin';
+  const isUserAdmin = isHardcodedAdmin || isDbAdmin;
   if (!user || (isAdmin && !isUserAdmin)) return <Navigate to="/" replace />;
   return children;
 };
@@ -86,7 +88,10 @@ const AppInner = () => {
         try {
           // Dynamic import to avoid circular dependencies if any
           const { fetchUserProfile } = await import('./services/api');
-          await fetchUserProfile(firebaseUser.uid);
+          const dbUser = await fetchUserProfile(firebaseUser.uid);
+          if (dbUser) {
+            useAuthStore.getState().setDbUser(dbUser);
+          }
         } catch (err) {
           console.error("Failed to sync user to MongoDB:", err);
         }
