@@ -2257,6 +2257,13 @@ const Admin = () => {
                         min="1"
                         value={deliverySettings.defaultDays || 7}
                         onChange={(e) => setDeliverySettings({ ...deliverySettings, defaultDays: Number(e.target.value) })}
+                        onBlur={async () => {
+                          try {
+                            await updateDeliverySettings(deliverySettings);
+                          } catch (err) {
+                            addToast('Failed to save default days', 'error');
+                          }
+                        }}
                         className="w-full md:w-1/3 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-black/10"
                       />
                       <p className="text-xs text-gray-500 mt-2">Used for all pincodes that do not have specific overrides.</p>
@@ -2280,16 +2287,23 @@ const Admin = () => {
                         onChange={e => setNewOverrideDays(Number(e.target.value))}
                       />
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if(!newOverridePincode.trim()) return addToast('Please enter pincodes', 'error');
-                          setDeliverySettings({
+                          const newSettings = {
                             ...deliverySettings,
                             overrides: [
                               ...(deliverySettings.overrides || []),
                               { pincodes: newOverridePincode, days: newOverrideDays }
                             ]
-                          });
+                          };
+                          setDeliverySettings(newSettings);
                           setNewOverridePincode('');
+                          try {
+                            await updateDeliverySettings(newSettings);
+                            addToast('Override added successfully', 'success');
+                          } catch (err) {
+                            addToast('Failed to save override', 'error');
+                          }
                         }}
                         className="bg-[var(--primary)] text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-[var(--primary)]/90"
                       >
@@ -2305,10 +2319,19 @@ const Admin = () => {
                             <span className="text-xs text-[var(--primary)] font-black uppercase tracking-wider">Delivery: {override.days} days</span>
                           </div>
                           <button
-                            onClick={() => setDeliverySettings({
-                              ...deliverySettings,
-                              overrides: deliverySettings.overrides.filter((_, i) => i !== index)
-                            })}
+                            onClick={async () => {
+                              const newSettings = {
+                                ...deliverySettings,
+                                overrides: deliverySettings.overrides.filter((_, i) => i !== index)
+                              };
+                              setDeliverySettings(newSettings);
+                              try {
+                                await updateDeliverySettings(newSettings);
+                                addToast('Override removed successfully', 'success');
+                              } catch (err) {
+                                addToast('Failed to remove override', 'error');
+                              }
+                            }}
                             className="text-red-500 hover:text-red-700 p-2 bg-red-50 rounded-lg"
                           >
                             <Trash2 size={18} />
