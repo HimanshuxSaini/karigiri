@@ -53,6 +53,7 @@ const QuickViewModal = ({ product, onClose }) => {
           transition={{ type: 'spring', damping: 28, stiffness: 350 }}
           className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
+          data-lenis-prevent="true"
         >
           {/* Close button */}
           <div className="flex justify-between items-center p-4 md:p-5 border-b border-gray-100">

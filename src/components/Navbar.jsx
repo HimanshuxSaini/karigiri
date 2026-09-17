@@ -50,7 +50,7 @@ const Navbar = () => {
     };
   }, [isMobileMenuOpen, isSearchModalOpen]);
 
-  const isAdmin = isAdminEmail(user?.email);
+  const isAdmin = isAdminEmail(user?.email) || user?.role === 'admin';
 
   return (
     <>
@@ -248,7 +248,7 @@ const Navbar = () => {
                 </button>
               </div>
 
-              <div className="p-6 space-y-2 flex-grow overflow-y-auto bg-gray-50/30 no-scrollbar">
+              <div className="p-6 space-y-2 flex-grow overflow-y-auto bg-gray-50/30 no-scrollbar" data-lenis-prevent="true">
 
 
                 <div className="px-2 mb-4">

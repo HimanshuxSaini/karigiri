@@ -3564,7 +3564,7 @@ const Admin = () => {
                     <XCircle size={24} />
                   </button>
                 </div>
-                <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                <div className="p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar" data-lenis-prevent="true">
                   <form onSubmit={async (e) => {
                     e.preventDefault();
                     setIsSubmittingAdmin(true);

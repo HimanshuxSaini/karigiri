@@ -208,7 +208,7 @@ const Profile = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-3">
-              {isAdminEmail(user?.email) && (
+              {(isAdminEmail(user?.email) || user?.role === 'admin') && (
                 <Link
                   to="/admin"
                   className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all"

@@ -222,7 +222,7 @@ const ProductDetails = () => {
 
   const isWishlisted = isInWishlist(product._id || product.id);
   const isOutOfStock = product.inStock === false;
-  const isAdmin = isAdminEmail(user?.email);
+  const isAdmin = isAdminEmail(user?.email) || user?.role === 'admin';
   const productId = product._id || product.id;
 
   const currentPrice = (selectedSize && product?.sizePrices && product.sizePrices[selectedSize]) 
@@ -837,6 +837,7 @@ const ProductDetails = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
+            data-lenis-prevent="true"
           >
             <button
               onClick={() => setShowSizeChart(false)}

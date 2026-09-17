@@ -297,7 +297,7 @@ const LoginModal = ({ isOpen, onClose }) => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col"
             >
-              <div className="p-6 md:p-8 flex-1 overflow-y-auto scrollbar-hide">
+              <div className="p-6 md:p-8 flex-1 overflow-y-auto scrollbar-hide" data-lenis-prevent="true">
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex items-center space-x-3">
                     {view === 'forgot' && (

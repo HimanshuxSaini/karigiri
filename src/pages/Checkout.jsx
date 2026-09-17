@@ -704,7 +704,7 @@ const Checkout = () => {
             <div className="glass-card p-8 premium-shadow sticky top-32">
               <h2 className="text-2xl font-serif text-[var(--primary)] mb-8">Order Summary</h2>
 
-              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 mb-8 custom-scrollbar" data-lenis-prevent="true">
                 {items.map((item) => (
                   <div key={item.cartItemId || item.id} className="flex space-x-4 items-center bg-white/30 p-2 rounded-2xl">
                     <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm shrink-0">
