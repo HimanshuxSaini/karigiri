@@ -9,7 +9,6 @@ import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackPurchase } from '../utils/analytics';
 import SEO from '../components/SEO';
-import MapModal from '../components/MapModal';
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     const script = document.createElement('script');
@@ -73,29 +72,6 @@ const Checkout = () => {
     
     return { type: 'Home', street: '', city: cachedCity, state: cachedState, pincode: cachedPincode, phone: '' };
   });
-
-  const [showMapModal, setShowMapModal] = useState(false);
-
-  const handleUseLocation = () => {
-    setShowMapModal(true);
-  };
-
-  const handleMapConfirm = (locationData) => {
-    setAddressForm(prev => ({
-      ...prev,
-      street: locationData.street || prev.street,
-      city: locationData.city || prev.city,
-      state: locationData.state || prev.state,
-      pincode: locationData.pincode || prev.pincode
-    }));
-    setShowMapModal(false);
-    if (locationData.street || locationData.city || locationData.pincode) {
-      showToast("Address populated from map location successfully.");
-    } else {
-      showToast("Could not determine address from map pin.", "error");
-    }
-  };
-
 
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
@@ -880,15 +856,7 @@ const Checkout = () => {
             >
               <button onClick={() => setShowAddressModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-black"><X size={24} /></button>
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-serif text-[var(--primary)]">New Shipping Address</h3>
-                <button 
-                  type="button"
-                  onClick={handleUseLocation}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
-                >
-                  <MapPin size={14} />
-                  <span>Use Location</span>
-                </button>
+                <h3 className="text-2xl font-serif text-[var(--primary)] mb-6">New Shipping Address</h3>
               </div>
               <form onSubmit={onAddAddress} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -928,11 +896,6 @@ const Checkout = () => {
         )}
 
       </AnimatePresence>
-      <MapModal 
-        isOpen={showMapModal} 
-        onClose={() => setShowMapModal(false)} 
-        onConfirm={handleMapConfirm} 
-      />
     </div>
   );
 };

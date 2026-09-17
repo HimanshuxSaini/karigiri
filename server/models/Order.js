@@ -18,7 +18,9 @@ const orderSchema = new mongoose.Schema({
     line2: { type: String },
     city: { type: String, required: true },
     state: { type: String, required: true },
-    pincode: { type: String, required: true }
+    pincode: { type: String, required: true },
+    lat: { type: Number },
+    lng: { type: Number }
   },
   paymentMethod: { type: String, required: true },
   paymentDetails: {
