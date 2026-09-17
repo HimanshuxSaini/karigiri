@@ -57,7 +57,22 @@ const Checkout = () => {
   }, [showAddressModal]);
 
   // Form states
-  const [addressForm, setAddressForm] = useState({ type: 'Home', street: '', city: '', state: '', pincode: '', phone: '' });
+  const [addressForm, setAddressForm] = useState(() => {
+    const cachedPincode = localStorage.getItem('pk_delivery_pincode') || '';
+    let cachedCity = '';
+    let cachedState = '';
+    
+    try {
+      const savedLocStr = localStorage.getItem('pk_delivery_location');
+      if (savedLocStr) {
+        const parsed = JSON.parse(savedLocStr);
+        if (parsed.District) cachedCity = parsed.District;
+        if (parsed.State) cachedState = parsed.State;
+      }
+    } catch(e) {}
+    
+    return { type: 'Home', street: '', city: cachedCity, state: cachedState, pincode: cachedPincode, phone: '' };
+  });
 
   // Coupon states
   const [couponCode, setCouponCode] = useState('');

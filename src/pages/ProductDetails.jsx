@@ -73,6 +73,9 @@ const ProductDetails = () => {
   const [pincode, setPincode] = useState('');
   const [deliveryResult, setDeliveryResult] = useState('');
   const [isCheckingPincode, setIsCheckingPincode] = useState(false);
+  const [pincodeLocations, setPincodeLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -122,7 +125,14 @@ const ProductDetails = () => {
   useEffect(() => {
     const loadDeliverySettings = async () => {
       const savedPincode = localStorage.getItem('pk_delivery_pincode');
+      const savedLocationStr = localStorage.getItem('pk_delivery_location');
+      
       if (savedPincode) setPincode(savedPincode);
+      if (savedLocationStr) {
+        try {
+          setSelectedLocation(JSON.parse(savedLocationStr));
+        } catch(e) {}
+      }
       
       const res = await getDeliverySettings();
       setDeliverySettings(res);
@@ -132,6 +142,48 @@ const ProductDetails = () => {
     };
     loadDeliverySettings();
   }, []);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (pincode.length !== 6) {
+        setPincodeLocations([]);
+        // Only clear selected if it's not the one we just loaded from cache
+        const savedLoc = localStorage.getItem('pk_delivery_location');
+        if (!savedLoc || pincode !== localStorage.getItem('pk_delivery_pincode')) {
+          setSelectedLocation(null);
+        }
+        return;
+      }
+      
+      setIsFetchingLocation(true);
+      try {
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await response.json();
+        
+        if (data && data[0] && data[0].Status === 'Success') {
+          setPincodeLocations(data[0].PostOffice);
+          
+          // Auto-select the first one if none selected or if it's a new pincode
+          const savedLoc = localStorage.getItem('pk_delivery_location');
+          if (!savedLoc || pincode !== localStorage.getItem('pk_delivery_pincode')) {
+            setSelectedLocation(data[0].PostOffice[0]);
+            localStorage.setItem('pk_delivery_location', JSON.stringify(data[0].PostOffice[0]));
+            localStorage.setItem('pk_delivery_pincode', pincode);
+          }
+        } else {
+          setPincodeLocations([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch pincode locations:", error);
+      } finally {
+        setIsFetchingLocation(false);
+      }
+    };
+    
+    // Add a small debounce to avoid firing while typing the last digit if they type fast
+    const timeoutId = setTimeout(fetchLocations, 300);
+    return () => clearTimeout(timeoutId);
+  }, [pincode]);
 
   const calculateDeliveryDate = (code, settings) => {
     if (!code || code.length !== 6) return;
@@ -603,22 +655,57 @@ const ProductDetails = () => {
                 <div className="w-full">
                   <h5 className="font-bold text-sm mb-2">Check Delivery Time</h5>
                   <div className="flex gap-2 mb-2 max-w-[280px]">
-                    <input 
-                      type="text" 
-                      maxLength="6"
-                      placeholder="Enter Pincode" 
-                      className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 font-medium"
-                      value={pincode}
-                      onChange={(e) => setPincode(e.target.value.replace(/[^0-9]/g, ''))}
-                    />
+                    <div className="relative flex-1">
+                      <input 
+                        type="text" 
+                        maxLength="6"
+                        placeholder="Enter Pincode" 
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 font-medium"
+                        value={pincode}
+                        onChange={(e) => setPincode(e.target.value.replace(/[^0-9]/g, ''))}
+                      />
+                      {isFetchingLocation && (
+                        <div className="absolute right-3 top-2.5">
+                          <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                    </div>
                     <button 
                       onClick={handleCheckPincode}
-                      disabled={isCheckingPincode}
+                      disabled={isCheckingPincode || pincode.length !== 6}
                       className="px-5 py-2 bg-slate-100 font-bold text-[10px] uppercase tracking-wider rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
                     >
                       {isCheckingPincode ? '...' : 'Check'}
                     </button>
                   </div>
+                  
+                  {/* Location selection and display */}
+                  {pincodeLocations.length > 0 && (
+                    <div className="mb-2 max-w-[280px]">
+                      {pincodeLocations.length > 1 ? (
+                        <select 
+                          className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-[11px] font-medium text-slate-600 focus:outline-none bg-slate-50"
+                          value={selectedLocation?.Name || ''}
+                          onChange={(e) => {
+                            const loc = pincodeLocations.find(l => l.Name === e.target.value);
+                            setSelectedLocation(loc);
+                            localStorage.setItem('pk_delivery_location', JSON.stringify(loc));
+                          }}
+                        >
+                          {pincodeLocations.map(loc => (
+                            <option key={loc.Name} value={loc.Name}>
+                              {loc.Name}, {loc.District}, {loc.State}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          {selectedLocation?.Name}, {selectedLocation?.District}, {selectedLocation?.State}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {deliveryResult && (
                     <p className={`text-[11px] font-bold tracking-wide uppercase ${deliveryResult.includes('Expected') ? 'text-emerald-600' : 'text-red-500'}`}>
                       {deliveryResult}

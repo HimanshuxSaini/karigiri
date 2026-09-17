@@ -762,7 +762,15 @@ export const getDeliverySettings = async () => {
     const response = await fetch(`${API_URL}/settings/config/deliverySettings`);
     if (response.ok) {
       const data = await response.json();
-      return data?.data || { defaultDays: 7, overrides: [] };
+      // If it was previously saved with `{ data: ... }` wrapper by mistake:
+      if (data && data.data && (data.data.defaultDays !== undefined || data.data.overrides)) {
+        return data.data;
+      }
+      // If it's correctly saved without wrapper:
+      if (data && (data.defaultDays !== undefined || data.overrides)) {
+        return data;
+      }
+      return { defaultDays: 7, overrides: [] };
     }
     return { defaultDays: 7, overrides: [] };
   } catch (error) {
@@ -775,7 +783,7 @@ export const updateDeliverySettings = async (deliveryData) => {
   try {
     return await adminFetch('/settings/config/deliverySettings', {
       method: 'PUT',
-      body: JSON.stringify({ data: deliveryData })
+      body: JSON.stringify(deliveryData)
     });
   } catch (error) {
     console.error("Error updating delivery settings:", error);
