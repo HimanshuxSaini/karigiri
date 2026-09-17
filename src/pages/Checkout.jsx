@@ -74,6 +74,51 @@ const Checkout = () => {
     return { type: 'Home', street: '', city: cachedCity, state: cachedState, pincode: cachedPincode, phone: '' };
   });
 
+  const [isFetchingGeo, setIsFetchingGeo] = useState(false);
+
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) {
+      showToast("Geolocation is not supported by your browser.", "error");
+      return;
+    }
+    
+    setIsFetchingGeo(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          
+          if (data && data.address) {
+            const addr = data.address;
+            const streetStr = [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(', ');
+            
+            setAddressForm(prev => ({
+              ...prev,
+              street: streetStr || prev.street,
+              city: addr.city || addr.town || addr.village || addr.county || prev.city,
+              state: addr.state || prev.state,
+              pincode: addr.postcode || prev.pincode
+            }));
+            showToast("Address fetched from location successfully.");
+          }
+        } catch (error) {
+          console.error("Error fetching location details:", error);
+          showToast("Failed to fetch location details.", "error");
+        } finally {
+          setIsFetchingGeo(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        showToast("Unable to retrieve your location.", "error");
+        setIsFetchingGeo(false);
+      }
+    );
+  };
+
+
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
@@ -856,7 +901,22 @@ const Checkout = () => {
               className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl relative z-10"
             >
               <button onClick={() => setShowAddressModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-black"><X size={24} /></button>
-              <h3 className="text-2xl font-serif text-[var(--primary)] mb-6">New Shipping Address</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-serif text-[var(--primary)]">New Shipping Address</h3>
+                <button 
+                  type="button"
+                  onClick={handleUseLocation}
+                  disabled={isFetchingGeo}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
+                >
+                  {isFetchingGeo ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <MapPin size={14} />
+                  )}
+                  <span>Use Location</span>
+                </button>
+              </div>
               <form onSubmit={onAddAddress} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
