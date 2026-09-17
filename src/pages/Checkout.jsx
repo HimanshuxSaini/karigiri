@@ -884,14 +884,9 @@ const Checkout = () => {
                 <button 
                   type="button"
                   onClick={handleUseLocation}
-                  disabled={isFetchingGeo}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors disabled:opacity-50"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
                 >
-                  {isFetchingGeo ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <MapPin size={14} />
-                  )}
+                  <MapPin size={14} />
                   <span>Use Location</span>
                 </button>
               </div>
