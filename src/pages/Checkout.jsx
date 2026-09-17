@@ -9,7 +9,7 @@ import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { getOptimizedImage } from '../utils/imageHelpers';
 import { trackPageView, trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackPurchase } from '../utils/analytics';
 import SEO from '../components/SEO';
-
+import MapModal from '../components/MapModal';
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     const script = document.createElement('script');
@@ -74,48 +74,26 @@ const Checkout = () => {
     return { type: 'Home', street: '', city: cachedCity, state: cachedState, pincode: cachedPincode, phone: '' };
   });
 
-  const [isFetchingGeo, setIsFetchingGeo] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
 
   const handleUseLocation = () => {
-    if (!navigator.geolocation) {
-      showToast("Geolocation is not supported by your browser.", "error");
-      return;
+    setShowMapModal(true);
+  };
+
+  const handleMapConfirm = (locationData) => {
+    setAddressForm(prev => ({
+      ...prev,
+      street: locationData.street || prev.street,
+      city: locationData.city || prev.city,
+      state: locationData.state || prev.state,
+      pincode: locationData.pincode || prev.pincode
+    }));
+    setShowMapModal(false);
+    if (locationData.street || locationData.city || locationData.pincode) {
+      showToast("Address populated from map location successfully.");
+    } else {
+      showToast("Could not determine address from map pin.", "error");
     }
-    
-    setIsFetchingGeo(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-          const data = await res.json();
-          
-          if (data && data.address) {
-            const addr = data.address;
-            const streetStr = [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(', ');
-            
-            setAddressForm(prev => ({
-              ...prev,
-              street: streetStr || prev.street,
-              city: addr.city || addr.town || addr.village || addr.county || prev.city,
-              state: addr.state || prev.state,
-              pincode: addr.postcode || prev.pincode
-            }));
-            showToast("Address fetched from location successfully.");
-          }
-        } catch (error) {
-          console.error("Error fetching location details:", error);
-          showToast("Failed to fetch location details.", "error");
-        } finally {
-          setIsFetchingGeo(false);
-        }
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        showToast("Unable to retrieve your location.", "error");
-        setIsFetchingGeo(false);
-      }
-    );
   };
 
 
@@ -955,6 +933,11 @@ const Checkout = () => {
         )}
 
       </AnimatePresence>
+      <MapModal 
+        isOpen={showMapModal} 
+        onClose={() => setShowMapModal(false)} 
+        onConfirm={handleMapConfirm} 
+      />
     </div>
   );
 };
