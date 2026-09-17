@@ -27,7 +27,7 @@ export const WHATSAPP = {
 export const BRAND = {
   name: 'PrathamKarigiri',
   tagline: 'Artisanal Woolens & Yarn',
-  fullName: 'pratham ai gurukul (Pratham Guru Education and Welfare Society)',
+  fullName: 'Pratham Guru Enterprises (Pratham Guru Education and Welfare Society)',
   email: 'prathamkarigiri@gmail.com',
   salesEmail: 'sales.karigiri@gmail.com',
   phone: '+91 70273 11213',
