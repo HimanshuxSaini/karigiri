@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Playfair Display"', 'serif'],
-        sans: ['Inter', 'sans-serif'],
+        serif: ['"Lora"', 'serif'],
+        sans: ['"Outfit"', 'sans-serif'],
       },
       animation: {
         'marquee': 'marquee 25s linear infinite',
