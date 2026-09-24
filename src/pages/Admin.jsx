@@ -515,7 +515,7 @@ const Admin = () => {
     return [
       { label: 'TOTAL REVENUE', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: <ShoppingBag className="text-emerald-500" />, color: "bg-emerald-50" },
       { label: 'TOTAL ORDERS', value: activeOrders.length, icon: <Package className="text-blue-500" />, color: "bg-blue-50" },
-      { label: 'TOTAL PRODUCTS', value: productsArray.length, icon: <LayoutDashboard className="text-purple-500" />, color: "bg-purple-50" },
+      { label: 'TOTAL PRODUCTS', value: productsArray.length, icon: <LayoutDashboard className="text-[var(--primary)]" />, color: "bg-[var(--primary)]/10" },
       { label: 'REELS (MOTION)', value: reelsArray.length, icon: <Eye className="text-rose-500" />, color: "bg-rose-50" },
     ];
   }, [orders, products, reels]);
@@ -2028,7 +2028,7 @@ const Admin = () => {
                             {coupons.map((coupon) => (
                               <tr key={coupon._id || coupon.id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4">
-                                  <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg text-xs font-black tracking-wider">{coupon.code}</span>
+                                  <span className="bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 rounded-lg text-xs font-black tracking-wider">{coupon.code}</span>
                                   {coupon.isAutomatic && (
                                     <div className="mt-2 flex space-x-2">
                                       <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Auto</span>
@@ -2577,7 +2577,7 @@ const Admin = () => {
                                   <p className="font-bold text-gray-900">{adm.email}</p>
                                 </td>
                                 <td className="px-6 py-4">
-                                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold capitalize">
+                                  <span className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-xs font-bold capitalize">
                                     {adm.role}
                                   </span>
                                 </td>
@@ -3675,7 +3675,7 @@ const Admin = () => {
             <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCouponModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
             <Motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-lg relative z-10">
               <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-5 flex items-center justify-between flex-shrink-0">
+                <div className="bg-[var(--primary)] p-5 flex items-center justify-between flex-shrink-0">
                   <h3 className="text-white font-serif text-xl">{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h3>
                   <button onClick={() => setShowCouponModal(false)} className="text-white hover:opacity-70"><X size={24} /></button>
                 </div>
@@ -3684,11 +3684,11 @@ const Admin = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-black uppercase tracking-widest text-gray-400">Code *</label>
-                        <input type="text" required value={couponFormData.code} onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })} placeholder="SUMMER20" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none font-bold uppercase tracking-wider" />
+                        <input type="text" required value={couponFormData.code} onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })} placeholder="SUMMER20" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none font-bold uppercase tracking-wider" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-black uppercase tracking-widest text-gray-400">Discount Type</label>
-                        <select value={couponFormData.discountType} onChange={(e) => setCouponFormData({ ...couponFormData, discountType: e.target.value })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 outline-none font-bold">
+                        <select value={couponFormData.discountType} onChange={(e) => setCouponFormData({ ...couponFormData, discountType: e.target.value })} className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-[var(--primary)]/20 outline-none font-bold">
                           <option value="percentage">Percentage (%)</option>
                           <option value="flat">Flat Amount (₹)</option>
                           <option value="free_shipping">Free Shipping</option>
@@ -3697,7 +3697,7 @@ const Admin = () => {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-black uppercase tracking-widest text-gray-400">Description</label>
-                      <input type="text" value={couponFormData.description} onChange={(e) => setCouponFormData({ ...couponFormData, description: e.target.value })} placeholder="Festival sale discount" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-purple-500/20 outline-none" />
+                      <input type="text" value={couponFormData.description} onChange={(e) => setCouponFormData({ ...couponFormData, description: e.target.value })} placeholder="Festival sale discount" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-[var(--primary)]/20 outline-none" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       {couponFormData.discountType === 'percentage' ? (
@@ -3734,7 +3734,7 @@ const Admin = () => {
                         type="datetime-local"
                         value={couponFormData.expiryDate ? new Date(new Date(couponFormData.expiryDate).getTime() - new Date(couponFormData.expiryDate).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
                         onChange={(e) => setCouponFormData({ ...couponFormData, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold focus:ring-2 focus:ring-purple-500/20"
+                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold focus:ring-2 focus:ring-[var(--primary)]/20"
                       />
                       <p className="text-[10px] text-gray-400">Optional. Coupon will automatically stop working after this point.</p>
                     </div>
@@ -3778,7 +3778,7 @@ const Admin = () => {
                             disabled={isCouponExpired}
                             checked={isCouponExpired ? false : couponFormData.isActive}
                             onChange={(e) => setCouponFormData({ ...couponFormData, isActive: e.target.checked })}
-                            className="w-5 h-5 rounded accent-purple-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                            className="w-5 h-5 rounded accent-[var(--primary)] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                           />
                           <div className="flex flex-col">
                             <label className={`text-sm font-bold ${isCouponExpired ? 'text-red-700' : 'text-gray-700'}`}>Coupon is Active</label>
@@ -3791,7 +3791,7 @@ const Admin = () => {
                       <button
                         type="submit"
                         disabled={isSubmittingCoupon}
-                        className={`flex-grow bg-purple-600 text-white py-3.5 rounded-2xl font-bold hover:bg-purple-700 transition-all shadow-lg flex items-center justify-center ${isSubmittingCoupon ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`flex-grow bg-[var(--primary)] text-white py-3.5 rounded-2xl font-bold hover:bg-[var(--primary)] transition-all shadow-lg flex items-center justify-center ${isSubmittingCoupon ? 'opacity-70 cursor-not-allowed' : ''}`}
                       >
                         {isSubmittingCoupon ? (
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -538,9 +538,9 @@ const Checkout = () => {
             </section>
 
             {/* Step 2: Coupon Code */}
-            <section className="glass-card p-6 md:p-8 premium-shadow border-l-4 border-purple-500">
+            <section className="glass-card p-6 md:p-8 premium-shadow border-l-4 border-[var(--primary)]">
               <div className="flex items-center space-x-4 mb-4 md:mb-6">
-                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
+                <div className="w-10 h-10 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center text-[var(--primary)]">
                   <Tag size={20} />
                 </div>
                 <h2 className="text-lg md:text-xl font-serif text-[var(--text-main)]">Apply Coupon</h2>
@@ -571,7 +571,7 @@ const Checkout = () => {
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                     placeholder="Enter coupon code"
-                    className="flex-grow px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 text-sm font-bold uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal placeholder:font-normal"
+                    className="flex-grow px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] text-sm font-bold uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal placeholder:font-normal"
                   />
                   <button
                     onClick={() => handleApplyCoupon()}
@@ -591,15 +591,15 @@ const Checkout = () => {
 
               <div className="mt-6">
                 <div className="flex items-center justify-between gap-3 mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-purple-600">Available Coupons</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--primary)]">Available Coupons</p>
                   <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">
                     Bag total {formatCurrency(cartTotal)}
                   </p>
                 </div>
 
                 {couponsLoading ? (
-                  <div className="rounded-2xl border border-purple-100 bg-white/70 px-4 py-5 flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
-                    <Loader2 size={16} className="animate-spin text-purple-500" />
+                  <div className="rounded-2xl border border-[var(--primary)] bg-white/70 px-4 py-5 flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
+                    <Loader2 size={16} className="animate-spin text-[var(--primary)]" />
                     <span>Loading coupon offers...</span>
                   </div>
                 ) : couponListError ? (
