@@ -131,7 +131,7 @@ const Cart = () => {
               <div className="flex items-center gap-3 mb-3">
                 <Truck size={16} className={pct >= 100 ? 'text-emerald-500' : 'text-slate-400'} />
                 {pct >= 100 ? (
-                  <p className="text-sm font-black text-emerald-600">🎉 You've unlocked Free Delivery!</p>
+                  <p className="text-sm font-black text-emerald-600"> You've unlocked Free Delivery!</p>
                 ) : (
                   <p className="text-sm font-medium text-slate-600">
                     Add <span className="font-black text-slate-900">₹{remaining.toLocaleString('en-IN')}</span> more for

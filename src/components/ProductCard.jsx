@@ -74,7 +74,7 @@ const ProductCard = ({ product, priority = false }) => {
             )}
             {badge === 'bestseller' && (
               <div className="bg-amber-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm">
-                🔥 Best
+                BESTSELLER Best
               </div>
             )}
           </div>

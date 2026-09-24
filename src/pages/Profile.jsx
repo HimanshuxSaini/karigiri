@@ -878,7 +878,7 @@ const Profile = () => {
                       <AlertTriangle size={28} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-lg font-black uppercase tracking-wider text-red-800">🚨 Security Check Triggered</h4>
+                      <h4 className="text-lg font-black uppercase tracking-wider text-red-800"> Security Check Triggered</h4>
                       <p className="text-sm font-bold text-red-700 mt-1 leading-relaxed">
                         Your order could not be processed because our system detected suspicious, automated, or invalid transaction behaviors.
                       </p>
@@ -939,7 +939,7 @@ const Profile = () => {
                             stepState === 'active' ? 'bg-amber-500 text-white animate-pulse shadow-amber-100' :
                             'bg-gray-100 text-gray-400'
                           }`}>
-                            {stepState === 'completed' ? '✓' : idx + 1}
+                            {stepState === 'completed' ? <Check size={14} strokeWidth={4} /> : idx + 1}
                           </div>
 
                           {/* Content */}
@@ -1006,7 +1006,7 @@ const Profile = () => {
 
                   <a 
                     href={`https://wa.me/917027311213?text=${encodeURIComponent(
-                      `Hello, I need support with my order.\n\n📋 Order ID: #${String(selectedOrder?._id || selectedOrder?.id || '').toUpperCase()}\n📦 Status: ${selectedOrder?.status || 'N/A'}`
+                      `Hello, I need support with my order.\n\n Order ID: #${String(selectedOrder?._id || selectedOrder?.id || '').toUpperCase()}\n Status: ${selectedOrder?.status || 'N/A'}`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

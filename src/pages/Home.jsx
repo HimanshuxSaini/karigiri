@@ -511,7 +511,7 @@ const Home = () => {
                 <span className="bg-[var(--primary)] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-3 inline-block">{artisan.craft}</span>
                 <h4 className="text-xl md:text-2xl font-bold text-[var(--primary)] mb-2">{artisan.name}</h4>
                 <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-4">
-                  {artisan.region} {artisan.phone && <span className="ml-2 font-bold text-[var(--primary)]">📞 {artisan.phone}</span>}
+                  {artisan.region} {artisan.phone && <span className="ml-2 font-bold text-[var(--primary)]"> {artisan.phone}</span>}
                 </p>
                 <p className="text-xs md:text-base text-[var(--text-muted)] leading-relaxed italic opacity-80">"{artisan.story}"</p>
               </div>

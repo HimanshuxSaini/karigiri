@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronRight, Search, X } from 'lucide-react';
+import { ChevronRight, Search, X, Filter } from 'lucide-react';
 import { useSearchParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -81,6 +81,7 @@ const Shop = () => {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [visibleCount, setVisibleCount] = useState(12);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Sync state with URL
   useEffect(() => {
@@ -323,17 +324,27 @@ const Shop = () => {
 
         <div className="flex px-4 md:px-12">
           {/* Sidebar Filters */}
-          <aside className="hidden lg:block w-64 pt-6 pr-6 border-r border-gray-100 flex-shrink-0 sticky top-24 self-start max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar">
+          <aside className={`
+            ${isMobileFilterOpen ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto w-full max-h-screen block' : 'hidden'} 
+            lg:block lg:relative lg:w-64 lg:pt-6 lg:pr-6 lg:border-r lg:border-gray-100 lg:flex-shrink-0 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:custom-scrollbar lg:bg-transparent lg:z-auto lg:p-0
+          `}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-bold text-sm uppercase tracking-wider">Filters</h2>
-              {(categoryFilter !== 'All' || searchQuery) && (
-                <button 
-                  onClick={clearFilters}
-                  className="text-[10px] text-gray-400 hover:text-black uppercase font-bold tracking-tighter transition-colors"
-                >
-                  Clear All
-                </button>
-              )}
+              <div className="flex items-center gap-4">
+                {(categoryFilter !== 'All' || searchQuery) && (
+                  <button 
+                    onClick={clearFilters}
+                    className="text-[10px] text-gray-400 hover:text-black uppercase font-bold tracking-tighter transition-colors"
+                  >
+                    Clear All
+                  </button>
+                )}
+                {isMobileFilterOpen && (
+                  <button onClick={() => setIsMobileFilterOpen(false)} className="lg:hidden p-2">
+                    <X size={20} />
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="mb-6">
@@ -403,27 +414,7 @@ const Shop = () => {
               </div>
             </div>
 
-            {uniqueBrands.length > 1 && (
-              <div className="mb-6">
-                <h3 className="font-bold text-[13px] uppercase mb-3 flex items-center">
-                  <span className="w-4 h-[2px] bg-black mr-3"></span>
-                  Brands
-                </h3>
-                <div className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                  {uniqueBrands.map(brand => (
-                    <label key={brand} className="flex items-center space-x-3 cursor-pointer group">
-                      <input 
-                        type="checkbox"
-                        checked={selectedBrands.includes(brand)}
-                        onChange={() => toggleBrand(brand)}
-                        className="w-4 h-4 accent-black rounded border-gray-300"
-                      />
-                      <span className="text-sm text-gray-600 group-hover:text-black font-medium truncate">{brand}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </aside>
 
           {/* Main Content */}
@@ -439,15 +430,23 @@ const Shop = () => {
                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   {filteredProducts.length} Results
                 </div>
-                <select 
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="text-[10px] font-bold uppercase tracking-widest bg-transparent focus:outline-none"
-                >
-                  <option value="newest">Newest</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
+                <div className="flex gap-4 items-center">
+                  <button 
+                    onClick={() => setIsMobileFilterOpen(true)}
+                    className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 hover:text-black transition-colors"
+                  >
+                    <Filter size={14} /> Filter
+                  </button>
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="text-[10px] font-bold uppercase tracking-widest bg-transparent focus:outline-none"
+                  >
+                    <option value="newest">Newest</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                  </select>
+                </div>
               </div>
             </div>
 
