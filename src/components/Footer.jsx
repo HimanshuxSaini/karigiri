@@ -34,7 +34,7 @@ const Footer = () => {
 
                <div className="lg:col-span-1 text-center sm:text-left">
                   <h4 className="font-black uppercase text-xs tracking-widest mb-4 text-slate-900">Mobile Experience</h4>
-                  <div className="flex items-start space-x-3 mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 max-w-[260px] mx-auto sm:mx-0">
+                  <div className="flex items-start space-x-3 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-100 max-w-[260px] mx-auto sm:mx-0">
                      <div className="p-2.5 bg-white rounded-xl shadow-sm flex-shrink-0 text-[var(--primary)]">
                         <Smartphone size={20} strokeWidth={2.5} />
                      </div>

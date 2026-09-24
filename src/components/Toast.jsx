@@ -23,7 +23,7 @@ const ToastItem = ({ id, message, type, removeToast }) => {
       animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
       exit={{ opacity: 0, scale: 0.9, y: 10, transition: { duration: 0.2 } }}
       className={`
-        flex items-center space-x-4 p-5 rounded-[2rem] 
+        flex items-center space-x-4 p-5 rounded-xl 
         bg-white/80 backdrop-blur-xl border border-white/50
         shadow-[0_20px_50px_rgba(0,0,0,0.1)] ${glowStyles[type]}
         min-w-[320px] max-w-md pointer-events-auto mb-4
@@ -36,7 +36,7 @@ const ToastItem = ({ id, message, type, removeToast }) => {
         type === 'error' ? 'bg-[var(--primary)]' : 'bg-[var(--primary-light)]'
       }`} />
 
-      <div className="flex-shrink-0 bg-white p-2.5 rounded-2xl shadow-sm border border-gray-50">
+      <div className="flex-shrink-0 bg-white p-2.5 rounded-lg shadow-sm border border-gray-50">
         {icons[type]}
       </div>
       

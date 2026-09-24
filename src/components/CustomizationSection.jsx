@@ -57,7 +57,7 @@ const CustomizationSection = () => {
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[var(--primary)]/20 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="glass-card overflow-hidden rounded-3xl border border-amber-100/50 shadow-2xl">
+        <div className="glass-card overflow-hidden rounded-xl border border-amber-100/50 shadow-2xl">
           <div className="flex flex-col lg:flex-row">
             
             {/* Text Content Panel */}
@@ -87,7 +87,7 @@ const CustomizationSection = () => {
                 {/* Benefits Stack */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 shrink-0 bg-white rounded-2xl shadow-md flex items-center justify-center text-[var(--primary)]">
+                    <div className="w-12 h-12 shrink-0 bg-white rounded-lg shadow-md flex items-center justify-center text-[var(--primary)]">
                       <Clock size={20} className="stroke-[2.5px]" />
                     </div>
                     <div>
@@ -97,7 +97,7 @@ const CustomizationSection = () => {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 shrink-0 bg-white rounded-2xl shadow-md flex items-center justify-center text-[var(--primary)]">
+                    <div className="w-12 h-12 shrink-0 bg-white rounded-lg shadow-md flex items-center justify-center text-[var(--primary)]">
                       <Truck size={20} className="stroke-[2.5px]" />
                     </div>
                     <div>

@@ -27,7 +27,7 @@ const ShopSearchBar = ({ value, onChange, onSubmit, onClear }) => (
     onSubmit={onSubmit}
     className="mb-6 md:mb-8 flex items-center gap-2 rounded-[1.75rem] border border-gray-100 bg-white p-2 shadow-sm"
   >
-    <div className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.25rem] bg-gray-50 px-4 py-3">
+    <div className="flex min-w-0 flex-1 items-center gap-3 rounded-lg bg-gray-50 px-4 py-3">
       <Search size={18} className="shrink-0 text-gray-400" />
       <input
         type="search"
@@ -49,7 +49,7 @@ const ShopSearchBar = ({ value, onChange, onSubmit, onClear }) => (
     </div>
     <button
       type="submit"
-      className="shrink-0 rounded-[1.25rem] bg-black px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-all hover:opacity-90 active:scale-95 md:px-6"
+      className="shrink-0 rounded-lg bg-black px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-all hover:opacity-90 active:scale-95 md:px-6"
     >
       Search
     </button>
@@ -452,7 +452,7 @@ const Shop = () => {
 
             <div className="hidden lg:flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
               <div className="w-1/2">
-                <div className="flex items-center gap-3 bg-gray-50 px-5 py-3 rounded-2xl border border-gray-100 focus-within:border-black/20 focus-within:bg-white transition-all">
+                <div className="flex items-center gap-3 bg-gray-50 px-5 py-3 rounded-lg border border-gray-100 focus-within:border-black/20 focus-within:bg-white transition-all">
                   <Search size={16} className="text-gray-400" />
                   <input 
                     type="text"

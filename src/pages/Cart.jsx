@@ -127,7 +127,7 @@ const Cart = () => {
           const pct = Math.min(100, Math.round((cartTotal / threshold) * 100));
           const remaining = threshold - cartTotal;
           return (
-            <div className="mb-8 bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+            <div className="mb-8 bg-white rounded-lg border border-slate-100 p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 <Truck size={16} className={pct >= 100 ? 'text-emerald-500' : 'text-slate-400'} />
                 {pct >= 100 ? (

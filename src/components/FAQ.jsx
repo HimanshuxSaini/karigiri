@@ -90,7 +90,7 @@ const FAQ = () => {
           </motion.p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-white">
+        <div className="bg-white rounded-xl p-6 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-white">
           {faqData.map((item, index) => (
             <FAQItem
               key={index}

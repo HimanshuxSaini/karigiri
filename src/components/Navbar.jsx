@@ -96,7 +96,7 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className={`absolute top-full ${categoryStructure[link.name].position || 'left-0'} ${categoryStructure[link.name].width} bg-white/95 backdrop-blur-xl shadow-[0_25px_60px_rgba(0,0,0,0.1)] rounded-[2rem] lg:rounded-[3rem] border border-gray-100 p-6 lg:p-8 xl:p-12 grid ${categoryStructure[link.name].gridCols} gap-6 lg:gap-8 xl:gap-10 z-50 mt-0 overflow-hidden`}
+                        className={`absolute top-full ${categoryStructure[link.name].position || 'left-0'} ${categoryStructure[link.name].width} bg-white/95 backdrop-blur-xl shadow-[0_25px_60px_rgba(0,0,0,0.1)] rounded-xl lg:rounded-xl border border-gray-100 p-6 lg:p-8 xl:p-12 grid ${categoryStructure[link.name].gridCols} gap-6 lg:gap-8 xl:gap-10 z-50 mt-0 overflow-hidden`}
                         onMouseEnter={() => setHoveredCategory(link.name)}
                         onMouseLeave={() => setHoveredCategory(null)}
                       >
@@ -153,7 +153,7 @@ const Navbar = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full right-0 mt-2 w-[300px] bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-2 z-50"
+                    className="absolute top-full right-0 mt-2 w-[300px] bg-white rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 p-2 z-50"
                   >
                     <form 
                       onSubmit={(e) => {
@@ -275,7 +275,7 @@ const Navbar = () => {
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              className="overflow-hidden bg-gray-50/50 rounded-2xl mb-4"
+                              className="overflow-hidden bg-gray-50/50 rounded-lg mb-4"
                             >
                               <div className="p-4 space-y-6">
                                 {categoryStructure[link.name].sections.map((section, idx) => (
@@ -333,7 +333,7 @@ const Navbar = () => {
                         setIsMobileMenuOpen(false);
                         user ? navigate('/profile') : setIsLoginModalOpen(true);
                       }}
-                      className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
+                      className="flex items-center space-x-4 p-4 rounded-lg bg-white border border-gray-100 shadow-sm"
                     >
                       <div className="w-10 h-10 rounded-xl bg-[var(--secondary)] flex items-center justify-center text-[var(--primary)]">
                         <User size={20} />
@@ -348,7 +348,7 @@ const Navbar = () => {
                         setIsMobileMenuOpen(false);
                         navigate('/wishlist');
                       }}
-                      className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
+                      className="flex items-center space-x-4 p-4 rounded-lg bg-white border border-gray-100 shadow-sm"
                     >
                       <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-400">
                         <Heart size={20} />

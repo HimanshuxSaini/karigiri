@@ -246,7 +246,7 @@ const ProductDetails = () => {
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Image Gallery Skeleton */}
           <div className="lg:w-3/5 space-y-4">
-            <div className="w-full aspect-[3/4] shimmer-bg rounded-2xl"></div>
+            <div className="w-full aspect-[3/4] shimmer-bg rounded-lg"></div>
             <div className="flex gap-4 justify-center lg:justify-start">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="w-20 h-24 shimmer-bg rounded-xl"></div>
@@ -258,7 +258,7 @@ const ProductDetails = () => {
             <div className="h-10 shimmer-bg rounded-lg w-1/3 animate-pulse"></div>
             <div className="h-6 shimmer-bg rounded-lg w-2/3 animate-pulse"></div>
             <div className="h-12 shimmer-bg rounded-lg w-1/2 animate-pulse"></div>
-            <div className="h-48 shimmer-bg rounded-2xl w-full animate-pulse"></div>
+            <div className="h-48 shimmer-bg rounded-lg w-full animate-pulse"></div>
             <div className="h-14 shimmer-bg rounded-xl w-full animate-pulse"></div>
           </div>
         </div>
@@ -435,7 +435,7 @@ const ProductDetails = () => {
           <div className="lg:w-3/5">
             {/* Featured Image */}
             <div
-              className="w-full h-[60vh] lg:h-[70vh] bg-gray-50 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative group"
+              className="w-full h-[60vh] lg:h-[70vh] bg-gray-50 flex items-center justify-center rounded-lg overflow-hidden shadow-sm border border-slate-100 relative group"
             >
               <img
                 key={activeImageIndex}
@@ -450,7 +450,7 @@ const ProductDetails = () => {
               />
               {isOutOfStock && (
                 <div className="absolute inset-0 bg-black/10 flex items-center justify-center backdrop-blur-[2px]">
-                  <div className="bg-red-600/95 backdrop-blur-md px-8 py-3 rounded-2xl text-white font-black uppercase tracking-[0.2em] text-sm md:text-base shadow-2xl">
+                  <div className="bg-red-600/95 backdrop-blur-md px-8 py-3 rounded-lg text-white font-black uppercase tracking-[0.2em] text-sm md:text-base shadow-2xl">
                     Out of Stock
                   </div>
                 </div>
@@ -796,7 +796,7 @@ const ProductDetails = () => {
         </div>
 
         {/* Review Form */}
-        <div className="bg-slate-50 rounded-2xl p-5 md:p-6 mb-8">
+        <div className="bg-slate-50 rounded-lg p-5 md:p-6 mb-8">
           <h3 className="text-sm font-black uppercase tracking-widest mb-4">Write a Review</h3>
           {reviewSubmitted ? (
             <div className="flex items-center gap-3 text-emerald-600 py-4">
@@ -846,7 +846,7 @@ const ProductDetails = () => {
         ) : (
           <div className="space-y-4">
             {reviews.map(r => (
-              <div key={r.id} className="bg-white border border-slate-100 rounded-2xl p-5">
+              <div key={r.id} className="bg-white border border-slate-100 rounded-lg p-5">
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <p className="font-black text-sm text-slate-900">{r.name || 'Anonymous'}</p>
@@ -923,7 +923,7 @@ const ProductDetails = () => {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
+            className="bg-white rounded-xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
             data-lenis-prevent="true"
           >
             <button
@@ -938,7 +938,7 @@ const ProductDetails = () => {
             <h3 className="text-xl md:text-2xl font-black text-[var(--primary)] uppercase tracking-tight mb-2">Size Chart</h3>
             <p className="text-xs md:text-sm text-slate-500 mb-6">Standard size measurements for our exquisite hand-knitted & woolen apparel.</p>
 
-            <div className="overflow-x-auto border border-slate-100 rounded-2xl mb-8">
+            <div className="overflow-x-auto border border-slate-100 rounded-lg mb-8">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[var(--secondary)]/20 border-b border-slate-100">
@@ -983,7 +983,7 @@ const ProductDetails = () => {
               </table>
             </div>
 
-            <div className="bg-[var(--secondary)]/10 p-5 rounded-2xl border border-[var(--secondary)]/30">
+            <div className="bg-[var(--secondary)]/10 p-5 rounded-lg border border-[var(--secondary)]/30">
               <h4 className="font-black text-xs uppercase tracking-widest text-[var(--primary)] mb-3">How to Measure</h4>
               <div className="space-y-3 text-xs text-slate-600">
                 <p><strong className="text-[var(--primary)] font-bold">1. Bust:</strong> Measure around the fullest part of your chest, keeping the tape horizontal.</p>

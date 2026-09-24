@@ -254,8 +254,8 @@ const Home = () => {
           <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-4 md:gap-6 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
             {loading ? (
               [...Array(4)].map((_, i) => (
-                 <div key={i} className="min-w-[170px] md:min-w-0 bg-white p-3 rounded-3xl space-y-3">
-                    <div className="aspect-[3/4] shimmer-bg rounded-2xl w-full"></div>
+                 <div key={i} className="min-w-[170px] md:min-w-0 bg-white p-3 rounded-xl space-y-3">
+                    <div className="aspect-[3/4] shimmer-bg rounded-lg w-full"></div>
                     <div className="h-3 shimmer-bg rounded-md w-3/4"></div>
                     <div className="h-3 shimmer-bg rounded-md w-1/2"></div>
                  </div>
@@ -270,8 +270,8 @@ const Home = () => {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="min-w-[170px] lg:min-w-0 snap-center"
                 >
-                  <Link to={`/product/${deal._id}`} className="group block bg-white p-3 rounded-3xl border border-gray-50 shadow-sm lg:shadow-none lg:border-none lg:bg-transparent h-full">
-                    <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-2xl mb-3 md:mb-4 flex items-center justify-center p-4 relative">
+                  <Link to={`/product/${deal._id}`} className="group block bg-white p-3 rounded-xl border border-gray-50 shadow-sm lg:shadow-none lg:border-none lg:bg-transparent h-full">
+                    <div className="aspect-[3/4] bg-[var(--secondary)]/20 overflow-hidden rounded-lg mb-3 md:mb-4 flex items-center justify-center p-4 relative">
                        <img 
                          src={getOptimizedImage(deal.image, { width: 300, quality: 'auto:eco' })} 
                          width="300"
@@ -307,7 +307,7 @@ const Home = () => {
       {/* Mid Banner */}
       {midBannerConfig?.isVisible && midBannerConfig?.imageUrl && (
         <section className="py-4 md:py-8 px-4 md:px-12 max-w-[1440px] mx-auto">
-          <Link to={midBannerConfig.linkUrl || '/shop'} className="block rounded-[2rem] md:rounded-[3rem] overflow-hidden relative shadow-lg group">
+          <Link to={midBannerConfig.linkUrl || '/shop'} className="block rounded-xl md:rounded-xl overflow-hidden relative shadow-lg group">
             <img 
               src={midBannerConfig.imageUrl} 
               alt="Promotional Banner" 
@@ -334,7 +334,7 @@ const Home = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-8">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="space-y-4">
-                <div className="aspect-[3/4] shimmer-bg rounded-3xl w-full"></div>
+                <div className="aspect-[3/4] shimmer-bg rounded-xl w-full"></div>
                 <div className="space-y-2 px-1">
                   <div className="h-4 shimmer-bg rounded-md w-3/4"></div>
                   <div className="h-3 shimmer-bg rounded-md w-1/2"></div>
@@ -378,8 +378,8 @@ const Home = () => {
             <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 gap-4 md:gap-8 no-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
               {loading ? (
                 [...Array(4)].map((_, i) => (
-                   <div key={i} className="min-w-[220px] md:min-w-0 bg-white p-4 rounded-3xl space-y-4">
-                      <div className="aspect-[3/4] shimmer-bg rounded-2xl w-full"></div>
+                   <div key={i} className="min-w-[220px] md:min-w-0 bg-white p-4 rounded-xl space-y-4">
+                      <div className="aspect-[3/4] shimmer-bg rounded-lg w-full"></div>
                       <div className="h-4 shimmer-bg rounded-md w-3/4"></div>
                    </div>
                 ))
@@ -417,7 +417,7 @@ const Home = () => {
               {loading ? (
                 [...Array(4)].map((_, i) => (
                    <div key={i} className="min-w-[220px] md:min-w-0 space-y-4">
-                      <div className="aspect-[3/4] shimmer-bg rounded-3xl w-full"></div>
+                      <div className="aspect-[3/4] shimmer-bg rounded-xl w-full"></div>
                       <div className="h-4 shimmer-bg rounded-md w-3/4"></div>
                    </div>
                 ))
@@ -502,7 +502,7 @@ const Home = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.2 }}
-              className="bg-[var(--secondary)]/20 p-8 md:p-12 rounded-3xl flex flex-col md:flex-row gap-8 md:gap-10 items-center text-center md:text-left border border-[var(--secondary)]/30 min-w-[280px] md:min-w-0 snap-center"
+              className="bg-[var(--secondary)]/20 p-8 md:p-12 rounded-xl flex flex-col md:flex-row gap-8 md:gap-10 items-center text-center md:text-left border border-[var(--secondary)]/30 min-w-[280px] md:min-w-0 snap-center"
             >
               <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-white shadow-xl flex-shrink-0 flex items-center justify-center text-3xl font-black text-[var(--primary)] border-4 border-white overflow-hidden">
                 <div className="w-full h-full bg-slate-100 flex items-center justify-center">{artisan.name[0]}</div>

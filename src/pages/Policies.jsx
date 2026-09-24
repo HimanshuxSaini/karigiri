@@ -197,7 +197,7 @@ const Policies = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.08 }}
-                className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm"
+                className="bg-white p-6 md:p-8 rounded-lg border border-gray-100 shadow-sm"
               >
                 <h2 className="text-lg font-bold text-[var(--text-main)] mb-3 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mr-3 flex-shrink-0"></span>

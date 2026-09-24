@@ -79,7 +79,7 @@ const BackToTop = () => {
                     transition={{ duration: 0.2 }}
                     className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none px-4 md:absolute md:inset-auto md:right-full md:mr-4 md:top-1/2 md:-translate-y-1/2"
                   >
-                    <div className="w-full max-w-[260px] md:min-w-[260px] bg-white text-gray-900 border border-gray-100 text-sm p-4 rounded-2xl shadow-2xl font-medium leading-relaxed text-center pointer-events-auto relative">
+                    <div className="w-full max-w-[260px] md:min-w-[260px] bg-white text-gray-900 border border-gray-100 text-sm p-4 rounded-lg shadow-2xl font-medium leading-relaxed text-center pointer-events-auto relative">
                       {/* Pointer triangle for desktop */}
                       <div className="hidden md:block absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-y-[6px] border-y-transparent border-l-[6px] border-l-white drop-shadow-sm" />
                       

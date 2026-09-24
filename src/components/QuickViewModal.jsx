@@ -51,7 +51,7 @@ const QuickViewModal = ({ product, onClose }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 60 }}
           transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-          className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] overflow-y-auto"
+          className="bg-white w-full md:max-w-2xl rounded-t-3xl md:rounded-lg overflow-hidden shadow-2xl max-h-[92vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
           data-lenis-prevent="true"
         >

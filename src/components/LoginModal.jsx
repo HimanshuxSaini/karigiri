@@ -295,7 +295,7 @@ const LoginModal = ({ isOpen, onClose }) => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+              className="bg-white w-full max-w-md rounded-xl overflow-hidden shadow-2xl flex flex-col"
             >
               <div className="p-6 md:p-8 flex-1 overflow-y-auto scrollbar-hide" data-lenis-prevent="true">
                 <div className="flex justify-between items-start mb-6">
@@ -343,7 +343,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         <button 
                           onClick={handleSendOtp}
                           disabled={loading}
-                          className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-[var(--primary)]/20 active:scale-[0.98] transition-all flex flex-col items-center justify-center space-y-1 disabled:opacity-50"
+                          className="w-full bg-[var(--primary)] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl hover:shadow-[var(--primary)]/20 active:scale-[0.98] transition-all flex flex-col items-center justify-center space-y-1 disabled:opacity-50"
                         >
                           <div className="flex items-center space-x-2">
                             <span>{loading ? (slowConnection ? 'Still Sending...' : 'Sending...') : 'Get OTP Code'}</span>
@@ -362,13 +362,13 @@ const LoginModal = ({ isOpen, onClose }) => {
                             type="text" maxLength="6" placeholder="000000"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                            className="w-full py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
+                            className="w-full py-4 rounded-lg bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
                           />
                         </div>
                         <button 
                           onClick={handleVerifyOtp}
                           disabled={loading}
-                          className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                          className="w-full bg-[var(--primary)] text-white py-4 rounded-lg font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                         >
                           <span>{loading ? 'Verifying...' : 'Verify & Sign In'}</span>
                         </button>
@@ -402,7 +402,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         />
                       </div>
                     </div>
-                    <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-2xl font-bold text-md shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2">
+                    <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-lg font-bold text-md shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2">
                       <KeyRound size={18} />
                       <span>{loading ? 'Sending...' : 'Send Reset Link'}</span>
                     </button>
@@ -415,13 +415,13 @@ const LoginModal = ({ isOpen, onClose }) => {
                         type="text" maxLength="6" placeholder="000000"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                        className="w-full py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
+                        className="w-full py-4 rounded-lg bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
                       />
                     </div>
                     <button 
                       onClick={handleVerifySignupOtp}
                       disabled={loading}
-                      className="w-full bg-[var(--primary)] text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                      className="w-full bg-[var(--primary)] text-white py-4 rounded-lg font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                     >
                       <span>{loading ? 'Creating Account...' : 'Verify & Create Account'}</span>
                     </button>

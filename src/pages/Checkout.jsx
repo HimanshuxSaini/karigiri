@@ -443,7 +443,7 @@ const Checkout = () => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', damping: 12 }}
-              className="bg-emerald-100 p-6 rounded-3xl"
+              className="bg-emerald-100 p-6 rounded-xl"
             >
               <CheckCircle size={64} className="text-emerald-600" />
             </Motion.div>
@@ -508,7 +508,7 @@ const Checkout = () => {
                 {addresses.length === 0 ? (
                   <button
                     onClick={() => setShowAddressModal(true)}
-                    className="col-span-full p-8 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center hover:border-[var(--primary)] hover:bg-[var(--background)] transition-all group"
+                    className="col-span-full p-8 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center hover:border-[var(--primary)] hover:bg-[var(--background)] transition-all group"
                   >
                     <MapPin size={24} className="text-[var(--text-muted)] mb-2 group-hover:text-[var(--primary)]" />
                     <p className="font-bold text-[var(--text-main)]">No Addresses Saved</p>
@@ -519,7 +519,7 @@ const Checkout = () => {
                     <div
                       key={addr.id}
                       onClick={() => setSelectedAddress(addr.id)}
-                      className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative ${selectedAddress === addr.id
+                      className={`p-5 rounded-lg border-2 transition-all cursor-pointer relative ${selectedAddress === addr.id
                           ? 'border-[var(--primary)] bg-[var(--secondary)]/30'
                           : 'border-white/40 bg-white/30 hover:border-white/60'
                         }`}
@@ -547,7 +547,7 @@ const Checkout = () => {
               </div>
 
               {appliedCoupon && (
-                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 flex items-center justify-between mb-4">
+                <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200 flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="bg-emerald-100 p-2 rounded-xl">
                       <Tag size={16} className="text-emerald-600" />
@@ -598,7 +598,7 @@ const Checkout = () => {
                 </div>
 
                 {couponsLoading ? (
-                  <div className="rounded-2xl border border-[var(--primary)] bg-white/70 px-4 py-5 flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
+                  <div className="rounded-lg border border-[var(--primary)] bg-white/70 px-4 py-5 flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
                     <Loader2 size={16} className="animate-spin text-[var(--primary)]" />
                     <span>Loading coupon offers...</span>
                   </div>
@@ -618,7 +618,7 @@ const Checkout = () => {
                       return (
                         <div
                           key={coupon.couponId}
-                          className={`rounded-2xl border p-4 transition-all ${isApplied
+                          className={`rounded-lg border p-4 transition-all ${isApplied
                               ? 'border-emerald-300 bg-emerald-50/90'
                               : coupon.eligibility.valid
                                 ? 'border-emerald-100 bg-white/80'
@@ -700,7 +700,7 @@ const Checkout = () => {
                 <h2 className="text-lg md:text-xl font-serif text-[var(--text-main)]">How it Works</h2>
               </div>
 
-              <div className="bg-emerald-50/50 p-4 md:p-6 rounded-2xl border border-emerald-100/50">
+              <div className="bg-emerald-50/50 p-4 md:p-6 rounded-lg border border-emerald-100/50">
                 <p className="text-xs md:text-sm text-emerald-800 font-medium leading-relaxed">
                   Your order will be securely processed via Razorpay.
                   We accept UPI, Credit/Debit Cards, Netbanking, and Wallets.
@@ -720,7 +720,7 @@ const Checkout = () => {
 
               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 mb-8 custom-scrollbar" data-lenis-prevent="true">
                 {items.map((item) => (
-                  <div key={item.cartItemId || item.id} className="flex space-x-4 items-center bg-white/30 p-2 rounded-2xl">
+                  <div key={item.cartItemId || item.id} className="flex space-x-4 items-center bg-white/30 p-2 rounded-lg">
                     <div className="relative aspect-[3/4] w-16 bg-[var(--secondary)] rounded-xl overflow-hidden border border-white/40 shadow-sm shrink-0">
                       <img src={getOptimizedImage(item.image, { width: 100, quality: 'auto:eco' })} className="w-full h-full object-contain" alt={item.name} loading="lazy" />
                     </div>
@@ -852,7 +852,7 @@ const Checkout = () => {
             />
             <Motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl relative z-10"
+              className="bg-white w-full max-w-lg rounded-xl p-8 shadow-2xl relative z-10"
             >
               <button onClick={() => setShowAddressModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-black"><X size={24} /></button>
               <div className="flex items-center justify-between mb-6">

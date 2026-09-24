@@ -1053,9 +1053,9 @@ const Admin = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.1 }}
-          className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-6 hover:shadow-md transition-shadow"
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center space-x-6 hover:shadow-md transition-shadow"
         >
-          <div className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center text-xl`}>
+          <div className={`w-14 h-14 ${stat.color} rounded-lg flex items-center justify-center text-xl`}>
             {stat.icon}
           </div>
           <div>
@@ -1087,7 +1087,7 @@ const Admin = () => {
             <div className="flex items-center space-x-2 md:space-x-3 w-full sm:w-auto">
               <Link
                 to="/"
-                className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-2xl bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-100 transition-all"
+                className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-lg bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-100 transition-all"
               >
                 <ExternalLink size={14} />
                 <span className="hidden sm:inline">View Site</span>
@@ -1101,14 +1101,14 @@ const Admin = () => {
             <div
               ref={tabsContainerRef}
               onScroll={checkScroll}
-              className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto no-scrollbar"
+              className="bg-white p-2 rounded-xl shadow-sm border border-gray-100 overflow-x-auto no-scrollbar"
             >
               <div className="flex items-center min-w-max md:min-w-0">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${activeTab === tab.id
+                    className={`flex items-center space-x-3 px-8 py-4 rounded-lg transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${activeTab === tab.id
                       ? 'bg-black text-white shadow-xl'
                       : 'text-gray-400 hover:text-gray-900'
                       }`}
@@ -1155,7 +1155,7 @@ const Admin = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)]"></div>
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-100 p-8 rounded-3xl text-center">
+            <div className="bg-red-50 border border-red-100 p-8 rounded-xl text-center">
               <XCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
               <h3 className="text-lg font-bold text-red-800 mb-2">{error}</h3>
               <button onClick={loadData} className="text-[var(--primary)] font-bold hover:underline">Try Again</button>
@@ -1171,7 +1171,7 @@ const Admin = () => {
                 <>
                   <Stats />
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                    <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
                       <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-bold">Recent Orders</h3>
                         <button onClick={() => setActiveTab('orders')} className="text-sm text-[var(--primary)] font-bold hover:underline">View All</button>
@@ -1179,7 +1179,7 @@ const Admin = () => {
                       <div className="space-y-4">
                         {Array.isArray(orders) && orders.length > 0 ? (
                           orders.filter(o => !o.isDeletedByAdmin && !o.status?.includes('Suspicious')).slice(0, 5).map((order, idx) => (
-                            <div key={order?._id || order?.id || `recent-${idx}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div key={order?._id || order?.id || `recent-${idx}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
                               <div className="flex items-center space-x-4">
                                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[var(--primary)]">
                                   <ShoppingBag size={20} />
@@ -1206,7 +1206,7 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                    <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
                       <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-bold">Inventory Overview</h3>
                         <button onClick={() => setActiveTab('products')} className="text-sm text-[var(--primary)] font-bold hover:underline">Manage</button>
@@ -1256,12 +1256,12 @@ const Admin = () => {
                         ? products.filter(p => p.stockCount !== undefined && p.stockCount <= 5).sort((a, b) => a.stockCount - b.stockCount)
                         : [];
                       return (
-                        <div className="lg:col-span-2 bg-rose-50 p-8 rounded-[3rem] border border-rose-100 relative group overflow-hidden shadow-sm">
+                        <div className="lg:col-span-2 bg-rose-50 p-8 rounded-xl border border-rose-100 relative group overflow-hidden shadow-sm">
                           <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
                           <div className="relative z-10 h-full flex flex-col">
                             <div className="flex items-center justify-between mb-6">
                               <div className="flex items-center space-x-3">
-                                <div className="p-3 bg-rose-500/20 rounded-2xl text-rose-600">
+                                <div className="p-3 bg-rose-500/20 rounded-lg text-rose-600">
                                   <AlertTriangle size={24} />
                                 </div>
                                 <h3 className="text-xl font-bold text-rose-950">Low Stock Alerts</h3>
@@ -1278,7 +1278,7 @@ const Admin = () => {
                                 lowStockProducts.slice(0, 3).map((product, idx) => (
                                   <div
                                     key={product._id || product.id || idx}
-                                    className="flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-rose-100/50 hover:bg-white hover:shadow-md transition-all cursor-pointer group/item"
+                                    className="flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-rose-100/50 hover:bg-white hover:shadow-md transition-all cursor-pointer group/item"
                                     onClick={() => setActiveTab('stock')}
                                   >
                                     <div className="flex items-center space-x-4">
@@ -1298,7 +1298,7 @@ const Admin = () => {
                                   </div>
                                 ))
                               ) : (
-                                <div className="flex flex-col items-center justify-center h-full py-10 text-emerald-600 bg-emerald-50/50 rounded-3xl border border-emerald-100/50">
+                                <div className="flex flex-col items-center justify-center h-full py-10 text-emerald-600 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
                                   <ShieldCheck size={40} className="mb-3 opacity-50" />
                                   <p className="font-bold text-sm">Inventory is healthy!</p>
                                   <p className="text-xs text-emerald-600/70 mt-1">All products are well stocked.</p>
@@ -1334,7 +1334,7 @@ const Admin = () => {
                         placeholder="Search products..."
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
-                        className="w-full pl-12 pr-6 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
+                        className="w-full pl-12 pr-6 py-3 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
                       />
                     </div>
                   </div>
@@ -1414,7 +1414,7 @@ const Admin = () => {
                         placeholder="Search products..."
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
-                        className="w-full pl-12 pr-6 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
+                        className="w-full pl-12 pr-6 py-3 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
                       />
                     </div>
                     <div className="flex space-x-3">
@@ -1441,7 +1441,7 @@ const Admin = () => {
                           });
                           setShowProductModal(true);
                         }}
-                        className="flex items-center justify-center space-x-2 bg-black text-white px-8 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-md"
+                        className="flex items-center justify-center space-x-2 bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-md"
                       >
                         <Plus size={20} />
                         <span>Add Product</span>
@@ -1622,7 +1622,7 @@ const Admin = () => {
               {activeTab === 'orders' && (
                 <div className="space-y-6">
                   <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-fit">
+                    <div className="flex bg-white p-1.5 rounded-lg shadow-sm border border-gray-100 w-fit">
                       {['All', 'Processing', 'Shipped', 'Delivered', 'Suspicious'].map((status) => (
                         <button
                           key={status}
@@ -1649,12 +1649,12 @@ const Admin = () => {
                           placeholder="Search by ID or Phone..."
                           value={orderSearch}
                           onChange={(e) => setOrderSearch(e.target.value)}
-                          className="w-full pl-12 pr-6 py-2.5 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
+                          className="w-full pl-12 pr-6 py-2.5 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
                         />
                       </div>
                       <button 
                         onClick={handleExportOrdersCSV}
-                        className="px-6 py-2.5 bg-black text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-gray-800 transition-all shadow-md whitespace-nowrap text-sm"
+                        className="px-6 py-2.5 bg-black text-white rounded-lg font-bold flex items-center gap-2 hover:bg-gray-800 transition-all shadow-md whitespace-nowrap text-sm"
                       >
                         Export CSV
                       </button>
@@ -1672,7 +1672,7 @@ const Admin = () => {
                         <Motion.div
                           key={order?._id || order?.id || `order-${idx}`}
                           layout
-                          className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4 hover:shadow-md transition-shadow"
+                          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4 hover:shadow-md transition-shadow"
                         >
                           <div className="flex justify-between items-start">
                             <div>
@@ -1751,7 +1751,7 @@ const Admin = () => {
               {activeTab === 'billing' && (
                 <div className="space-y-6">
                   <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-fit">
+                    <div className="flex bg-white p-1.5 rounded-lg shadow-sm border border-gray-100 w-fit">
                       <div className="px-5 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
                         Order Billing & Invoices
                       </div>
@@ -1764,7 +1764,7 @@ const Admin = () => {
                         placeholder="Search by ID or Phone..."
                         value={orderSearch}
                         onChange={(e) => setOrderSearch(e.target.value)}
-                        className="w-full pl-12 pr-6 py-2.5 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
+                        className="w-full pl-12 pr-6 py-2.5 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
                       />
                     </div>
                   </div>
@@ -1929,7 +1929,7 @@ const Admin = () => {
                           setReelFormData({ image: '', tag: '', handle: '@prathamkarigiri_official', order: 0 });
                           setShowReelModal(true);
                         }}
-                        className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
+                        className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-lg"
                       >
                         <Plus size={20} />
                         <span className="hidden sm:inline">Add New Reel</span>
@@ -1946,7 +1946,7 @@ const Admin = () => {
                       </div>
                     ) : (
                       reels.sort((a, b) => (a.order || 0) - (b.order || 0)).map((reel) => (
-                        <div key={reel._id} className="group bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all duration-500">
+                        <div key={reel._id} className="group bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all duration-500">
                           <div className="aspect-[9/16] relative overflow-hidden bg-gray-100">
                             <img
                               src={reel.image}
@@ -1997,7 +1997,7 @@ const Admin = () => {
                     </div>
                     <button
                       onClick={() => { setEditingCoupon(null); setCouponFormData({ code: '', description: '', discountType: 'percentage', discountPercent: 10, discountAmount: 0, maxDiscount: 500, minOrderAmount: 499, usageLimit: 100, isActive: true, isAutomatic: false, isFirstOrderOnly: false }); setShowCouponModal(true); }}
-                      className="flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
+                      className="flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-lg"
                     >
                       <Plus size={20} />
                       <span>New Coupon</span>
@@ -2010,7 +2010,7 @@ const Admin = () => {
                       <p className="text-gray-400 font-medium">No coupons created yet.</p>
                     </div>
                   ) : (
-                    <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                       <div className="overflow-x-auto">
                         <table className="w-full text-left">
                           <thead className="bg-gray-50 border-b border-gray-100">
@@ -2078,9 +2078,9 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm max-w-2xl">
+                  <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm max-w-2xl">
                     <form onSubmit={handleUpdateSaleConfig} className="space-y-6">
-                      <div className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                      <div className="flex items-center justify-between p-6 bg-gray-50 rounded-lg border border-gray-100">
                         <div>
                           <h4 className="font-bold text-gray-900">Activate Flash Sale</h4>
                           <p className="text-xs text-gray-500">Toggle this to show or hide the banner sitewide.</p>
@@ -2102,7 +2102,7 @@ const Admin = () => {
                           type="text"
                           required
                           placeholder="e.g. Flash Sale is live!"
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={saleConfig.text}
                           onChange={(e) => setSaleConfig(prev => ({ ...prev, text: e.target.value }))}
                         />
@@ -2114,7 +2114,7 @@ const Admin = () => {
                           type="text"
                           required
                           placeholder="e.g. Up to 50% OFF"
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={saleConfig.discountText}
                           onChange={(e) => setSaleConfig(prev => ({ ...prev, discountText: e.target.value }))}
                         />
@@ -2125,7 +2125,7 @@ const Admin = () => {
                         <input
                           type="datetime-local"
                           required
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={saleConfig.endTime ? new Date(new Date(saleConfig.endTime).getTime() - new Date(saleConfig.endTime).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
                           onChange={(e) => setSaleConfig(prev => ({ ...prev, endTime: e.target.value ? new Date(e.target.value).toISOString() : '' }))}
                         />
@@ -2136,7 +2136,7 @@ const Admin = () => {
                         <button
                           type="submit"
                           disabled={isUpdatingSale}
-                          className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center"
+                          className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center"
                         >
                           {isUpdatingSale ? 'Saving Updates...' : 'Save Flash Sale Configuration'}
                         </button>
@@ -2172,7 +2172,7 @@ const Admin = () => {
                     </button>
                   </div>
 
-                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
                     <h3 className="text-xl font-bold mb-6">Current Offers</h3>
 
                     <div className="space-y-4 mb-8">
@@ -2248,7 +2248,7 @@ const Admin = () => {
                     </button>
                   </div>
 
-                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
                     <h3 className="text-xl font-bold mb-6">Default Delivery Option</h3>
                     <div className="mb-8">
                       <label className="text-sm font-bold text-gray-700 block mb-2">Default Delivery Days</label>
@@ -2365,7 +2365,7 @@ const Admin = () => {
                     </button>
                   </div>
 
-                  <div className="bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="bg-white p-4 md:p-8 rounded-lg shadow-sm border border-gray-100">
                     {heroSlides.length === 0 ? (
                       <div className="text-center py-12 text-gray-400">
                         <Presentation size={48} className="mx-auto mb-4 opacity-50" />
@@ -2374,7 +2374,7 @@ const Admin = () => {
                     ) : (
                       <div className="space-y-4">
                         {heroSlides.map((slide, index) => (
-                          <div key={index} className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 border border-gray-100 rounded-2xl hover:border-gray-300 transition-colors bg-gray-50/50">
+                          <div key={index} className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-4 border border-gray-100 rounded-lg hover:border-gray-300 transition-colors bg-gray-50/50">
                             <div className="w-full md:w-24 h-40 md:h-24 bg-white rounded-xl border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
                               {slide.img ? (
                                 <img src={slide.img} alt={slide.title} className="max-w-full max-h-full object-contain" />
@@ -2470,7 +2470,7 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
+                  <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 max-w-2xl">
                     <form onSubmit={handleSendPush} className="space-y-6">
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Notification Title</label>
@@ -2478,7 +2478,7 @@ const Admin = () => {
                           type="text"
                           required
                           placeholder="e.g. New Handmade Collection!"
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={pushData.title}
                           onChange={(e) => setPushData(prev => ({ ...prev, title: e.target.value }))}
                         />
@@ -2490,7 +2490,7 @@ const Admin = () => {
                           required
                           rows={3}
                           placeholder="e.g. Check out our latest arrivals and get 20% off today."
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 resize-none"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 resize-none"
                           value={pushData.body}
                           onChange={(e) => setPushData(prev => ({ ...prev, body: e.target.value }))}
                         />
@@ -2501,7 +2501,7 @@ const Admin = () => {
                         <input
                           type="text"
                           placeholder="https://example.com/image.png"
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={pushData.image}
                           onChange={(e) => setPushData(prev => ({ ...prev, image: e.target.value }))}
                         />
@@ -2512,7 +2512,7 @@ const Admin = () => {
                         <input
                           type="text"
                           placeholder="/shop"
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={pushData.url}
                           onChange={(e) => setPushData(prev => ({ ...prev, url: e.target.value }))}
                         />
@@ -2522,7 +2522,7 @@ const Admin = () => {
                         <button
                           type="submit"
                           disabled={isSendingPush}
-                          className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2"
+                          className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2"
                         >
                           <Smartphone size={20} />
                           <span>{isSendingPush ? 'Sending...' : 'Send Push Notification'}</span>
@@ -2553,7 +2553,7 @@ const Admin = () => {
                     </button>
                   </div>
 
-                  <div className="bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="bg-white p-4 md:p-8 rounded-lg shadow-sm border border-gray-100">
                     {adminsList.length === 0 ? (
                       <div className="text-center py-12 text-gray-400">
                         <Users size={48} className="mx-auto mb-4 opacity-50" />
@@ -2643,7 +2643,7 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
+                  <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 max-w-2xl">
                     <form onSubmit={async (e) => {
                       e.preventDefault();
                       setIsUpdatingMidBanner(true);
@@ -2677,11 +2677,11 @@ const Admin = () => {
                           <input
                             type="text"
                             placeholder="e.g. /offers.webp or https://..."
-                            className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                            className="flex-1 px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                             value={midBannerConfig.imageUrl}
                             onChange={(e) => setMidBannerConfig(prev => ({ ...prev, imageUrl: e.target.value }))}
                           />
-                          <label className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl cursor-pointer flex items-center justify-center transition-colors">
+                          <label className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg cursor-pointer flex items-center justify-center transition-colors">
                             <Upload size={20} />
                             <input
                               type="file"
@@ -2713,7 +2713,7 @@ const Admin = () => {
                         <input
                           type="text"
                           placeholder="e.g. /shop?category=Women or /product/123"
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={midBannerConfig.linkUrl}
                           onChange={(e) => setMidBannerConfig(prev => ({ ...prev, linkUrl: e.target.value }))}
                         />
@@ -2723,7 +2723,7 @@ const Admin = () => {
                         <button
                           type="submit"
                           disabled={isUpdatingMidBanner}
-                          className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2"
+                          className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2"
                         >
                           {isUpdatingMidBanner ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle size={20} />}
                           <span>{isUpdatingMidBanner ? 'Saving...' : 'Save Banner Settings'}</span>
@@ -2744,7 +2744,7 @@ const Admin = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="md:col-span-1 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 h-fit">
+                    <div className="md:col-span-1 bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-fit">
                       <h3 className="font-bold text-gray-900 mb-4 px-2">Main Categories</h3>
                       <div className="space-y-1">
                         {Object.keys(categoriesConfig).map(cat => (
@@ -2759,7 +2759,7 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    <div className="md:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="md:col-span-3 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                       {selectedCategoryKey ? (
                         <div className="space-y-6">
                           <div className="flex items-center justify-between border-b border-gray-100 pb-4">
@@ -2932,7 +2932,7 @@ const Admin = () => {
                       required
                       type="text"
                       placeholder="e.g. Floral Collection"
-                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                       value={heroFormData.title}
                       onChange={(e) => setHeroFormData({ ...heroFormData, title: e.target.value })}
                     />
@@ -2943,7 +2943,7 @@ const Admin = () => {
                       required
                       rows="2"
                       placeholder={"e.g. Artisanal\nCrochet Bouquet."}
-                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 resize-none"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 resize-none"
                       value={heroFormData.head}
                       onChange={(e) => setHeroFormData({ ...heroFormData, head: e.target.value })}
                     />
@@ -2955,7 +2955,7 @@ const Admin = () => {
                       required
                       type="text"
                       placeholder="e.g. /shop or /category/kids"
-                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                       value={heroFormData.link}
                       onChange={(e) => setHeroFormData({ ...heroFormData, link: e.target.value })}
                     />
@@ -2964,7 +2964,7 @@ const Admin = () => {
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Slide Image</label>
                     <div className="flex items-center gap-4">
                       {heroFormData.img && (
-                        <div className="relative group w-24 h-24 rounded-2xl bg-gray-50 border-2 border-gray-100 flex items-center justify-center overflow-hidden">
+                        <div className="relative group w-24 h-24 rounded-lg bg-gray-50 border-2 border-gray-100 flex items-center justify-center overflow-hidden">
                           <img src={heroFormData.img} alt="Preview" className="max-w-full max-h-full object-contain" />
                           <button
                             type="button"
@@ -3000,7 +3000,7 @@ const Admin = () => {
                           />
                           <label
                             htmlFor="hero-image-upload"
-                            className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all bg-gray-50/50 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
+                            className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all bg-gray-50/50 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
                           >
                             {uploadingImage ? (
                               <div className="flex flex-col items-center">
@@ -3022,14 +3022,14 @@ const Admin = () => {
                     <button
                       type="button"
                       onClick={() => setShowHeroModal(false)}
-                      className="flex-1 bg-gray-100 text-gray-900 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-colors"
+                      className="flex-1 bg-gray-100 text-gray-900 py-4 rounded-lg font-bold hover:bg-gray-200 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isUpdatingHero || !heroFormData.img}
-                      className="flex-1 bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50"
+                      className="flex-1 bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50"
                     >
                       {isUpdatingHero ? 'Saving...' : 'Save Slide'}
                     </button>
@@ -3067,7 +3067,7 @@ const Admin = () => {
                     <input
                       required
                       type="text"
-                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     />
@@ -3078,7 +3078,7 @@ const Admin = () => {
                       <input
                         required
                         type="number"
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                         value={formData.price}
                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       />
@@ -3088,7 +3088,7 @@ const Admin = () => {
                       <input
                         required
                         type="number"
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                         value={formData.deliveryCharge}
                         onChange={(e) => setFormData({ ...formData, deliveryCharge: Number(e.target.value) })}
                       />
@@ -3097,7 +3097,7 @@ const Admin = () => {
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Category</label>
                     <select
-                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value, subCategory: '' })}
                     >
@@ -3110,7 +3110,7 @@ const Admin = () => {
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Product Badge</label>
                     <select
-                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                       value={formData.badge || 'none'}
                       onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
                     >
@@ -3124,7 +3124,7 @@ const Admin = () => {
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{formData.category} Sub-Category</label>
                       <select
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                         value={formData.subCategory}
                         onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
                       >
@@ -3147,7 +3147,7 @@ const Admin = () => {
                       <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
                         {formData.image && (
                           <div className="relative group flex-shrink-0">
-                            <img src={formData.image} alt="Preview" className="w-32 aspect-[3/4] rounded-2xl object-contain bg-white border-2 border-[var(--primary)] shadow-md" />
+                            <img src={formData.image} alt="Preview" className="w-32 aspect-[3/4] rounded-lg object-contain bg-white border-2 border-[var(--primary)] shadow-md" />
                             <button
                               type="button"
                               onClick={() => setFormData({ ...formData, image: '' })}
@@ -3169,7 +3169,7 @@ const Admin = () => {
                             />
                             <label
                               htmlFor="main-image-upload"
-                              className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all bg-gray-50/50 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
+                              className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all bg-gray-50/50 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                               {uploadingImage ? (
                                 <div className="flex flex-col items-center">
@@ -3237,7 +3237,7 @@ const Admin = () => {
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Size Category</label>
                         <select
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={formData.sizeType}
                           onChange={(e) => {
                             const val = e.target.value;
@@ -3262,7 +3262,7 @@ const Admin = () => {
                           <input
                             type="text"
                             placeholder="e.g. 28, 30, 32, 34"
-                            className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                            className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                             value={(Array.isArray(formData.sizes) ? formData.sizes : []).join(', ')}
                             onChange={(e) => {
                               const val = e.target.value;
@@ -3279,7 +3279,7 @@ const Admin = () => {
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
                           Select Available Sizes ({(Array.isArray(formData.sizes) ? formData.sizes : []).length} selected)
                         </label>
-                        <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
                           {(formData.sizeType === 'standard'
                             ? ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
                             : ['New Born', '0-3M', '3-6M', '6-12M', '1-2Y', '2-3Y', '3-4Y', '4-5Y', '5-6Y', '7-8Y', '9-10Y', '10-12Y']
@@ -3348,7 +3348,7 @@ const Admin = () => {
                     <textarea
                       required
                       rows="3"
-                      className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     ></textarea>
@@ -3361,7 +3361,7 @@ const Admin = () => {
                         min="0"
                         disabled={!formData.inStock}
                         placeholder={formData.inStock ? "Unlimited" : "Not Applicable"}
-                        className={`w-full px-4 py-3 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 transition-colors ${!formData.inStock ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-70' : 'bg-gray-50 border-gray-100'}`}
+                        className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 transition-colors ${!formData.inStock ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-70' : 'bg-gray-50 border-gray-100'}`}
                         value={formData.stockCount !== undefined ? formData.stockCount : ''}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -3395,7 +3395,7 @@ const Admin = () => {
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Return Policy</label>
                       <select
-                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                        className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                         value={formData.isReturnable ? 'yes' : 'no'}
                         onChange={(e) => setFormData({ ...formData, isReturnable: e.target.value === 'yes' })}
                       >
@@ -3407,7 +3407,7 @@ const Admin = () => {
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Return Days</label>
                         <select
-                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
                           value={formData.returnDays || 7}
                           onChange={(e) => setFormData({ ...formData, returnDays: Number(e.target.value) })}
                         >
@@ -3423,14 +3423,14 @@ const Admin = () => {
                   <div className="md:col-span-2 flex space-x-4 mt-4">
                     <button
                       type="submit"
-                      className="flex-grow bg-[var(--primary)] text-white py-4 rounded-2xl font-bold hover:opacity-90 transition-all shadow-lg"
+                      className="flex-grow bg-[var(--primary)] text-white py-4 rounded-lg font-bold hover:opacity-90 transition-all shadow-lg"
                     >
                       {editingProduct ? 'Update Product' : 'Create Product'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowProductModal(false)}
-                      className="px-8 border border-gray-100 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all"
+                      className="px-8 border border-gray-100 rounded-lg font-bold text-gray-500 hover:bg-gray-50 transition-all"
                     >
                       Cancel
                     </button>
@@ -3469,7 +3469,7 @@ const Admin = () => {
               initial={{ opacity: 0, scale: 0.9, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
+              className="bg-white w-full max-w-sm rounded-xl overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
             >
               <div className="bg-black p-5 flex justify-between items-center flex-shrink-0">
                 <h3 className="text-white font-serif text-xl">{editingReel ? 'Edit Reel' : 'Add New Reel'}</h3>
@@ -3483,7 +3483,7 @@ const Admin = () => {
                     <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Reel Preview / Image</label>
                     <div className="flex justify-center">
                       {reelFormData.image ? (
-                        <div className="relative group w-32 aspect-[9/16] rounded-2xl overflow-hidden border-2 border-[var(--primary)] shadow-lg">
+                        <div className="relative group w-32 aspect-[9/16] rounded-lg overflow-hidden border-2 border-[var(--primary)] shadow-lg">
                           <img src={reelFormData.image} alt="Preview" className="w-full h-full object-cover" />
                           <button
                             type="button"
@@ -3494,7 +3494,7 @@ const Admin = () => {
                           </button>
                         </div>
                       ) : (
-                        <label className={`w-32 aspect-[9/16] border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all ${uploadingImage ? 'opacity-50' : ''}`}>
+                        <label className={`w-32 aspect-[9/16] border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all ${uploadingImage ? 'opacity-50' : ''}`}>
                           <input type="file" className="hidden" accept="image/*" onChange={handleReelImageUpload} />
                           {uploadingImage ? (
                             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--primary)]"></div>
@@ -3515,7 +3515,7 @@ const Admin = () => {
                       <input
                         type="text"
                         required
-                        className="w-full px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
                         value={reelFormData.tag}
                         onChange={(e) => setReelFormData({ ...reelFormData, tag: e.target.value })}
                       />
@@ -3525,7 +3525,7 @@ const Admin = () => {
                       <input
                         type="text"
                         required
-                        className="w-full px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
                         value={reelFormData.handle}
                         onChange={(e) => setReelFormData({ ...reelFormData, handle: e.target.value })}
                       />
@@ -3535,7 +3535,7 @@ const Admin = () => {
                       <input
                         type="number"
                         required
-                        className="w-full px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
+                        className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1"
                         value={reelFormData.order}
                         onChange={(e) => setReelFormData({ ...reelFormData, order: parseInt(e.target.value) })}
                       />
@@ -3546,14 +3546,14 @@ const Admin = () => {
                     <button
                       type="submit"
                       disabled={uploadingImage}
-                      className="flex-grow bg-[var(--primary)] text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg disabled:opacity-50"
+                      className="flex-grow bg-[var(--primary)] text-white py-3 rounded-lg font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg disabled:opacity-50"
                     >
                       {editingReel ? 'Update Reel' : 'Create Reel'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowReelModal(false)}
-                      className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all"
+                      className="px-8 border border-gray-100 rounded-lg font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all"
                     >
                       Cancel
                     </button>
@@ -3579,7 +3579,7 @@ const Admin = () => {
                 initial={{ opacity: 0, scale: 0.9, y: 40 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                className="bg-white w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
+                className="bg-white w-full max-w-md rounded-xl overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
               >
                 <div className="bg-black p-5 flex justify-between items-center flex-shrink-0">
                   <h3 className="text-white font-serif text-xl">{editingAdmin ? 'Edit Admin Permissions' : 'Add New Admin'}</h3>
@@ -3614,7 +3614,7 @@ const Admin = () => {
                         type="email"
                         required
                         disabled={!!editingAdmin}
-                        className={`w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1 ${editingAdmin ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50'}`}
+                        className={`w-full px-4 py-3 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 mt-1 ${editingAdmin ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50'}`}
                         value={adminFormData.email}
                         onChange={(e) => setAdminFormData({ ...adminFormData, email: e.target.value })}
                         placeholder="admin@example.com"
@@ -3650,14 +3650,14 @@ const Admin = () => {
                       <button
                         type="submit"
                         disabled={isSubmittingAdmin || adminFormData.permissions.length === 0}
-                        className="flex-grow bg-black text-white py-4 rounded-2xl font-black tracking-widest text-xs hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50"
+                        className="flex-grow bg-black text-white py-4 rounded-lg font-black tracking-widest text-xs hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50"
                       >
                         {isSubmittingAdmin ? 'Saving...' : (editingAdmin ? 'Update Permissions' : 'Grant Access')}
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowAdminModal(false)}
-                        className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all"
+                        className="px-8 border border-gray-100 rounded-lg font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all"
                       >
                         Cancel
                       </button>
@@ -3674,7 +3674,7 @@ const Admin = () => {
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCouponModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
             <Motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="w-full max-w-lg relative z-10">
-              <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="bg-[var(--primary)] p-5 flex items-center justify-between flex-shrink-0">
                   <h3 className="text-white font-serif text-xl">{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h3>
                   <button onClick={() => setShowCouponModal(false)} className="text-white hover:opacity-70"><X size={24} /></button>
@@ -3791,7 +3791,7 @@ const Admin = () => {
                       <button
                         type="submit"
                         disabled={isSubmittingCoupon}
-                        className={`flex-grow bg-[var(--primary)] text-white py-3.5 rounded-2xl font-bold hover:bg-[var(--primary)] transition-all shadow-lg flex items-center justify-center ${isSubmittingCoupon ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`flex-grow bg-[var(--primary)] text-white py-3.5 rounded-lg font-bold hover:bg-[var(--primary)] transition-all shadow-lg flex items-center justify-center ${isSubmittingCoupon ? 'opacity-70 cursor-not-allowed' : ''}`}
                       >
                         {isSubmittingCoupon ? (
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -3799,7 +3799,7 @@ const Admin = () => {
                           editingCoupon ? 'Update Coupon' : 'Create Coupon'
                         )}
                       </button>
-                      <button type="button" onClick={() => setShowCouponModal(false)} className="px-8 border border-gray-100 rounded-2xl font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
+                      <button type="button" onClick={() => setShowCouponModal(false)} className="px-8 border border-gray-100 rounded-lg font-black uppercase tracking-widest text-[10px] text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
                     </div>
                   </form>
                 </div>
@@ -3838,7 +3838,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onUpdateDeliveryDate
         initial={{ opacity: 0, scale: 0.9, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 40 }}
-        className="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10"
+        className="bg-white w-full max-w-2xl rounded-xl overflow-hidden shadow-2xl relative z-10"
       >
         <div className="h-32 bg-black p-8 flex justify-between items-start">
           <div>
@@ -3896,13 +3896,13 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onUpdateDeliveryDate
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-            <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100">
+            <div className="p-6 rounded-xl bg-gray-50 border border-gray-100">
               <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)] mb-4">Customer Details</h4>
               <p className="text-sm font-bold text-gray-900 mb-1">{order?.email || 'N/A'}</p>
               <p className="text-xs text-gray-500 mb-1">UID: {order?.user || 'Guest'}</p>
               <p className="text-sm text-gray-500">{order?.shippingAddress?.phone || 'N/A'}</p>
             </div>
-            <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100">
+            <div className="p-6 rounded-xl bg-gray-50 border border-gray-100">
               <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)] mb-4">Shipping Address</h4>
               <p className="text-sm font-bold text-gray-900 mb-1">{order?.shippingAddress?.street || order?.shippingAddress?.address || 'N/A'}</p>
               <p className="text-sm text-gray-500">
@@ -3914,7 +3914,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onUpdateDeliveryDate
           <div className="space-y-6 mb-10">
             <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">Order Items</h4>
             {(order?.orderItems || []).map((item, i) => (
-              <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50/50 border border-gray-50">
+              <div key={i} className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50/50 border border-gray-50">
                 <img
                   src={item?.image || item?.images?.[0] || '/placeholder.png'}
                   className="w-16 aspect-[3/4] object-contain bg-white rounded-xl shadow-sm border border-gray-100"
@@ -3933,7 +3933,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onUpdateDeliveryDate
             ))}
           </div>
 
-          <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100 mb-6">
+          <div className="p-6 bg-blue-50 rounded-xl border border-blue-100 mb-6">
             <h4 className="text-xs font-black uppercase tracking-widest text-blue-800 mb-4">Expected Delivery Date</h4>
             <div className="flex items-center space-x-3">
               <input
@@ -3955,7 +3955,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onUpdateDeliveryDate
             </div>
           </div>
 
-          <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
+          <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-100">
             <h4 className="text-xs font-black uppercase tracking-widest text-emerald-800 mb-4">Update Status</h4>
             <div className="flex flex-wrap gap-2">
               {['Processing', 'Shipped', 'Delivered'].map((status) => (
@@ -3986,7 +3986,7 @@ const OrderDetailModal = ({ order, onClose, onUpdateStatus, onUpdateDeliveryDate
             
             {/* Cancellation Options Section */}
             {showCancelOptions && (
-              <div className="mt-4 p-4 bg-white rounded-2xl border border-red-100 shadow-sm animate-in fade-in slide-in-from-top-2">
+              <div className="mt-4 p-4 bg-white rounded-lg border border-red-100 shadow-sm animate-in fade-in slide-in-from-top-2">
                 <h5 className="text-xs font-bold text-red-800 mb-3 uppercase tracking-wider">Select Cancellation Reason</h5>
                 <select 
                   className="w-full p-3 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500/20 mb-3 text-sm"

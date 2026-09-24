@@ -211,7 +211,7 @@ const Profile = () => {
               {(isAdminEmail(user?.email) || user?.role === 'admin') && (
                 <Link
                   to="/admin"
-                  className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all"
+                  className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-red-50 text-red-600 font-bold text-xs uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all"
                 >
                   <Settings size={14} className="animate-spin-slow" />
                   <span>Admin Panel</span>
@@ -219,7 +219,7 @@ const Profile = () => {
               )}
               <button 
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-6 py-3 rounded-2xl bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-100 transition-all"
+                className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-100 transition-all"
               >
                 <LogOut size={14} />
                 <span>Logout</span>
@@ -228,13 +228,13 @@ const Profile = () => {
           </div>
 
           {/* Horizontal Tab Navigation - Styled like the user's request */}
-          <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
+          <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
             <div className="flex items-center min-w-max md:min-w-0">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${
+                  className={`flex items-center space-x-3 px-8 py-4 rounded-lg transition-all duration-300 font-bold text-xs uppercase tracking-[0.15em] ${
                     activeTab === tab.id 
                       ? 'bg-black text-white shadow-xl' 
                       : 'text-gray-400 hover:text-gray-900'
@@ -266,9 +266,9 @@ const Profile = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm flex items-center space-x-4"
+                        className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center space-x-4"
                       >
-                        <div className={`w-12 h-12 ${stat.bg} rounded-2xl flex items-center justify-center`}>
+                        <div className={`w-12 h-12 ${stat.bg} rounded-lg flex items-center justify-center`}>
                           {stat.icon}
                         </div>
                         <div>
@@ -282,7 +282,7 @@ const Profile = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Recent Activity / Orders Preview */}
                     <div className="lg:col-span-8 space-y-6">
-                      <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-gray-100 shadow-sm overflow-hidden">
+                      <div className="bg-white p-5 sm:p-8 rounded-xl sm:rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                         <div className="flex flex-col gap-3 mb-8 sm:flex-row sm:items-center sm:justify-between">
                           <h3 className="text-xl sm:text-2xl font-serif font-bold">Recent Purchases</h3>
                           <button 
@@ -302,9 +302,9 @@ const Profile = () => {
                             </div>
                           ) : (
                             dbOrders.slice(0, 3).map((order, idx) => (
-                              <div key={idx} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 bg-gray-50 rounded-[2rem] border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
+                              <div key={idx} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 bg-gray-50 rounded-xl border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
                                 <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                                  <div className="w-12 h-12 shrink-0 bg-white rounded-2xl flex items-center justify-center text-[var(--primary)] shadow-sm">
+                                  <div className="w-12 h-12 shrink-0 bg-white rounded-lg flex items-center justify-center text-[var(--primary)] shadow-sm">
                                     <Package size={20} />
                                   </div>
                                   <div className="min-w-0">
@@ -333,17 +333,17 @@ const Profile = () => {
 
                     {/* Sidebar: Profile Summary & Actions */}
                     <div className="lg:col-span-4 space-y-6">
-                      <div className="bg-black p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                      <div className="bg-black p-8 rounded-xl text-white shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
                         <div className="relative z-10">
-                           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl font-serif mb-6 border border-white/30">
+                           <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center text-3xl font-serif mb-6 border border-white/30">
                              {((user.displayName?.[0] || user.email?.[0] || 'A')).toUpperCase()}
                            </div>
                            <h4 className="text-2xl font-serif mb-1">{user.displayName || 'Artisan Client'}</h4>
                            <p className="text-white/50 text-sm mb-6">{user.email || user.phoneNumber || 'Verified Account'}</p>
                            <button 
                             onClick={() => setActiveTab('settings')}
-                            className="w-full py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center space-x-2"
+                            className="w-full py-4 bg-white text-black rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center space-x-2"
                            >
                              <UserIcon size={14} />
                              <span>Edit Profile</span>
@@ -364,13 +364,13 @@ const Profile = () => {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
-                  <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
+                  <div className="bg-white p-5 sm:p-8 rounded-xl sm:rounded-xl border border-gray-100 shadow-sm min-h-[600px]">
                     <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h3 className="text-2xl font-serif text-[var(--primary)]">Order History</h3>
                         <p className="text-sm text-[var(--text-muted)]">Track and manage your recent purchases</p>
                       </div>
-                      <div className="self-start p-3 bg-[var(--secondary)] rounded-2xl text-[var(--primary)] sm:self-auto">
+                      <div className="self-start p-3 bg-[var(--secondary)] rounded-lg text-[var(--primary)] sm:self-auto">
                         <Package size={24} />
                       </div>
                     </div>
@@ -405,7 +405,7 @@ const Profile = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             onClick={() => setSelectedOrder(order)}
-                            className="p-5 sm:p-6 rounded-2xl border border-white/40 hover:border-[var(--primary-light)] transition-all bg-white/30 group cursor-pointer"
+                            className="p-5 sm:p-6 rounded-lg border border-white/40 hover:border-[var(--primary-light)] transition-all bg-white/30 group cursor-pointer"
                           >
                             <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
                               <div className="min-w-0">
@@ -483,13 +483,13 @@ const Profile = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
+                  <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm min-h-[600px]">
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <h3 className="text-2xl font-serif text-[var(--primary)]">My Wishlist</h3>
                         <p className="text-sm text-[var(--text-muted)]">Items you've saved for later</p>
                       </div>
-                      <div className="p-3 bg-red-50 rounded-2xl text-red-500">
+                      <div className="p-3 bg-red-50 rounded-lg text-red-500">
                         <Heart size={24} />
                       </div>
                     </div>
@@ -512,7 +512,7 @@ const Profile = () => {
                             layout
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="flex flex-col p-4 rounded-2xl bg-white/30 border border-white/40 group hover:shadow-lg transition-all"
+                            className="flex flex-col p-4 rounded-lg bg-white/30 border border-white/40 group hover:shadow-lg transition-all"
                           >
                             <div className="flex space-x-4 mb-4">
                               <div className="aspect-[3/4] w-20 bg-[var(--secondary)]/30 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
@@ -583,13 +583,13 @@ const Profile = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm min-h-[600px]">
+                  <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm min-h-[600px]">
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <h3 className="text-2xl font-serif text-[var(--primary)]">Account Settings</h3>
                         <p className="text-sm text-[var(--text-muted)]">Manage your profile and preferences</p>
                       </div>
-                      <div className="p-3 bg-blue-50 rounded-2xl text-blue-500">
+                      <div className="p-3 bg-blue-50 rounded-lg text-blue-500">
                         <Settings size={24} />
                       </div>
                     </div>
@@ -703,7 +703,7 @@ const Profile = () => {
                           {addresses.length === 0 ? (
                             <div 
                               onClick={() => setShowAddressModal(true)}
-                              className="p-6 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center hover:border-[var(--primary)] hover:bg-[var(--background)] transition-all cursor-pointer group col-span-full"
+                              className="p-6 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center hover:border-[var(--primary)] hover:bg-[var(--background)] transition-all cursor-pointer group col-span-full"
                             >
                               <MapPin size={24} className="text-[var(--text-muted)] mb-2 group-hover:text-[var(--primary)]" />
                               <p className="text-sm font-bold text-[var(--text-main)]">Add New Address</p>
@@ -730,7 +730,7 @@ const Profile = () => {
 
                       <section>
                         <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6">Notifications</h4>
-                        <div className="p-6 rounded-2xl border border-gray-100 flex items-center justify-between bg-white shadow-sm">
+                        <div className="p-6 rounded-lg border border-gray-100 flex items-center justify-between bg-white shadow-sm">
                           <div>
                             <p className="text-sm font-bold text-[var(--text-main)] mb-1">Push Notifications</p>
                             <p className="text-xs text-[var(--text-muted)]">Enable to get real-time order updates.</p>
@@ -808,7 +808,7 @@ const Profile = () => {
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10"
+              className="bg-white w-full max-w-2xl rounded-xl overflow-hidden shadow-2xl relative z-10"
             >
               <div className="h-32 bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] p-8 flex justify-between items-start">
                 <div>
@@ -857,7 +857,7 @@ const Profile = () => {
 
                 {/* Expected Delivery Date Alert */}
                 {selectedOrder.expectedDeliveryDate && selectedOrder.status !== 'Delivered' && selectedOrder.status !== 'Cancelled' && (
-                  <div className="mb-10 p-4 rounded-[1.5rem] bg-blue-50/60 border border-blue-100 flex items-center space-x-4">
+                  <div className="mb-10 p-4 rounded-lg bg-blue-50/60 border border-blue-100 flex items-center space-x-4">
                     <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
                       <Truck size={20} />
                     </div>
@@ -872,9 +872,9 @@ const Profile = () => {
 
                 {/* Suspension Alert if Flagged */}
                 {(selectedOrder.isDeletedByAdmin || selectedOrder.status?.includes('Suspicious')) && (
-                  <div className="mb-10 p-6 sm:p-8 rounded-[2rem] bg-red-50/60 border-2 border-red-100 flex flex-col sm:flex-row items-start sm:items-center gap-6 relative overflow-hidden shadow-inner">
+                  <div className="mb-10 p-6 sm:p-8 rounded-xl bg-red-50/60 border-2 border-red-100 flex flex-col sm:flex-row items-start sm:items-center gap-6 relative overflow-hidden shadow-inner">
                     <div className="absolute top-0 left-0 h-full w-2 bg-red-500" />
-                    <div className="p-4 bg-red-100 rounded-2xl text-red-600 shadow-sm flex-shrink-0">
+                    <div className="p-4 bg-red-100 rounded-lg text-red-600 shadow-sm flex-shrink-0">
                       <AlertTriangle size={28} />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -891,7 +891,7 @@ const Profile = () => {
 
                 {/* Visual Order Progress Stepper */}
                 {!(selectedOrder.isDeletedByAdmin || selectedOrder.status?.includes('Suspicious')) && (
-                  <div className="mb-10 p-6 sm:p-8 rounded-[2rem] bg-white border border-gray-100 shadow-sm">
+                  <div className="mb-10 p-6 sm:p-8 rounded-xl bg-white border border-gray-100 shadow-sm">
                   <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--primary)] mb-6 flex items-center space-x-2">
                     <Truck size={14} className="animate-bounce" />
                     <span>Shipping Status & Progress</span>
@@ -958,7 +958,7 @@ const Profile = () => {
                 </div>
                 )}
 
-                <div className="mb-10 p-6 rounded-3xl bg-gray-50 border border-gray-100">
+                <div className="mb-10 p-6 rounded-xl bg-gray-50 border border-gray-100">
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)] mb-4 flex items-center space-x-2">
                     <MapPin size={14} />
                     <span>Shipping Address</span>
@@ -973,7 +973,7 @@ const Profile = () => {
                 <div className="space-y-6 mb-10">
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">Order Items</h4>
                   {(selectedOrder.orderItems || selectedOrder.items || []).map((item, i) => (
-                    <div key={i} className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50/50">
+                    <div key={i} className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50/50">
                       <div className="aspect-[3/4] w-16 bg-gray-100 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
                         <img src={item.image} className="max-w-full max-h-full object-contain" alt="" />
                       </div>
@@ -986,7 +986,7 @@ const Profile = () => {
                   ))}
                 </div>
 
-                <div className="bg-[var(--secondary)]/30 rounded-3xl p-6">
+                <div className="bg-[var(--secondary)]/30 rounded-xl p-6">
                    <div className="flex justify-between mb-2">
                      <span className="text-sm text-[var(--text-muted)]">Items Subtotal</span>
                      <span className="text-sm font-bold text-[var(--text-main)]">₹{(selectedOrder.totalPrice || selectedOrder.total || 0).toLocaleString('en-IN')}</span>
@@ -1030,7 +1030,7 @@ const Profile = () => {
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl relative z-10"
+              className="bg-white w-full max-w-lg rounded-xl p-8 shadow-2xl relative z-10"
             >
               <button onClick={() => setShowAddressModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-black">
                 <X size={24} />

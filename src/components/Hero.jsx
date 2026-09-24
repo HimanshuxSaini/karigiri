@@ -129,7 +129,7 @@ const Hero = () => {
         <div className="w-full h-[52%] md:h-[80vh] md:w-1/2 bg-white order-1 md:order-2 flex items-center justify-center p-4 md:p-16">
           <div className="w-full h-full relative group">
             {/* Elegant Stage for Image */}
-            <div className="absolute inset-0 bg-gray-50/50 rounded-[3rem] -z-10 transform scale-95 group-hover:scale-100 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gray-50/50 rounded-xl -z-10 transform scale-95 group-hover:scale-100 transition-transform duration-700" />
             
             <AnimatePresence mode="wait">
               <motion.div 
