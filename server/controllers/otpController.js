@@ -30,19 +30,19 @@ exports.sendOtp = async (req, res) => {
         to: email,
         subject: 'Your OTP for PrathamKarigiri',
         html: `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: auto; padding: 40px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">PrathamKarigiri</h1>
-              <p style="color: #A0522D; font-size: 12px; text-transform: uppercase; letter-spacing: 4px; margin-top: 5px;">Handcrafted Excellence</p>
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; width: 100%; box-sizing: border-box; margin: auto; padding: 25px 20px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 16px;">
+            <div style="text-align: center; margin-bottom: 25px;">
+              <h1 style="color: #5C4033; margin: 0; font-size: 24px; letter-spacing: 1px; word-break: keep-all;">PrathamKarigiri</h1>
+              <p style="color: #A0522D; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Handcrafted Excellence</p>
             </div>
-            <p style="color: #333; font-size: 16px;">Welcome!</p>
+            <p style="color: #333; font-size: 15px;">Welcome!</p>
             <p style="color: #666; font-size: 14px; line-height: 1.6;">Use the verification code below to access your PrathamKarigiri account.</p>
-            <div style="background: #fdf5e6; padding: 30px; text-align: center; border-radius: 15px; margin: 30px 0; border: 1px dashed #d2b48c;">
-            <h1 style="color: #5C4033; letter-spacing: 8px; margin: 0; font-size: 36px; font-weight: 800;">${otpCode}</h1>
+            <div style="background: #fdf5e6; padding: 25px; text-align: center; border-radius: 12px; margin: 25px 0; border: 1px dashed #d2b48c;">
+            <h1 style="color: #5C4033; letter-spacing: 6px; margin: 0; font-size: 32px; font-weight: 800;">${otpCode}</h1>
           </div>
           <p style="color: #999; font-size: 12px; text-align: center;">This code expires in 5 minutes. If you didn't request this, you can safely ignore this email.</p>
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-            <p style="color: #5C4033; font-weight: bold; font-size: 14px; margin: 0;">Preserving Heritage, One Stitch at a Time.</p>
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+            <p style="color: #5C4033; font-weight: bold; font-size: 13px; margin: 0;">Preserving Heritage, One Stitch at a Time.</p>
           </div>
         </div>
       `,
@@ -133,19 +133,19 @@ exports.forgotPassword = async (req, res) => {
       to: email,
       subject: 'Reset Your PrathamKarigiri Password',
       html: `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: auto; padding: 40px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #5C4033; margin: 0; font-size: 28px; letter-spacing: 2px;">PrathamKarigiri</h1>
-            <p style="color: #A0522D; font-size: 12px; text-transform: uppercase; letter-spacing: 4px; margin-top: 5px;">Handcrafted Excellence</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; width: 100%; box-sizing: border-box; margin: auto; padding: 25px 20px; background-color: #fcfcfc; border: 1px solid #eee; border-radius: 16px;">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <h1 style="color: #5C4033; margin: 0; font-size: 24px; letter-spacing: 1px; word-break: keep-all;">PrathamKarigiri</h1>
+            <p style="color: #A0522D; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Handcrafted Excellence</p>
           </div>
-          <p style="color: #333; font-size: 16px;">Hello,</p>
+          <p style="color: #333; font-size: 15px;">Hello,</p>
           <p style="color: #666; font-size: 14px; line-height: 1.6;">We received a request to reset your password for your PrathamKarigiri account. Click the button below to proceed.</p>
           <div style="text-align: center; margin: 35px 0;">
-            <a href="${resetLink}" style="background-color: #5C4033; color: white; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 15px rgba(92, 64, 51, 0.2);">RESET PASSWORD</a>
+            <a href="${resetLink}" style="background-color: #5C4033; color: white; padding: 14px 25px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 15px rgba(92, 64, 51, 0.2);">RESET PASSWORD</a>
           </div>
           <p style="color: #999; font-size: 12px; text-align: center;">If you didn't request this, you can safely ignore this email. This link will expire shortly.</p>
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-            <p style="color: #5C4033; font-weight: bold; font-size: 14px; margin: 0;">Preserving Heritage, One Stitch at a Time.</p>
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+            <p style="color: #5C4033; font-weight: bold; font-size: 13px; margin: 0;">Preserving Heritage, One Stitch at a Time.</p>
           </div>
         </div>
       `,
