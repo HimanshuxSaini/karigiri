@@ -10,7 +10,9 @@ import {
   ArrowLeft,
   KeyRound,
   Eye,
-  EyeOff
+  EyeOff,
+  ChevronDown,
+  Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -25,9 +27,11 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { useAuthStore, useToastStore } from '../store/useStore';
-import { sendOtp, verifyOtp, requestPasswordReset } from '../services/api';
+import { sendOtp, verifyOtp, requestPasswordReset, saveUserProfile } from '../services/api';
+import { parsePhoneNumberWithError } from 'libphonenumber-js';
 import { getFriendlyErrorMessage } from '../utils/errorMessages';
 import { trackLogin, trackSignup } from '../utils/analytics';
+import { countryCodes } from '../utils/countryCodes';
 
 const LoginModal = ({ isOpen, onClose }) => {
   const [view, setView] = useState('login'); // 'otp', 'login', 'signup', 'forgot'
@@ -36,11 +40,16 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [phoneError, setPhoneError] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [slowConnection, setSlowConnection] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
   
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
@@ -52,6 +61,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       setView('login');
       setStep('number');
       setIdentifier('');
+      setPhoneError('');
       setLoading(false);
       setSlowConnection(false);
       setShowPassword(false);
@@ -91,7 +101,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     }, 5000);
 
     try {
-      await sendOtp(normalizedEmail);
+      await sendOtp(normalizedEmail, false, true);
       setStep('verify');
       setResendTimer(60);
       setLoading(false);
@@ -150,12 +160,24 @@ const LoginModal = ({ isOpen, onClose }) => {
     if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     
     if (view === 'signup') {
+      try {
+        const phoneNumberStr = `${countryCode}${phone}`;
+        const phoneNumber = parsePhoneNumberWithError(phoneNumberStr);
+        if (!phoneNumber.isValid()) {
+          setPhoneError('Please choose the correct country code according to your number.');
+          return;
+        }
+      } catch (err) {
+        setPhoneError('Please choose the correct country code according to your number.');
+        return;
+      }
+
       setLoading(true);
       setSlowConnection(false);
       const slowTimer = setTimeout(() => setSlowConnection(true), 5000);
 
       try {
-        await sendOtp(email.trim().toLowerCase());
+        await sendOtp(email.trim().toLowerCase(), true);
         setStep('verify-signup');
         setResendTimer(60);
         showToast('OTP sent to verify your email!');
@@ -205,11 +227,18 @@ const LoginModal = ({ isOpen, onClose }) => {
         email: user.email,
         displayName: name || user.email.split('@')[0],
         photoURL: user.photoURL,
-        phoneNumber: user.phoneNumber,
+        phoneNumber: `${countryCode}${phone}`,
         lastLogin: new Date().toISOString(),
         provider: 'password'
       };
       
+      // Save profile to MongoDB explicitly during signup
+      try {
+        await saveUserProfile(user.uid, { phone: `${countryCode}${phone}`, displayName: name });
+      } catch (err) {
+        console.error("Failed to save phone to db:", err);
+      }
+
       setUser(userData);
       trackSignup({ method: 'Email' });
 
@@ -443,13 +472,63 @@ const LoginModal = ({ isOpen, onClose }) => {
                 ) : (
                   <form onSubmit={handleEmailAuth} className="space-y-4">
                     {view === 'signup' && (
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                        <input
-                          type="text" required placeholder="John Doe"
-                          value={name} onChange={(e) => setName(e.target.value)}
-                          className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
-                        />
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                          <input
+                            type="text" required placeholder="Enter your name"
+                            value={name} onChange={(e) => setName(e.target.value)}
+                            className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                          />
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
+                          <div className={`relative flex rounded-xl bg-white border transition-all ${phoneError ? 'border-red-500 focus-within:ring-2 focus-within:ring-red-500/20' : 'border-gray-100 focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary)]/20'}`}>
+                            <div 
+                              onClick={() => setShowCountryDropdown(true)}
+                              className="relative flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors border-r border-gray-100 px-3 w-[75px] cursor-pointer rounded-l-xl"
+                            >
+                              <img 
+                                src={`https://flagcdn.com/w20/${countryCodes.find(c => c.code === countryCode)?.iso.toLowerCase() || 'in'}.png`}
+                                alt="flag"
+                                className="w-5 h-auto mr-1.5 shadow-[0_0_2px_rgba(0,0,0,0.2)]"
+                              />
+                              <ChevronDown size={14} className="text-gray-400" />
+                            </div>
+                            
+                            <div className="flex-1 flex items-center px-4 py-3.5 bg-white">
+                              <span className="text-gray-500 font-bold mr-2 text-sm">{countryCode}</span>
+                              <input
+                                type="tel" required placeholder="Phone number"
+                                value={phone}
+                                onChange={(e) => {
+                                  setPhone(e.target.value.replace(/\D/g, ''));
+                                  setPhoneError('');
+                                }}
+                                onBlur={() => {
+                                  if (phone.length > 3) {
+                                    try {
+                                      const phoneNumberStr = `${countryCode}${phone}`;
+                                      const phoneNumber = parsePhoneNumberWithError(phoneNumberStr);
+                                      if (!phoneNumber.isValid()) {
+                                        setPhoneError('Invalid number for this country code.');
+                                      }
+                                    } catch (err) {
+                                      setPhoneError('Invalid number for this country code.');
+                                    }
+                                  }
+                                }}
+                                className="flex-1 w-full bg-transparent outline-none text-sm font-bold tracking-widest text-gray-800 placeholder-gray-300"
+                              />
+                            </div>
+                          </div>
+                          {phoneError && (
+                            <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 mt-1">
+                              <AlertCircle size={10} /> {phoneError}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     )}
                     <div className="space-y-1">
@@ -576,6 +655,63 @@ const LoginModal = ({ isOpen, onClose }) => {
             </motion.div>
           </div>
         </>
+      )}
+      {showCountryDropdown && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setShowCountryDropdown(false)}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="bg-white w-full max-w-sm rounded-2xl shadow-2xl z-10 flex flex-col overflow-hidden max-h-[70vh] border border-gray-100"
+          >
+            <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center">
+              <Search size={18} className="text-gray-400 mr-3" />
+              <input 
+                type="text" 
+                placeholder="Search country or code..."
+                value={countrySearch}
+                onChange={(e) => setCountrySearch(e.target.value)}
+                autoFocus
+                className="w-full bg-transparent outline-none font-bold text-sm text-gray-800 placeholder-gray-400"
+              />
+              <button onClick={() => setShowCountryDropdown(false)} className="p-1 hover:bg-gray-200 rounded-full ml-2">
+                <X size={16} className="text-gray-500" />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-2 scrollbar-hide">
+              {countryCodes.filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase()) || c.code.includes(countrySearch)).map((c, i) => (
+                <div 
+                  key={i}
+                  onClick={() => {
+                    setCountryCode(c.code);
+                    setShowCountryDropdown(false);
+                    setCountrySearch('');
+                    setPhoneError('');
+                  }}
+                  className="flex items-center p-3 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                >
+                  <img 
+                    src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`}
+                    alt={c.name}
+                    className="w-5 h-auto mr-3 shadow-[0_0_2px_rgba(0,0,0,0.2)]"
+                  />
+                  <span className="font-bold text-gray-800 text-sm flex-1">{c.name}</span>
+                  <span className="text-gray-400 font-bold text-xs">{c.code}</span>
+                </div>
+              ))}
+              {countryCodes.filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase()) || c.code.includes(countrySearch)).length === 0 && (
+                <div className="p-6 text-center text-gray-400 font-bold text-sm">
+                  No countries found.
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );

@@ -391,11 +391,11 @@ export const fetchWishlistFromDatabase = async (uid) => {
 };
 
 // OTP Services
-export const sendOtp = async (email) => {
+export const sendOtp = async (email, isSignup = false, isLogin = false) => {
   try {
     return await authenticatedFetch('/otp/send-otp', {
       method: 'POST',
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email, isSignup, isLogin })
     });
   } catch (error) {
     console.error('Error sending OTP:', error);

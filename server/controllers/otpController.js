@@ -4,9 +4,35 @@ const { sendEmail } = require('../utils/emailService');
 const OTP = require('../models/OTP');
 
 exports.sendOtp = async (req, res) => {
-  const { email } = req.body;
+  const { email, isSignup, isLogin } = req.body;
   try {
     if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    // Check email registration status
+    try {
+      await admin.auth().getUserByEmail(email);
+      // User exists
+      if (isSignup) {
+        return res.status(400).json({ 
+          success: false,
+          code: 'auth/email-already-in-use',
+          message: 'This email is already registered. Please sign in instead.' 
+        });
+      }
+    } catch (e) {
+      if (e.code === 'auth/user-not-found') {
+        // User does not exist
+        if (isLogin) {
+          return res.status(400).json({
+            success: false,
+            code: 'auth/user-not-found',
+            message: 'No account found with this email. Please sign up first.'
+          });
+        }
+      } else {
+        throw e;
+      }
+    }
 
     console.log(`Starting OTP process for: ${email}`);
     
