@@ -324,10 +324,10 @@ const LoginModal = ({ isOpen, onClose }) => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-md rounded-xl overflow-hidden shadow-2xl flex flex-col"
+              className="bg-white w-full max-w-sm max-h-[90vh] rounded-lg overflow-hidden shadow-2xl flex flex-col"
             >
-              <div className="p-6 md:p-8 flex-1 overflow-y-auto scrollbar-hide" data-lenis-prevent="true">
-                <div className="flex justify-between items-start mb-6">
+              <div className="p-4 md:p-5 flex-1 overflow-y-auto scrollbar-hide" data-lenis-prevent="true">
+                <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center space-x-3">
                     {view === 'forgot' && (
                       <button onClick={() => setView('login')} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400">
@@ -350,9 +350,9 @@ const LoginModal = ({ isOpen, onClose }) => {
 
 
                 {view === 'otp' ? (
-                  <div className="space-y-6">
+                  <div className="space-y-2">
                     {step === 'number' ? (
-                      <div className="space-y-6">
+                      <div className="space-y-2">
                         <div className="space-y-2">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">
                             Email Address for OTP
@@ -364,7 +364,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                               placeholder="email@example.com"
                               value={identifier}
                               onChange={(e) => setIdentifier(e.target.value)}
-                              className="w-full pl-12 pr-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-bold"
+                              className="w-full pl-12 pr-5 py-2 rounded-lg bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-800 font-bold"
                             />
                           </div>
                         </div>
@@ -372,7 +372,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         <button 
                           onClick={handleSendOtp}
                           disabled={loading}
-                          className="w-full bg-[var(--primary)] text-white py-4 rounded-lg font-bold text-lg hover:shadow-xl hover:shadow-[var(--primary)]/20 active:scale-[0.98] transition-all flex flex-col items-center justify-center space-y-1 disabled:opacity-50"
+                          className="w-full bg-[var(--primary)] text-white py-2 rounded-lg font-bold text-lg hover:shadow-xl hover:shadow-[var(--primary)]/20 active:scale-[0.98] transition-all flex flex-col items-center justify-center space-y-1 disabled:opacity-50"
                         >
                           <div className="flex items-center space-x-2">
                             <span>{loading ? (slowConnection ? 'Still Sending...' : 'Sending...') : 'Get OTP Code'}</span>
@@ -384,25 +384,25 @@ const LoginModal = ({ isOpen, onClose }) => {
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-6">
+                      <div className="space-y-2">
                         <div className="space-y-2">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 text-center block">Enter 6-Digit Code</label>
                           <input
                             type="text" maxLength="6" placeholder="000000"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                            className="w-full py-4 rounded-lg bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
+                            className="w-full py-2 rounded-lg bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
                           />
                         </div>
                         <button 
                           onClick={handleVerifyOtp}
                           disabled={loading}
-                          className="w-full bg-[var(--primary)] text-white py-4 rounded-lg font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                          className="w-full bg-[var(--primary)] text-white py-2 rounded-lg font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                         >
                           <span>{loading ? 'Verifying...' : 'Verify & Sign In'}</span>
                         </button>
                         
-                        <div className="flex flex-col space-y-4">
+                        <div className="flex flex-col space-y-2">
                           <button 
                             onClick={handleSendOtp}
                             disabled={loading || resendTimer > 0}
@@ -419,7 +419,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                     )}
                   </div>
                 ) : view === 'forgot' ? (
-                  <form onSubmit={handleForgotPassword} className="space-y-6">
+                  <form onSubmit={handleForgotPassword} className="space-y-2">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Account Email</label>
                       <div className="relative">
@@ -427,35 +427,35 @@ const LoginModal = ({ isOpen, onClose }) => {
                         <input
                           type="email" required placeholder="your@email.com"
                           value={email} onChange={(e) => setEmail(e.target.value)}
-                          className="w-full pl-12 pr-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                          className="w-full pl-12 pr-5 py-2 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
                         />
                       </div>
                     </div>
-                    <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-lg font-bold text-md shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2">
+                    <button type="submit" disabled={loading} className="w-full bg-black text-white py-2 rounded-lg font-bold text-md shadow-lg disabled:opacity-50 flex items-center justify-center space-x-2">
                       <KeyRound size={18} />
                       <span>{loading ? 'Sending...' : 'Send Reset Link'}</span>
                     </button>
                   </form>
                 ) : view === 'signup' && step === 'verify-signup' ? (
-                  <div className="space-y-6">
+                  <div className="space-y-2">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 text-center block">Verify Email to Create Account</label>
                       <input
                         type="text" maxLength="6" placeholder="000000"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                        className="w-full py-4 rounded-lg bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
+                        className="w-full py-2 rounded-lg bg-gray-50 border border-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-gray-900 font-black tracking-[0.8em] text-center text-2xl"
                       />
                     </div>
                     <button 
                       onClick={handleVerifySignupOtp}
                       disabled={loading}
-                      className="w-full bg-[var(--primary)] text-white py-4 rounded-lg font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                      className="w-full bg-[var(--primary)] text-white py-2 rounded-lg font-bold text-lg shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                     >
                       <span>{loading ? 'Creating Account...' : 'Verify & Create Account'}</span>
                     </button>
                     
-                    <div className="flex flex-col space-y-4">
+                    <div className="flex flex-col space-y-2">
                       <button 
                         onClick={(e) => handleEmailAuth(e || { preventDefault: () => {} })}
                         disabled={loading || resendTimer > 0}
@@ -470,21 +470,21 @@ const LoginModal = ({ isOpen, onClose }) => {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleEmailAuth} className="space-y-4">
+                  <form onSubmit={handleEmailAuth} className="space-y-2">
                     {view === 'signup' && (
-                      <div className="space-y-4">
+                      <div className="space-y-2">
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
                           <input
                             type="text" required placeholder="Enter your name"
                             value={name} onChange={(e) => setName(e.target.value)}
-                            className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                            className="w-full px-5 py-2 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
                           />
                         </div>
                         
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-                          <div className={`relative flex rounded-xl bg-white border transition-all ${phoneError ? 'border-red-500 focus-within:ring-2 focus-within:ring-red-500/20' : 'border-gray-100 focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary)]/20'}`}>
+                          <div className={`relative flex rounded-lg bg-white border transition-all ${phoneError ? 'border-red-500 focus-within:ring-2 focus-within:ring-red-500/20' : 'border-gray-100 focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary)]/20'}`}>
                             <div 
                               onClick={() => setShowCountryDropdown(true)}
                               className="relative flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors border-r border-gray-100 px-3 w-[75px] cursor-pointer rounded-l-xl"
@@ -497,7 +497,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                               <ChevronDown size={14} className="text-gray-400" />
                             </div>
                             
-                            <div className="flex-1 flex items-center px-4 py-3.5 bg-white">
+                            <div className="flex-1 flex items-center px-4 py-2 bg-white">
                               <span className="text-gray-500 font-bold mr-2 text-sm">{countryCode}</span>
                               <input
                                 type="tel" required placeholder="Phone number"
@@ -536,7 +536,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                       <input
                         type="email" required placeholder="your@email.com"
                         value={email} onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                        className="w-full px-5 py-2 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
                       />
                     </div>
                     <div className="space-y-1">
@@ -556,7 +556,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         <input
                           type={showPassword ? "text" : "password"} required placeholder="••••••••"
                           value={password} onChange={(e) => setPassword(e.target.value)}
-                          className="w-full pl-5 pr-12 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
+                          className="w-full pl-5 pr-12 py-2 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-sm font-bold"
                         />
                         <button
                           type="button"
@@ -567,7 +567,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         </button>
                       </div>
                     </div>
-                    <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-3.5 rounded-xl font-bold text-md shadow-lg shadow-[var(--primary)]/20 disabled:opacity-50 mt-1">
+                    <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-2 rounded-lg font-bold text-md shadow-lg shadow-[var(--primary)]/20 disabled:opacity-50 mt-1">
                       {loading ? 'Processing...' : (view === 'login' ? 'Sign In' : 'Create Account')}
                     </button>
                   </form>
@@ -581,15 +581,15 @@ const LoginModal = ({ isOpen, onClose }) => {
                 <button 
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full bg-white border border-gray-100 py-3 rounded-xl flex items-center justify-center space-x-3 hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="w-full bg-white border border-gray-100 py-2 rounded-lg flex items-center justify-center space-x-3 hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
                   <span className="font-bold text-gray-700 text-sm">Continue with Google</span>
                 </button>
 
-                <div className="mt-6 text-center space-y-3">
+                <div className="mt-6 text-center space-y-2">
                   {view === 'otp' ? (
-                    <div className="flex flex-col space-y-3">
+                    <div className="flex flex-col space-y-2">
                       <p className="text-sm text-gray-500 font-medium">
                         New to PrathamKarigiri? 
                         <button 
@@ -607,7 +607,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                       </button>
                     </div>
                   ) : view === 'login' ? (
-                    <div className="flex flex-col space-y-3">
+                    <div className="flex flex-col space-y-2">
                       <p className="text-sm text-gray-500 font-medium">
                         New here? 
                         <button 
@@ -632,7 +632,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                       Back to Login
                     </button>
                   ) : (
-                    <div className="flex flex-col space-y-3">
+                    <div className="flex flex-col space-y-2">
                       <p className="text-sm text-gray-500 font-medium">
                         Already have an account? 
                         <button 
@@ -693,7 +693,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                     setCountrySearch('');
                     setPhoneError('');
                   }}
-                  className="flex items-center p-3 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                  className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
                 >
                   <img 
                     src={`https://flagcdn.com/w20/${c.iso.toLowerCase()}.png`}
