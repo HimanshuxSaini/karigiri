@@ -169,9 +169,8 @@ const Profile = () => {
       { label: 'Purchases', value: dbOrders.length, icon: <ShoppingBag className="text-blue-500" />, bg: "bg-blue-50" },
       { label: 'Wishlist', value: wishlist.length, icon: <Heart className="text-red-500" />, bg: "bg-red-50" },
       { label: 'Pending', value: pendingOrders, icon: <Clock className="text-amber-500" />, bg: "bg-amber-50" },
-      { label: 'Saved', value: addresses.length, icon: <Star className="text-amber-500" />, bg: "bg-amber-50" },
     ];
-  }, [dbOrders, wishlist, addresses]);
+  }, [dbOrders, wishlist]);
 
   if (!user) return <Navigate to="/" />;
 
