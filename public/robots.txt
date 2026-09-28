@@ -1,26 +1,50 @@
 # =========================================================
 # PRATHAMKARIGIRI - ROBOTS.TXT
+# Updated for Maximum Search Engine Compatibility (2026+)
 # https://www.prathamkarigiri.in/
 # =========================================================
 
 # ---------------------------------------------------------
-# ALL SEARCH ENGINES & CRAWLERS
+# MAJOR SEARCH ENGINES (Explicitly Allowed)
 # ---------------------------------------------------------
+User-agent: Googlebot
+Allow: /
 
+User-agent: Bingbot
+Allow: /
+
+User-agent: Bravebot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# ---------------------------------------------------------
+# ALL OTHER SEARCH ENGINES & CRAWLERS
+# ---------------------------------------------------------
 User-agent: *
 Allow: /
 
-# Private / administrative / transactional pages
+# Protect Private & Transactional Routes from being indexed
 Disallow: /admin/
 Disallow: /profile/
 Disallow: /checkout/
 Disallow: /cart/
 Disallow: /wishlist/
+Disallow: /api/
 
 # ---------------------------------------------------------
-# OPENAI / CHATGPT
+# AI SEARCH BOTS & CRAWLERS
 # ---------------------------------------------------------
-
 User-agent: GPTBot
 Allow: /
 
@@ -29,10 +53,6 @@ Allow: /
 
 User-agent: OAI-SearchBot
 Allow: /
-
-# ---------------------------------------------------------
-# ANTHROPIC / CLAUDE
-# ---------------------------------------------------------
 
 User-agent: ClaudeBot
 Allow: /
@@ -43,29 +63,17 @@ Allow: /
 User-agent: anthropic-ai
 Allow: /
 
-# ---------------------------------------------------------
-# GOOGLE AI
-# ---------------------------------------------------------
-
 User-agent: Google-Extended
 Allow: /
 
 User-agent: GoogleOther
 Allow: /
 
-# ---------------------------------------------------------
-# META AI
-# ---------------------------------------------------------
-
 User-agent: Meta-ExternalAgent
 Allow: /
 
 User-agent: Meta-ExternalFetcher
 Allow: /
-
-# ---------------------------------------------------------
-# PERPLEXITY & AI SEARCH
-# ---------------------------------------------------------
 
 User-agent: PerplexityBot
 Allow: /
@@ -75,10 +83,6 @@ Allow: /
 
 User-agent: YouBot
 Allow: /
-
-# ---------------------------------------------------------
-# OTHER AI / WEB CRAWLERS
-# ---------------------------------------------------------
 
 User-agent: CCBot
 Allow: /
@@ -101,5 +105,4 @@ Allow: /
 # ---------------------------------------------------------
 # XML SITEMAP
 # ---------------------------------------------------------
-
 Sitemap: https://www.prathamkarigiri.in/sitemap.xml
