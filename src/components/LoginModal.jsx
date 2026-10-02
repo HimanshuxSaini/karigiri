@@ -50,6 +50,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
@@ -65,6 +66,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       setLoading(false);
       setSlowConnection(false);
       setShowPassword(false);
+      setTermsAccepted(false);
       document.body.style.overflow = 'unset';
     } else {
       document.body.style.overflow = 'hidden';
@@ -87,6 +89,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
+    if (!termsAccepted) return showToast('Please agree to the Terms & Conditions first', 'error');
     if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     if (!identifier) return showToast('Email is required', 'error');
     if (!identifier.includes('@')) return showToast('Please enter a valid email', 'error');
@@ -157,6 +160,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();
+    if (!termsAccepted) return showToast('Please agree to the Terms & Conditions first', 'error');
     if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     
     if (view === 'signup') {
@@ -270,6 +274,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   };
 
   const handleGoogleLogin = async () => {
+    if (!termsAccepted) return showToast('Please agree to the Terms & Conditions first', 'error');
     if (!navigator.onLine) return showToast('Please check your internet connection and try again.', 'error');
     setLoading(true);
     try {
@@ -567,7 +572,20 @@ const LoginModal = ({ isOpen, onClose }) => {
                         </button>
                       </div>
                     </div>
-                    <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-2 rounded-lg font-bold text-md shadow-lg shadow-[var(--primary)]/20 disabled:opacity-50 mt-1">
+                    <div className="flex items-center gap-2 mt-2 pt-2 pb-1">
+                      <input 
+                        type="checkbox" 
+                        id="terms" 
+                        required
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                        className="rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)]/20 w-4 h-4 cursor-pointer"
+                      />
+                      <label htmlFor="terms" className="text-xs text-gray-500 font-medium select-none cursor-pointer">
+                        I agree to the <a href="/terms" target="_blank" className="text-[var(--primary)] font-bold hover:underline">Terms & Conditions</a>
+                      </label>
+                    </div>
+                    <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-2 rounded-lg font-bold text-md shadow-lg shadow-[var(--primary)]/20 disabled:opacity-50 mt-2">
                       {loading ? 'Processing...' : (view === 'login' ? 'Sign In' : 'Create Account')}
                     </button>
                   </form>
