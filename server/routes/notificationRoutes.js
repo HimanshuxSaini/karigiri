@@ -82,7 +82,8 @@ router.post('/send', async (req, res) => {
     };
 
     // Send the multicast message
-    const response = await admin.messaging().sendEachForMulticast(message);
+    const { getMessaging } = require('firebase-admin/messaging');
+    const response = await getMessaging().sendEachForMulticast(message);
     
     // Handle failures (e.g., removing invalid tokens)
     if (response.failureCount > 0) {
