@@ -127,6 +127,8 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orderFilter, setOrderFilter] = useState('All');
+  const [orderDateFilter, setOrderDateFilter] = useState('');
+  const [orderMonthFilter, setOrderMonthFilter] = useState('');
   const [productSearch, setProductSearch] = useState('');
   const [orderSearch, setOrderSearch] = useState('');
   const [showProductModal, setShowProductModal] = useState(false);
@@ -499,9 +501,28 @@ const Admin = () => {
         statusMatch = orderFilter === 'All' || o?.status === orderFilter;
       }
 
-      return statusMatch && (idMatch || phoneMatch || emailMatch);
+      let dateMatch = true;
+      let monthMatch = true;
+      const orderDate = o?.createdAt ? (o.createdAt.toDate ? o.createdAt.toDate() : new Date(o.createdAt)) : null;
+
+      if (orderDateFilter && orderDate && !isNaN(orderDate.getTime())) {
+        const y = orderDate.getFullYear();
+        const m = String(orderDate.getMonth() + 1).padStart(2, '0');
+        const d = String(orderDate.getDate()).padStart(2, '0');
+        const orderDateString = `${y}-${m}-${d}`;
+        dateMatch = orderDateString === orderDateFilter;
+      }
+
+      if (orderMonthFilter && orderDate && !isNaN(orderDate.getTime())) {
+        const y = orderDate.getFullYear();
+        const m = String(orderDate.getMonth() + 1).padStart(2, '0');
+        const orderMonthString = `${y}-${m}`;
+        monthMatch = orderMonthString === orderMonthFilter;
+      }
+
+      return statusMatch && (idMatch || phoneMatch || emailMatch) && dateMatch && monthMatch;
     });
-  }, [orders, orderSearch, orderFilter]);
+  }, [orders, orderSearch, orderFilter, orderDateFilter, orderMonthFilter]);
 
   const statsData = useMemo(() => {
     const ordersArray = Array.isArray(orders) ? orders : [];
@@ -1641,8 +1662,8 @@ const Admin = () => {
                       ))}
                     </div>
 
-                    <div className="flex gap-3 items-center">
-                      <div className="relative flex-grow md:max-w-md">
+                    <div className="flex gap-3 items-center flex-wrap">
+                      <div className="relative flex-grow md:max-w-xs">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
                           type="text"
@@ -1652,6 +1673,39 @@ const Admin = () => {
                           className="w-full pl-12 pr-6 py-2.5 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm"
                         />
                       </div>
+                      <input
+                        type="date"
+                        value={orderDateFilter}
+                        onChange={(e) => {
+                          setOrderDateFilter(e.target.value);
+                          if (e.target.value) setOrderMonthFilter('');
+                        }}
+                        className="px-4 py-2.5 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm text-sm text-gray-600"
+                        title="Filter by Date"
+                      />
+                      <input
+                        type="month"
+                        value={orderMonthFilter}
+                        onChange={(e) => {
+                          setOrderMonthFilter(e.target.value);
+                          if (e.target.value) setOrderDateFilter('');
+                        }}
+                        className="px-4 py-2.5 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all bg-white shadow-sm text-sm text-gray-600"
+                        title="Filter by Month"
+                      />
+                      {(orderDateFilter || orderMonthFilter || orderSearch) && (
+                        <button
+                          onClick={() => {
+                            setOrderDateFilter('');
+                            setOrderMonthFilter('');
+                            setOrderSearch('');
+                          }}
+                          className="px-4 py-2.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm whitespace-nowrap text-sm"
+                          title="Reset Filters"
+                        >
+                          <RotateCcw size={16} />
+                        </button>
+                      )}
                       <button 
                         onClick={handleExportOrdersCSV}
                         className="px-6 py-2.5 bg-black text-white rounded-lg font-bold flex items-center gap-2 hover:bg-gray-800 transition-all shadow-md whitespace-nowrap text-sm"
