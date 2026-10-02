@@ -143,6 +143,42 @@ const policyContent = {
         content: `${BRAND.address.line1}, ${BRAND.address.line2}, ${BRAND.address.city}, ${BRAND.address.state} - ${BRAND.address.pincode}, ${BRAND.address.country}. Studio visits are by appointment only — please WhatsApp us to schedule.`
       }
     ]
+  },
+  'bulk-orders': {
+    title: 'Bulk & Corporate Orders',
+    lastUpdated: '15 May, 2026',
+    sections: [
+      {
+        heading: 'Custom & Corporate Gifting',
+        content: `Looking for unique, handmade gifts for your corporate events, weddings, or wholesale needs? We offer customized bulk orders for all our handcrafted products. Let us help you add a personalized, artisanal touch to your events.`
+      },
+      {
+        heading: 'Minimum Order Quantity',
+        content: `Our minimum order quantity (MOQ) for bulk pricing varies by product category. Due to the handcrafted nature of our items, bulk orders require adequate lead time for production.`
+      },
+      {
+        heading: 'How to Place a Bulk Order',
+        content: `Reach out to us at ${BRAND.salesEmail} or WhatsApp us at ${WHATSAPP.displayNumber} with your requirements, expected timeline, and quantities. Our team will get back to you with a detailed quote within 24 hours.`
+      }
+    ]
+  },
+  'collabs': {
+    title: 'Collaborations',
+    lastUpdated: '15 May, 2026',
+    sections: [
+      {
+        heading: 'Partner with PrathamKarigiri',
+        content: `If you are a celeb, blogger, model, influencer, or stylist looking to collaborate we would love to hear from you. Are you a creator or brand that resonates with handcrafted, authentic, and artistic products? We're always looking for genuine voices to collaborate with and spread the love for handmade artistry.`
+      },
+      {
+        heading: 'Who We Look For',
+        content: `We love collaborating with creators in the lifestyle, fashion, home decor, traditional crafts, and sustainability niches. If you have an engaged audience and a true appreciation for artisanal work, we’d love to hear from you.`
+      },
+      {
+        heading: 'How to Apply',
+        content: `Please send us a message with your details, media kit, and social links via email to ${BRAND.supportEmail} with the subject line "Collaboration Request". Our team reviews all applications and will get back to you soon!`
+      }
+    ]
   }
 };
 
