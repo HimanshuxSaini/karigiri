@@ -51,19 +51,22 @@ router.post('/send', async (req, res) => {
 
     const tokens = tokensDocs.map(doc => doc.token);
 
+    const cleanImageUrl = imageUrl && typeof imageUrl === 'string' ? imageUrl.trim() : '';
+
     // Create the message payload
     const message = {
       notification: {
         title: title,
         body: body,
-        ...(imageUrl ? { image: imageUrl } : {})
+        ...(cleanImageUrl ? { imageUrl: cleanImageUrl } : {})
       },
       data: {
         title: String(title),
         body: String(body),
         url: String(clickAction || 'https://prathamkarigiri.in'),
         icon: 'https://prathamkarigiri.in/pwa-192x192.png',
-        ...(imageUrl ? { image: String(imageUrl) } : {})
+        image: cleanImageUrl,
+        imageUrl: cleanImageUrl
       },
       android: {
         priority: 'high',
@@ -72,7 +75,7 @@ router.post('/send', async (req, res) => {
           body: body,
           sound: 'default',
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
-          ...(imageUrl ? { image: imageUrl } : {})
+          ...(cleanImageUrl ? { imageUrl: cleanImageUrl } : {})
         }
       },
       webpush: {
@@ -84,7 +87,7 @@ router.post('/send', async (req, res) => {
           body: body,
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
           badge: 'https://prathamkarigiri.in/pwa-192x192.png',
-          ...(imageUrl ? { image: imageUrl } : {})
+          ...(cleanImageUrl ? { image: cleanImageUrl } : {})
         },
         fcmOptions: {
           link: clickAction || 'https://prathamkarigiri.in'

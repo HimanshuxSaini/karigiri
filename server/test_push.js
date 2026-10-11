@@ -27,30 +27,39 @@ async function run() {
     if(tokensDocs.length > 0) {
       const tokens = tokensDocs.map(d => d.token);
       const { getMessaging } = require('firebase-admin/messaging');
+      const testImageUrl = 'https://prathamkarigiri.in/pwa-192x192.png';
       const res = await getMessaging().sendEachForMulticast({
-        notification: { title: 'Test Admin Push', body: 'Test notification check' },
+        notification: { 
+          title: 'Test Admin Push With Image', 
+          body: 'Check if this notification displays with image banner',
+          imageUrl: testImageUrl
+        },
         data: {
-          title: 'Test Admin Push',
-          body: 'Test notification check',
+          title: 'Test Admin Push With Image',
+          body: 'Check if this notification displays with image banner',
           url: 'https://prathamkarigiri.in',
-          icon: 'https://prathamkarigiri.in/pwa-192x192.png'
+          icon: 'https://prathamkarigiri.in/pwa-192x192.png',
+          image: testImageUrl,
+          imageUrl: testImageUrl
         },
         android: {
           priority: 'high',
           notification: {
-            title: 'Test Admin Push',
-            body: 'Test notification check',
+            title: 'Test Admin Push With Image',
+            body: 'Check if this notification displays with image banner',
             sound: 'default',
-            icon: 'https://prathamkarigiri.in/pwa-192x192.png'
+            icon: 'https://prathamkarigiri.in/pwa-192x192.png',
+            imageUrl: testImageUrl
           }
         },
         webpush: {
           headers: { Urgency: 'high' },
           notification: {
-            title: 'Test Admin Push',
-            body: 'Test notification check',
+            title: 'Test Admin Push With Image',
+            body: 'Check if this notification displays with image banner',
             icon: 'https://prathamkarigiri.in/pwa-192x192.png',
-            badge: 'https://prathamkarigiri.in/pwa-192x192.png'
+            badge: 'https://prathamkarigiri.in/pwa-192x192.png',
+            image: testImageUrl
           },
           fcmOptions: {
             link: 'https://prathamkarigiri.in'

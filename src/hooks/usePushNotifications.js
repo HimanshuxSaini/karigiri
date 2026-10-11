@@ -97,18 +97,26 @@ export const usePushNotifications = () => {
       const body = payload?.notification?.body || payload?.data?.body || '';
       const icon = payload?.notification?.icon || payload?.data?.icon || '/pwa-192x192.png';
       const url = payload?.fcmOptions?.link || payload?.data?.url || '/';
+      const image = payload?.notification?.image || payload?.notification?.imageUrl || payload?.data?.image || payload?.data?.imageUrl || undefined;
 
       // 1. In-app toast banner
       useToastStore.getState().showToast(`${title}: ${body}`, 'info');
 
       // 2. System/device notification banner (if permission is granted)
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        const notificationOptions = {
+          body: body,
+          icon: icon,
+          badge: '/pwa-192x192.png',
+          data: { url: url },
+          tag: payload?.data?.tag || payload?.messageId || 'karigiri-foreground'
+        };
+        if (image) {
+          notificationOptions.image = image;
+        }
+
         try {
-          const n = new Notification(title, {
-            body: body,
-            icon: icon,
-            tag: payload?.data?.tag || payload?.messageId || 'karigiri-foreground'
-          });
+          const n = new Notification(title, notificationOptions);
           n.onclick = () => {
             window.focus();
             if (url && url !== '/') {
@@ -119,12 +127,7 @@ export const usePushNotifications = () => {
           // If browser restricts 'new Notification()' in page context (e.g. Android Chrome), fallback to SW registration
           if (navigator.serviceWorker?.ready) {
             navigator.serviceWorker.ready.then((reg) => {
-              reg.showNotification(title, {
-                body: body,
-                icon: icon,
-                data: { url: url },
-                tag: payload?.data?.tag || payload?.messageId || 'karigiri-foreground'
-              });
+              reg.showNotification(title, notificationOptions);
             }).catch(console.error);
           }
         }
