@@ -175,6 +175,23 @@ const Admin = () => {
 
   const [pushData, setPushData] = useState({ title: '', body: '', image: '', url: '' });
   const [isSendingPush, setIsSendingPush] = useState(false);
+  const [isUploadingPushImage, setIsUploadingPushImage] = useState(false);
+
+  const handlePushImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingPushImage(true);
+    try {
+      const url = await uploadProductImage(file);
+      setPushData(prev => ({ ...prev, image: url }));
+      showNotification('Push image uploaded successfully');
+    } catch (err) {
+      console.error('Push image upload error:', err);
+      showNotification('Failed to upload image', 'error');
+    } finally {
+      setIsUploadingPushImage(false);
+    }
+  };
 
   const [deliverySettings, setDeliverySettings] = useState({ defaultDays: 7, overrides: [] });
   const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
@@ -2551,14 +2568,53 @@ const Admin = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Image URL (Optional)</label>
-                        <input
-                          type="text"
-                          placeholder="https://example.com/image.png"
-                          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10"
-                          value={pushData.image}
-                          onChange={(e) => setPushData(prev => ({ ...prev, image: e.target.value }))}
-                        />
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Notification Image (Optional)</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="https://example.com/image.png or upload image"
+                            className="flex-1 px-4 py-3 rounded-lg bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/10 text-sm"
+                            value={pushData.image}
+                            onChange={(e) => setPushData(prev => ({ ...prev, image: e.target.value }))}
+                          />
+                          <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg cursor-pointer font-medium text-sm transition-colors border border-gray-200">
+                            {isUploadingPushImage ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                            <span>{isUploadingPushImage ? 'Uploading...' : 'Upload'}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={isUploadingPushImage}
+                              onChange={handlePushImageUpload}
+                            />
+                          </label>
+                        </div>
+                        {pushData.image && (
+                          <div className="relative mt-2 w-full max-w-sm h-40 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center group shadow-sm">
+                            <img
+                              src={pushData.image}
+                              alt="Notification banner preview"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setPushData(prev => ({ ...prev, image: '' }))}
+                              className="absolute top-2 right-2 bg-black/75 hover:bg-black text-white p-1.5 rounded-full text-xs transition-colors shadow-md"
+                              title="Remove image"
+                            >
+                              <X size={14} />
+                            </button>
+                            <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded tracking-wider uppercase font-semibold">
+                              Banner Preview
+                            </span>
+                          </div>
+                        )}
+                        <p className="text-[11px] text-gray-400 ml-1">
+                          Tip: Direct HTTPS image URL ya phone/PC se image upload karein. Android devices par notification ko niche drag/expand karne par full banner image dikhti hai.
+                        </p>
                       </div>
 
                       <div className="space-y-2">

@@ -87,6 +87,7 @@ router.post('/send', async (req, res) => {
           body: body,
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
           badge: 'https://prathamkarigiri.in/pwa-192x192.png',
+          tag: 'karigiri-notification',
           ...(cleanImageUrl ? { image: cleanImageUrl } : {})
         },
         fcmOptions: {

@@ -23,11 +23,18 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   
-  const title = payload?.notification?.title || payload?.data?.title || 'Pratham Karigiri';
-  const body = payload?.notification?.body || payload?.data?.body || '';
-  const icon = payload?.notification?.icon || payload?.data?.icon || '/pwa-192x192.png';
-  const image = payload?.notification?.image || payload?.notification?.imageUrl || payload?.data?.image || payload?.data?.imageUrl || undefined;
-  const link = payload?.fcmOptions?.link || payload?.data?.url || '/';
+  // When payload includes 'notification', Firebase SDK automatically renders the notification!
+  // Calling showNotification again causes TWO identical notifications.
+  if (payload.notification) {
+    return;
+  }
+
+  // Handle data-only push messages:
+  const title = payload?.data?.title || 'Pratham Karigiri';
+  const body = payload?.data?.body || '';
+  const icon = payload?.data?.icon || '/pwa-192x192.png';
+  const image = payload?.data?.image || payload?.data?.imageUrl || undefined;
+  const link = payload?.data?.url || '/';
 
   const notificationOptions = {
     body: body,
@@ -36,7 +43,7 @@ messaging.onBackgroundMessage((payload) => {
     data: {
       url: link
     },
-    tag: payload?.data?.tag || payload?.messageId || 'karigiri-notification',
+    tag: payload?.data?.tag || 'karigiri-notification',
     renotify: true
   };
 
