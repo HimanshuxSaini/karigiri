@@ -58,9 +58,18 @@ router.post('/send', async (req, res) => {
         body: body,
         ...(imageUrl ? { image: imageUrl } : {})
       },
+      data: {
+        title: String(title),
+        body: String(body),
+        url: String(clickAction || 'https://prathamkarigiri.in'),
+        icon: 'https://prathamkarigiri.in/pwa-192x192.png',
+        ...(imageUrl ? { image: String(imageUrl) } : {})
+      },
       android: {
         priority: 'high',
         notification: {
+          title: title,
+          body: body,
           sound: 'default',
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
           ...(imageUrl ? { image: imageUrl } : {})
@@ -71,7 +80,10 @@ router.post('/send', async (req, res) => {
           Urgency: 'high'
         },
         notification: {
+          title: title,
+          body: body,
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
+          badge: 'https://prathamkarigiri.in/pwa-192x192.png',
           ...(imageUrl ? { image: imageUrl } : {})
         },
         fcmOptions: {

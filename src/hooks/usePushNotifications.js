@@ -93,9 +93,42 @@ export const usePushNotifications = () => {
     
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Received foreground message ', payload);
-      const title = payload?.notification?.title || 'New Notification';
-      const body = payload?.notification?.body || '';
-      useToastStore.getState().showToast(`${title}: ${body}`, 'success');
+      const title = payload?.notification?.title || payload?.data?.title || 'Pratham Karigiri';
+      const body = payload?.notification?.body || payload?.data?.body || '';
+      const icon = payload?.notification?.icon || payload?.data?.icon || '/pwa-192x192.png';
+      const url = payload?.fcmOptions?.link || payload?.data?.url || '/';
+
+      // 1. In-app toast banner
+      useToastStore.getState().showToast(`${title}: ${body}`, 'info');
+
+      // 2. System/device notification banner (if permission is granted)
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          const n = new Notification(title, {
+            body: body,
+            icon: icon,
+            tag: payload?.data?.tag || payload?.messageId || 'karigiri-foreground'
+          });
+          n.onclick = () => {
+            window.focus();
+            if (url && url !== '/') {
+              window.location.href = url;
+            }
+          };
+        } catch (e) {
+          // If browser restricts 'new Notification()' in page context (e.g. Android Chrome), fallback to SW registration
+          if (navigator.serviceWorker?.ready) {
+            navigator.serviceWorker.ready.then((reg) => {
+              reg.showNotification(title, {
+                body: body,
+                icon: icon,
+                data: { url: url },
+                tag: payload?.data?.tag || payload?.messageId || 'karigiri-foreground'
+              });
+            }).catch(console.error);
+          }
+        }
+      }
     });
 
     return () => {

@@ -15,8 +15,48 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   
-  // NOTE: We DO NOT call self.registration.showNotification() here.
-  // When the payload from the server includes the "notification" object,
-  // Firebase Cloud Messaging automatically displays the notification for us.
-  // Calling it manually here causes the notification to appear twice!
+  const title = payload?.notification?.title || payload?.data?.title || 'Pratham Karigiri';
+  const body = payload?.notification?.body || payload?.data?.body || '';
+  const icon = payload?.notification?.icon || payload?.data?.icon || '/pwa-192x192.png';
+  const image = payload?.notification?.image || payload?.data?.image || undefined;
+  const link = payload?.fcmOptions?.link || payload?.data?.url || '/';
+
+  const notificationOptions = {
+    body: body,
+    icon: icon,
+    badge: '/pwa-192x192.png',
+    data: {
+      url: link
+    },
+    tag: payload?.data?.tag || payload?.messageId || 'karigiri-notification',
+    renotify: true
+  };
+
+  if (image) {
+    notificationOptions.image = image;
+  }
+
+  return self.registration.showNotification(title, notificationOptions);
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const urlToOpen = event.notification.data?.url || '/';
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus().then((focusedClient) => {
+            if (focusedClient && 'navigate' in focusedClient && urlToOpen) {
+              return focusedClient.navigate(urlToOpen);
+            }
+          });
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
 });
