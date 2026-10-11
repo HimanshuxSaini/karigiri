@@ -115,20 +115,32 @@ export const usePushNotifications = () => {
           notificationOptions.image = image;
         }
 
-        try {
-          const n = new Notification(title, notificationOptions);
-          n.onclick = () => {
-            window.focus();
-            if (url && url !== '/') {
-              window.location.href = url;
+        // IMPORTANT: In Chromium browsers (Chrome/Edge/Android), 'new Notification()' strips options.image!
+        // options.image ONLY renders when displayed via ServiceWorkerRegistration.showNotification()!
+        if (navigator.serviceWorker?.ready) {
+          navigator.serviceWorker.ready.then((reg) => {
+            reg.showNotification(title, notificationOptions);
+          }).catch((err) => {
+            console.warn('Fallback to new Notification:', err);
+            try {
+              const n = new Notification(title, notificationOptions);
+              n.onclick = () => {
+                window.focus();
+                if (url && url !== '/') window.location.href = url;
+              };
+            } catch (e) {
+              console.error('Failed to show notification:', e);
             }
-          };
-        } catch (e) {
-          // If browser restricts 'new Notification()' in page context (e.g. Android Chrome), fallback to SW registration
-          if (navigator.serviceWorker?.ready) {
-            navigator.serviceWorker.ready.then((reg) => {
-              reg.showNotification(title, notificationOptions);
-            }).catch(console.error);
+          });
+        } else {
+          try {
+            const n = new Notification(title, notificationOptions);
+            n.onclick = () => {
+              window.focus();
+              if (url && url !== '/') window.location.href = url;
+            };
+          } catch (e) {
+            console.error('Failed to show notification:', e);
           }
         }
       }

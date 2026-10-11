@@ -10,6 +10,14 @@ firebase.initializeApp({
   appId: "1:911944665074:web:2ad0e2bde00473f942cd6b"
 });
 
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
+
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
@@ -17,6 +25,7 @@ messaging.onBackgroundMessage((payload) => {
   
   const title = payload?.notification?.title || payload?.data?.title || 'Pratham Karigiri';
   const body = payload?.notification?.body || payload?.data?.body || '';
+  const icon = payload?.notification?.icon || payload?.data?.icon || '/pwa-192x192.png';
   const image = payload?.notification?.image || payload?.notification?.imageUrl || payload?.data?.image || payload?.data?.imageUrl || undefined;
   const link = payload?.fcmOptions?.link || payload?.data?.url || '/';
 
