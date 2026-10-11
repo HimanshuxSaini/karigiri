@@ -99,51 +99,8 @@ export const usePushNotifications = () => {
       const url = payload?.fcmOptions?.link || payload?.data?.url || '/';
       const image = payload?.notification?.image || payload?.notification?.imageUrl || payload?.data?.image || payload?.data?.imageUrl || undefined;
 
-      // 1. In-app toast banner
+      // In-app toast banner (Push notification is already displayed by the Service Worker)
       useToastStore.getState().showToast(`${title}: ${body}`, 'info');
-
-      // 2. System/device notification banner (if permission is granted)
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        const notificationOptions = {
-          body: body,
-          icon: icon,
-          badge: '/pwa-192x192.png',
-          data: { url: url },
-          tag: payload?.data?.tag || payload?.messageId || 'karigiri-foreground'
-        };
-        if (image) {
-          notificationOptions.image = image;
-        }
-
-        // IMPORTANT: In Chromium browsers (Chrome/Edge/Android), 'new Notification()' strips options.image!
-        // options.image ONLY renders when displayed via ServiceWorkerRegistration.showNotification()!
-        if (navigator.serviceWorker?.ready) {
-          navigator.serviceWorker.ready.then((reg) => {
-            reg.showNotification(title, notificationOptions);
-          }).catch((err) => {
-            console.warn('Fallback to new Notification:', err);
-            try {
-              const n = new Notification(title, notificationOptions);
-              n.onclick = () => {
-                window.focus();
-                if (url && url !== '/') window.location.href = url;
-              };
-            } catch (e) {
-              console.error('Failed to show notification:', e);
-            }
-          });
-        } else {
-          try {
-            const n = new Notification(title, notificationOptions);
-            n.onclick = () => {
-              window.focus();
-              if (url && url !== '/') window.location.href = url;
-            };
-          } catch (e) {
-            console.error('Failed to show notification:', e);
-          }
-        }
-      }
     });
 
     return () => {

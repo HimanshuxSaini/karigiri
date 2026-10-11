@@ -25,18 +25,20 @@ async function run() {
     const tokensDocs = await FCMToken.find({});
     console.log('Tokens found:', tokensDocs.length);
     if(tokensDocs.length > 0) {
-      const tokens = tokensDocs.map(d => d.token);
+      // Only take the single most recent active token to test:
+      const latestToken = tokensDocs.sort((a,b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0))[0].token;
+      console.log('Sending test to single latest token:', latestToken.substring(0, 25));
+      const testImageUrl = 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80';
       const { getMessaging } = require('firebase-admin/messaging');
-      const testImageUrl = 'https://prathamkarigiri.in/pwa-192x192.png';
       const res = await getMessaging().sendEachForMulticast({
         notification: { 
-          title: 'Test Admin Push With Image', 
-          body: 'Check if this notification displays with image banner',
+          title: 'Pratham Karigiri Test', 
+          body: 'Single notification with photo banner test',
           imageUrl: testImageUrl
         },
         data: {
-          title: 'Test Admin Push With Image',
-          body: 'Check if this notification displays with image banner',
+          title: 'Pratham Karigiri Test',
+          body: 'Single notification with photo banner test',
           url: 'https://prathamkarigiri.in',
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
           image: testImageUrl,
@@ -45,8 +47,8 @@ async function run() {
         android: {
           priority: 'high',
           notification: {
-            title: 'Test Admin Push With Image',
-            body: 'Check if this notification displays with image banner',
+            title: 'Pratham Karigiri Test',
+            body: 'Single notification with photo banner test',
             sound: 'default',
             icon: 'https://prathamkarigiri.in/pwa-192x192.png',
             imageUrl: testImageUrl
@@ -55,17 +57,18 @@ async function run() {
         webpush: {
           headers: { Urgency: 'high' },
           notification: {
-            title: 'Test Admin Push With Image',
-            body: 'Check if this notification displays with image banner',
+            title: 'Pratham Karigiri Test',
+            body: 'Single notification with photo banner test',
             icon: 'https://prathamkarigiri.in/pwa-192x192.png',
             badge: 'https://prathamkarigiri.in/pwa-192x192.png',
-            image: testImageUrl
+            image: testImageUrl,
+            tag: 'karigiri-test-single'
           },
           fcmOptions: {
             link: 'https://prathamkarigiri.in'
           }
         },
-        tokens: tokens
+        tokens: [latestToken]
       });
       console.log('Firebase response: successCount =', res.successCount, 'failureCount =', res.failureCount);
       res.responses.forEach((r, idx) => {
