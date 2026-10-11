@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const admin = require('firebase-admin');
 const FCMToken = require('../models/FCMToken');
 
 /**
@@ -42,16 +41,20 @@ router.post('/send', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Title and body are required' });
     }
 
-    // Fetch all tokens from MongoDB
+    // Fetch all unique tokens from MongoDB
     const tokensDocs = await FCMToken.find({});
     
     if (tokensDocs.length === 0) {
       return res.status(200).json({ success: true, message: 'No devices found to send notifications' });
     }
 
-    const tokens = tokensDocs.map(doc => doc.token);
+    const tokens = [...new Set(tokensDocs.map(doc => doc.token).filter(Boolean))];
 
     const cleanImageUrl = imageUrl && typeof imageUrl === 'string' ? imageUrl.trim() : '';
+    const targetUrl = clickAction 
+      ? (clickAction.startsWith('http') ? clickAction : `https://prathamkarigiri.in${clickAction.startsWith('/') ? clickAction : '/' + clickAction}`) 
+      : 'https://prathamkarigiri.in';
+    const notificationTag = `karigiri-${Date.now()}`;
 
     // Create the message payload
     const message = {
@@ -63,10 +66,10 @@ router.post('/send', async (req, res) => {
       data: {
         title: String(title),
         body: String(body),
-        url: String(clickAction || 'https://prathamkarigiri.in'),
+        url: targetUrl,
         icon: 'https://prathamkarigiri.in/pwa-192x192.png',
-        image: cleanImageUrl,
-        imageUrl: cleanImageUrl
+        tag: notificationTag,
+        ...(cleanImageUrl ? { image: cleanImageUrl, imageUrl: cleanImageUrl } : {})
       },
       android: {
         priority: 'high',
@@ -75,6 +78,8 @@ router.post('/send', async (req, res) => {
           body: body,
           sound: 'default',
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
+          tag: notificationTag,
+          clickAction: targetUrl,
           ...(cleanImageUrl ? { imageUrl: cleanImageUrl } : {})
         }
       },
@@ -87,11 +92,12 @@ router.post('/send', async (req, res) => {
           body: body,
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
           badge: 'https://prathamkarigiri.in/pwa-192x192.png',
-          tag: 'karigiri-notification',
+          tag: notificationTag,
+          renotify: true,
           ...(cleanImageUrl ? { image: cleanImageUrl } : {})
         },
         fcmOptions: {
-          link: clickAction || 'https://prathamkarigiri.in'
+          link: targetUrl
         }
       },
       tokens: tokens
@@ -107,18 +113,20 @@ router.post('/send', async (req, res) => {
       response.responses.forEach((resp, idx) => {
         if (!resp.success) {
           failedTokens.push(tokens[idx]);
-          console.error(`Failed to send to token ${tokens[idx]}: ${resp.error}`);
+          console.error(`Failed to send to token ${tokens[idx]}:`, resp.error?.message || resp.error);
         }
       });
       
       // Cleanup invalid tokens from MongoDB
-      await FCMToken.deleteMany({ token: { $in: failedTokens } });
-      console.log(`Cleaned up ${failedTokens.length} invalid tokens.`);
+      if (failedTokens.length > 0) {
+        await FCMToken.deleteMany({ token: { $in: failedTokens } });
+        console.log(`Cleaned up ${failedTokens.length} invalid tokens.`);
+      }
     }
 
     res.status(200).json({ 
       success: true, 
-      message: 'Notifications sent',
+      message: 'Notifications sent successfully',
       successCount: response.successCount,
       failureCount: response.failureCount
     });

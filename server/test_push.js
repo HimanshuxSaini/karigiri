@@ -25,20 +25,19 @@ async function run() {
     const tokensDocs = await FCMToken.find({});
     console.log('Tokens found:', tokensDocs.length);
     if(tokensDocs.length > 0) {
-      // Only take the single most recent active token to test:
-      const latestToken = tokensDocs.sort((a,b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0))[0].token;
-      console.log('Sending test to single latest token:', latestToken.substring(0, 25));
+      const tokens = [...new Set(tokensDocs.map(d => d.token))];
+      console.log('Sending test to all devices, count:', tokens.length);
       const testImageUrl = 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80';
       const { getMessaging } = require('firebase-admin/messaging');
       const res = await getMessaging().sendEachForMulticast({
         notification: { 
-          title: 'Pratham Karigiri Test', 
-          body: 'Single notification with photo banner test',
+          title: 'Pratham Karigiri Collection', 
+          body: 'Check out our new handmade woolen collections!',
           imageUrl: testImageUrl
         },
         data: {
-          title: 'Pratham Karigiri Test',
-          body: 'Single notification with photo banner test',
+          title: 'Pratham Karigiri Collection',
+          body: 'Check out our new handmade woolen collections!',
           url: 'https://prathamkarigiri.in',
           icon: 'https://prathamkarigiri.in/pwa-192x192.png',
           image: testImageUrl,
@@ -47,8 +46,8 @@ async function run() {
         android: {
           priority: 'high',
           notification: {
-            title: 'Pratham Karigiri Test',
-            body: 'Single notification with photo banner test',
+            title: 'Pratham Karigiri Collection',
+            body: 'Check out our new handmade woolen collections!',
             sound: 'default',
             icon: 'https://prathamkarigiri.in/pwa-192x192.png',
             imageUrl: testImageUrl
@@ -57,18 +56,18 @@ async function run() {
         webpush: {
           headers: { Urgency: 'high' },
           notification: {
-            title: 'Pratham Karigiri Test',
-            body: 'Single notification with photo banner test',
+            title: 'Pratham Karigiri Collection',
+            body: 'Check out our new handmade woolen collections!',
             icon: 'https://prathamkarigiri.in/pwa-192x192.png',
             badge: 'https://prathamkarigiri.in/pwa-192x192.png',
             image: testImageUrl,
-            tag: 'karigiri-test-single'
+            tag: 'karigiri-broadcast'
           },
           fcmOptions: {
             link: 'https://prathamkarigiri.in'
           }
         },
-        tokens: [latestToken]
+        tokens: tokens
       });
       console.log('Firebase response: successCount =', res.successCount, 'failureCount =', res.failureCount);
       res.responses.forEach((r, idx) => {
